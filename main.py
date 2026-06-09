@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 import hashlib
 import json
+import base64
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from urllib.parse import quote
@@ -22,76 +23,98 @@ DB_PATH = "sistema_financeiro.db"
 
 
 # =====================================================
+# IMAGEM DE FUNDO / LOGO
+# =====================================================
+
+def imagem_base64(caminho):
+    try:
+        with open(caminho, "rb") as img:
+            return base64.b64encode(img.read()).decode()
+    except Exception:
+        return ""
+
+
+logo_base64 = imagem_base64("logo.png")
+
+
+# =====================================================
 # ESTILO VISUAL
 # =====================================================
 
 st.markdown(
-    """
+    f"""
     <style>
-    .main {
-        background-color: #f6f7fb;
-    }
+    .stApp {{
+        background-image:
+            linear-gradient(rgba(246, 247, 251, 0.92), rgba(246, 247, 251, 0.92)),
+            url("data:image/png;base64,{logo_base64}");
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 420px;
+        background-attachment: fixed;
+    }}
 
-    [data-testid="stSidebar"] {
+    [data-testid="stSidebar"] {{
         background: linear-gradient(180deg, #36115c 0%, #171321 100%);
         color: white;
-    }
+    }}
 
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] * {{
         color: white;
-    }
+    }}
 
-    .metric-card {
-        background: white;
+    .metric-card {{
+        background: rgba(255,255,255,0.94);
         border-radius: 18px;
         padding: 22px;
         box-shadow: 0 4px 18px rgba(0,0,0,0.08);
         border-left: 6px solid #7c3aed;
         min-height: 120px;
-    }
+        backdrop-filter: blur(4px);
+    }}
 
-    .metric-title {
+    .metric-title {{
         color: #6b7280;
         font-size: 14px;
         font-weight: 600;
-    }
+    }}
 
-    .metric-value {
+    .metric-value {{
         color: #111827;
         font-size: 28px;
         font-weight: 800;
         margin-top: 4px;
-    }
+    }}
 
-    .metric-sub {
+    .metric-sub {{
         color: #6b7280;
         font-size: 13px;
         margin-top: 2px;
-    }
+    }}
 
-    .success-box {
+    .success-box {{
         background: #ecfdf5;
         border-left: 5px solid #10b981;
         padding: 12px;
         border-radius: 10px;
         color: #064e3b;
-    }
+    }}
 
-    .warning-box {
+    .warning-box {{
         background: #fffbeb;
         border-left: 5px solid #f59e0b;
         padding: 12px;
         border-radius: 10px;
         color: #78350f;
-    }
+    }}
 
-    .danger-box {
+    .danger-box {{
         background: #fef2f2;
         border-left: 5px solid #ef4444;
         padding: 12px;
         border-radius: 10px;
         color: #7f1d1d;
-    }
+    }}
     </style>
     """,
     unsafe_allow_html=True
