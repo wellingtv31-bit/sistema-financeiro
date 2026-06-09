@@ -3,7 +3,6 @@ import pandas as pd
 import sqlite3
 import hashlib
 import json
-from pathlib import Path
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from urllib.parse import quote
@@ -48,6 +47,7 @@ st.markdown(
         padding: 22px;
         box-shadow: 0 4px 18px rgba(0,0,0,0.08);
         border-left: 6px solid #7c3aed;
+        min-height: 120px;
     }
 
     .metric-title {
@@ -130,6 +130,7 @@ def moeda(valor):
         valor = float(valor)
     except Exception:
         valor = 0
+
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
@@ -138,11 +139,8 @@ def percentual(valor):
         valor = float(valor)
     except Exception:
         valor = 0
+
     return f"{valor:.1f}%".replace(".", ",")
-
-
-def hoje_str():
-    return date.today().strftime("%Y-%m-%d")
 
 
 def data_br(valor):
@@ -161,16 +159,31 @@ def dias_para_vencimento(vencimento):
 
 
 def status_automatico(status, vencimento):
-    if status == "Pago" or status == "Recebido":
+    if status in ["Pago", "Recebido"]:
         return status
 
     dias = dias_para_vencimento(vencimento)
 
     if dias < 0:
         return "Vencido"
+
     if dias == 0:
         return "Vence hoje"
+
     return "Pendente"
+
+
+def card(titulo, valor, subtitulo=""):
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-title">{titulo}</div>
+            <div class="metric-value">{valor}</div>
+            <div class="metric-sub">{subtitulo}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # =====================================================
@@ -272,6 +285,7 @@ def criar_tabelas():
 
 def criar_admin_padrao():
     empresas = consultar("SELECT * FROM empresas")
+
     if empresas.empty:
         executar(
             """
@@ -282,8 +296,10 @@ def criar_admin_padrao():
         )
 
     usuarios = consultar("SELECT * FROM usuarios")
+
     if usuarios.empty:
         empresa = consultar("SELECT id FROM empresas LIMIT 1").iloc[0]["id"]
+
         executar(
             """
             INSERT INTO usuarios
@@ -410,10 +426,10 @@ def tela_login():
     with aba1:
         st.subheader("Acessar sistema")
 
-        email = st.text_input("E-mail")
-        senha = st.text_input("Senha", type="password")
+        email = st.text_input("E-mail", key="login_email")
+        senha = st.text_input("Senha", type="password", key="login_senha")
 
-        if st.button("Entrar", use_container_width=True):
+        if st.button("Entrar", use_container_width=True, key="btn_login"):
             usuario = consultar(
                 """
                 SELECT u.*, e.nome as empresa_nome
@@ -435,16 +451,16 @@ def tela_login():
     with aba2:
         st.subheader("Cadastrar nova empresa")
 
-        nome_empresa = st.text_input("Nome da empresa")
-        documento = st.text_input("CNPJ / CPF")
-        telefone = st.text_input("Telefone")
-        cidade = st.text_input("Cidade")
+        nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
+        documento = st.text_input("CNPJ / CPF", key="cad_documento")
+        telefone = st.text_input("Telefone", key="cad_telefone")
+        cidade = st.text_input("Cidade", key="cad_cidade")
 
-        nome_usuario = st.text_input("Nome do administrador")
-        email_usuario = st.text_input("E-mail do administrador")
-        senha_usuario = st.text_input("Senha", type="password")
+        nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
+        email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
+        senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
 
-        if st.button("Criar empresa", use_container_width=True):
+        if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
             if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
                 st.warning("Preencha todos os campos obrigatórios.")
             else:
@@ -485,7 +501,7 @@ def tela_login():
 
 
 # =====================================================
-# CARREGAMENTO DE DADOS
+# USUÁRIO ATUAL
 # =====================================================
 
 def empresa_id_atual():
@@ -499,6 +515,10 @@ def usuario_id_atual():
 def tipo_usuario_atual():
     return st.session_state.usuario["tipo"]
 
+
+# =====================================================
+# CARREGAMENTO
+# =====================================================
 
 def carregar_lancamentos():
     df = consultar(
@@ -548,7 +568,7 @@ def carregar_estoque():
 
 
 # =====================================================
-# CÁLCULOS FINANCEIROS
+# CÁLCULOS
 # =====================================================
 
 def calcular_indicadores(df):
@@ -620,21 +640,8 @@ def calcular_indicadores(df):
     }
 
 
-def card(titulo, valor, subtitulo=""):
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-title">{titulo}</div>
-            <div class="metric-value">{valor}</div>
-            <div class="metric-sub">{subtitulo}</div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
 # =====================================================
-# PDF
+# RELATÓRIO PDF
 # =====================================================
 
 def gerar_pdf_relatorio(df, ind):
@@ -647,7 +654,6 @@ def gerar_pdf_relatorio(df, ind):
 
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
-
     largura, altura = A4
 
     y = altura - 2 * cm
@@ -667,6 +673,7 @@ def gerar_pdf_relatorio(df, ind):
     y -= 0.7 * cm
 
     pdf.setFont("Helvetica", 10)
+
     linhas = [
         ("Receita", moeda(ind["receita"])),
         ("Custo", moeda(ind["custo"])),
@@ -693,6 +700,7 @@ def gerar_pdf_relatorio(df, ind):
 
     if not df.empty:
         ultimos = df.sort_values("data", ascending=False).head(15)
+
         for _, row in ultimos.iterrows():
             linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
             pdf.drawString(2 * cm, y, linha[:110])
@@ -705,11 +713,12 @@ def gerar_pdf_relatorio(df, ind):
 
     pdf.save()
     buffer.seek(0)
+
     return buffer
 
 
 # =====================================================
-# TELA PRINCIPAL
+# APLICATIVO PRINCIPAL
 # =====================================================
 
 def app():
@@ -736,10 +745,11 @@ def app():
             "WhatsApp Manual",
             "Usuários",
             "Configurações"
-        ]
+        ],
+        key="menu_principal"
     )
 
-    if st.sidebar.button("Sair"):
+    if st.sidebar.button("Sair", key="btn_sair"):
         del st.session_state.usuario
         st.rerun()
 
@@ -756,24 +766,32 @@ def app():
             st.info("Nenhum lançamento cadastrado ainda.")
 
         c1, c2, c3, c4 = st.columns(4)
+
         with c1:
             card("Receita total", moeda(ind["receita"]), "Total de entradas")
+
         with c2:
             card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
+
         with c3:
             card("Saldo em caixa", moeda(ind["caixa"]), "Entradas - saídas")
+
         with c4:
             card("Vencidas", moeda(ind["vencidas"]), "Atenção")
 
         st.write("")
 
         c5, c6, c7, c8 = st.columns(4)
+
         with c5:
             card("Custos", moeda(ind["custo"]))
+
         with c6:
             card("Despesas", moeda(ind["despesa_fixa"] + ind["despesa_variavel"]))
+
         with c7:
             card("A receber", moeda(ind["contas_receber"]))
+
         with c8:
             card("A pagar", moeda(ind["contas_pagar"]))
 
@@ -800,7 +818,7 @@ def app():
             st.dataframe(tabela, use_container_width=True)
 
     # =================================================
-    # LANÇAMENTOS
+    # ENTRADAS E SAÍDAS
     # =================================================
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
@@ -809,30 +827,32 @@ def app():
             col1, col2, col3 = st.columns(3)
 
             with col1:
-                data_lanc = st.date_input("Data", value=date.today())
-                vencimento = st.date_input("Vencimento", value=date.today())
-                tipo = st.selectbox("Tipo", list(TIPOS_LANCAMENTO.keys()))
+                data_lanc = st.date_input("Data", value=date.today(), key="lanc_data")
+                vencimento = st.date_input("Vencimento", value=date.today(), key="lanc_vencimento")
+                tipo = st.selectbox("Tipo", list(TIPOS_LANCAMENTO.keys()), key="lanc_tipo")
 
             with col2:
-                categoria = st.selectbox("Categoria", TIPOS_LANCAMENTO[tipo])
-                descricao = st.text_input("Descrição")
-                cliente = st.text_input("Cliente / Fornecedor")
+                categoria = st.selectbox("Categoria", TIPOS_LANCAMENTO[tipo], key="lanc_categoria")
+                descricao = st.text_input("Descrição", key="lanc_descricao")
+                cliente = st.text_input("Cliente / Fornecedor", key="lanc_cliente")
 
             with col3:
-                valor = st.number_input("Valor", min_value=0.0, step=1.0, format="%.2f")
-                forma = st.selectbox("Forma de pagamento", FORMAS_PAGAMENTO)
-                conta = st.selectbox("Conta", CONTAS)
+                valor = st.number_input("Valor", min_value=0.0, step=1.0, format="%.2f", key="lanc_valor")
+                forma = st.selectbox("Forma de pagamento", FORMAS_PAGAMENTO, key="lanc_forma")
+                conta = st.selectbox("Conta", CONTAS, key="lanc_conta")
 
             col4, col5, col6 = st.columns(3)
 
             with col4:
-                status = st.selectbox("Status", STATUS_OPCOES)
-            with col5:
-                parcela_total = st.number_input("Total de parcelas", min_value=1, value=1, step=1)
-            with col6:
-                observacao = st.text_input("Observação")
+                status = st.selectbox("Status", STATUS_OPCOES, key="lanc_status")
 
-            salvar = st.form_submit_button("Salvar lançamento", use_container_width=True)
+            with col5:
+                parcela_total = st.number_input("Total de parcelas", min_value=1, value=1, step=1, key="lanc_parcelas")
+
+            with col6:
+                observacao = st.text_input("Observação", key="lanc_observacao")
+
+            salvar = st.form_submit_button("Salvar lançamento")
 
             if salvar:
                 if valor <= 0:
@@ -884,30 +904,34 @@ def app():
             tabela = df.copy()
             tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
             tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+
             st.dataframe(tabela, use_container_width=True)
 
             st.subheader("Editar / Excluir")
-            id_edit = st.selectbox("Selecione o ID", df["id"].tolist())
+
+            id_edit = st.selectbox("Selecione o ID", df["id"].tolist(), key="edit_id")
             item = df[df["id"] == id_edit].iloc[0]
 
             novo_status = st.selectbox(
                 "Novo status",
                 STATUS_OPCOES,
-                index=STATUS_OPCOES.index(item["status"]) if item["status"] in STATUS_OPCOES else 0
+                index=STATUS_OPCOES.index(item["status"]) if item["status"] in STATUS_OPCOES else 0,
+                key="edit_status"
             )
 
             novo_valor = st.number_input(
                 "Novo valor",
                 min_value=0.0,
                 value=float(item["valor"]),
-                step=1.0
+                step=1.0,
+                key="edit_valor"
             )
 
-            nova_desc = st.text_input("Nova descrição", value=item["descricao"])
+            nova_desc = st.text_input("Nova descrição", value=item["descricao"], key="edit_desc")
 
             col_a, col_b = st.columns(2)
 
-            if col_a.button("Atualizar lançamento"):
+            if col_a.button("Atualizar lançamento", key="btn_atualizar_lancamento"):
                 executar(
                     """
                     UPDATE lancamentos
@@ -916,10 +940,11 @@ def app():
                     """,
                     (novo_status, novo_valor, nova_desc, int(id_edit), empresa_id_atual())
                 )
+
                 st.success("Atualizado.")
                 st.rerun()
 
-            if col_b.button("Excluir lançamento"):
+            if col_b.button("Excluir lançamento", key="btn_excluir_lancamento"):
                 executar(
                     """
                     DELETE FROM lancamentos
@@ -927,6 +952,7 @@ def app():
                     """,
                     (int(id_edit), empresa_id_atual())
                 )
+
                 st.warning("Excluído.")
                 st.rerun()
 
@@ -961,15 +987,19 @@ def app():
 
             filtro = st.selectbox(
                 "Filtrar",
-                ["Todas", "A pagar", "A receber", "Vencidas", "Vence hoje"]
+                ["Todas", "A pagar", "A receber", "Vencidas", "Vence hoje"],
+                key="filtro_contas"
             )
 
             if filtro == "A pagar":
                 contas = contas[contas["tipo"] != "Receita"]
+
             elif filtro == "A receber":
                 contas = contas[contas["tipo"] == "Receita"]
+
             elif filtro == "Vencidas":
                 contas = contas[contas["status_real"] == "Vencido"]
+
             elif filtro == "Vence hoje":
                 contas = contas[contas["status_real"] == "Vence hoje"]
 
@@ -1007,11 +1037,11 @@ def app():
     elif menu == "Pix":
         st.title("💳 Pix")
 
-        chave = st.text_input("Chave Pix")
-        valor_pix = st.number_input("Valor", min_value=0.0, step=1.0)
-        descricao_pix = st.text_input("Descrição")
+        chave = st.text_input("Chave Pix", key="pix_chave")
+        valor_pix = st.number_input("Valor", min_value=0.0, step=1.0, key="pix_valor")
+        descricao_pix = st.text_input("Descrição", key="pix_descricao")
 
-        if st.button("Gerar texto de cobrança"):
+        if st.button("Gerar texto de cobrança", key="btn_pix"):
             texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
             st.code(texto)
 
@@ -1020,8 +1050,6 @@ def app():
     # =================================================
     elif menu == "Relatórios PDF":
         st.title("📄 Relatórios PDF")
-
-        st.write("Baixe um resumo financeiro em PDF.")
 
         pdf = gerar_pdf_relatorio(df, ind)
 
@@ -1032,7 +1060,8 @@ def app():
                 "Baixar relatório PDF",
                 data=pdf,
                 file_name="relatorio_financeiro.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
+                key="download_pdf"
             )
 
         if not df.empty:
@@ -1041,7 +1070,8 @@ def app():
                 "Baixar CSV",
                 data=csv,
                 file_name="lancamentos.csv",
-                mime="text/csv"
+                mime="text/csv",
+                key="download_csv"
             )
 
     # =================================================
@@ -1059,12 +1089,13 @@ def app():
                 st.markdown(
                     """
                     <div class="danger-box">
-                    Seu negócio está com prejuízo líquido. É necessário reduzir custos, revisar despesas fixas
-                    ou aumentar a margem das vendas.
+                    Seu negócio está com prejuízo líquido. É necessário reduzir custos,
+                    revisar despesas fixas ou aumentar a margem das vendas.
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
+
             elif ind["margem_liquida"] < 10:
                 st.markdown(
                     """
@@ -1074,6 +1105,7 @@ def app():
                     """,
                     unsafe_allow_html=True
                 )
+
             else:
                 st.markdown(
                     """
@@ -1088,9 +1120,9 @@ def app():
             st.write(f"**Margem líquida:** {percentual(ind['margem_liquida'])}")
             st.write(f"**Ponto de equilíbrio:** {moeda(ind['ponto_equilibrio'])}")
 
-            pergunta = st.text_area("Faça uma pergunta financeira")
+            pergunta = st.text_area("Faça uma pergunta financeira", key="ia_pergunta")
 
-            if st.button("Responder"):
+            if st.button("Responder", key="btn_ia"):
                 st.info(
                     "Análise local: acompanhe os vencidos, reduza despesas fixas e priorize receitas recorrentes. "
                     "Para IA real com OpenAI, depois conectamos sua API."
@@ -1106,16 +1138,16 @@ def app():
             col1, col2 = st.columns(2)
 
             with col1:
-                nome = st.text_input("Nome")
-                telefone = st.text_input("Telefone / WhatsApp")
-                email = st.text_input("E-mail")
+                nome = st.text_input("Nome", key="cliente_nome")
+                telefone = st.text_input("Telefone / WhatsApp", key="cliente_telefone")
+                email = st.text_input("E-mail", key="cliente_email")
 
             with col2:
-                documento = st.text_input("CPF / CNPJ")
-                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro"])
-                obs = st.text_area("Observação")
+                documento = st.text_input("CPF / CNPJ", key="cliente_documento")
+                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro"], key="cliente_tipo")
+                obs = st.text_area("Observação", key="cliente_obs")
 
-            if st.form_submit_button("Salvar cliente", use_container_width=True):
+            if st.form_submit_button("Salvar cliente"):
                 executar(
                     """
                     INSERT INTO clientes
@@ -1133,6 +1165,7 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
+
                 st.success("Cliente salvo.")
                 st.rerun()
 
@@ -1153,19 +1186,19 @@ def app():
             col1, col2, col3 = st.columns(3)
 
             with col1:
-                produto = st.text_input("Produto")
-                categoria = st.text_input("Categoria")
-                fornecedor = st.text_input("Fornecedor")
+                produto = st.text_input("Produto", key="est_produto")
+                categoria = st.text_input("Categoria", key="est_categoria")
+                fornecedor = st.text_input("Fornecedor", key="est_fornecedor")
 
             with col2:
-                quantidade = st.number_input("Quantidade", min_value=0.0, step=1.0)
-                custo_unitario = st.number_input("Custo unitário", min_value=0.0, step=1.0)
+                quantidade = st.number_input("Quantidade", min_value=0.0, step=1.0, key="est_quantidade")
+                custo_unitario = st.number_input("Custo unitário", min_value=0.0, step=1.0, key="est_custo")
 
             with col3:
-                preco_venda = st.number_input("Preço de venda", min_value=0.0, step=1.0)
-                obs = st.text_area("Observação")
+                preco_venda = st.number_input("Preço de venda", min_value=0.0, step=1.0, key="est_preco")
+                obs = st.text_area("Observação", key="est_obs")
 
-            if st.form_submit_button("Salvar produto", use_container_width=True):
+            if st.form_submit_button("Salvar produto"):
                 executar(
                     """
                     INSERT INTO estoque
@@ -1184,6 +1217,7 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
+
                 st.success("Produto salvo.")
                 st.rerun()
 
@@ -1202,17 +1236,18 @@ def app():
     elif menu == "WhatsApp Manual":
         st.title("📲 WhatsApp Manual")
 
-        telefone = st.text_input("Telefone com DDD", placeholder="62999999999")
-        nome = st.text_input("Nome do cliente")
-        valor_msg = st.number_input("Valor", min_value=0.0, step=1.0)
-        venc_msg = st.date_input("Vencimento", value=date.today())
+        telefone = st.text_input("Telefone com DDD", placeholder="62999999999", key="zap_telefone")
+        nome = st.text_input("Nome do cliente", key="zap_nome")
+        valor_msg = st.number_input("Valor", min_value=0.0, step=1.0, key="zap_valor")
+        venc_msg = st.date_input("Vencimento", value=date.today(), key="zap_vencimento")
 
         mensagem = st.text_area(
             "Mensagem",
-            value=f"Olá, tudo bem? Passando para lembrar sobre o pagamento no valor de {moeda(valor_msg)}."
+            value="Olá {nome}, tudo bem? Passando para lembrar sobre o pagamento no valor de {valor}, com vencimento em {vencimento}.",
+            key="zap_mensagem"
         )
 
-        if st.button("Gerar link WhatsApp"):
+        if st.button("Gerar link WhatsApp", key="btn_zap"):
             texto = mensagem.replace("{nome}", nome)
             texto = texto.replace("{valor}", moeda(valor_msg))
             texto = texto.replace("{vencimento}", venc_msg.strftime("%d/%m/%Y"))
@@ -1233,15 +1268,15 @@ def app():
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    nome = st.text_input("Nome do usuário")
-                    email = st.text_input("E-mail")
-                    senha = st.text_input("Senha", type="password")
+                    nome = st.text_input("Nome do usuário", key="user_nome")
+                    email = st.text_input("E-mail", key="user_email")
+                    senha = st.text_input("Senha", type="password", key="user_senha")
 
                 with col2:
-                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO)
-                    ativo = st.checkbox("Ativo", value=True)
+                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO, key="user_tipo")
+                    ativo = st.checkbox("Ativo", value=True, key="user_ativo")
 
-                if st.form_submit_button("Criar usuário", use_container_width=True):
+                if st.form_submit_button("Criar usuário"):
                     try:
                         executar(
                             """
@@ -1259,8 +1294,10 @@ def app():
                                 datetime.now().isoformat()
                             )
                         )
+
                         st.success("Usuário criado.")
                         st.rerun()
+
                     except Exception as e:
                         st.error(f"Erro: {e}")
 
@@ -1291,12 +1328,12 @@ def app():
         else:
             emp = empresa.iloc[0]
 
-            nome = st.text_input("Nome da empresa", value=emp["nome"])
-            documento = st.text_input("Documento", value=emp["documento"] or "")
-            telefone = st.text_input("Telefone", value=emp["telefone"] or "")
-            cidade = st.text_input("Cidade", value=emp["cidade"] or "")
+            nome = st.text_input("Nome da empresa", value=emp["nome"], key="conf_nome")
+            documento = st.text_input("Documento", value=emp["documento"] or "", key="conf_doc")
+            telefone = st.text_input("Telefone", value=emp["telefone"] or "", key="conf_tel")
+            cidade = st.text_input("Cidade", value=emp["cidade"] or "", key="conf_cidade")
 
-            if st.button("Salvar configurações"):
+            if st.button("Salvar configurações", key="btn_conf"):
                 executar(
                     """
                     UPDATE empresas
@@ -1305,6 +1342,7 @@ def app():
                     """,
                     (nome, documento, telefone, cidade, empresa_id_atual())
                 )
+
                 st.success("Configurações atualizadas.")
                 st.rerun()
 
@@ -1320,7 +1358,8 @@ def app():
             "Baixar backup JSON",
             data=json.dumps(backup, ensure_ascii=False, indent=4, default=str),
             file_name="backup_sistema_financeiro.json",
-            mime="application/json"
+            mime="application/json",
+            key="download_backup_json"
         )
 
 
