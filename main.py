@@ -40,7 +40,7 @@ logo_base64 = imagem_base64("logo.png")
 
 
 # =====================================================
-# ESTILO VISUAL PREMIUM V2
+# ESTILO VISUAL PREMIUM V3 - FUNDO ESCURO + CORES DA LOGO
 # =====================================================
 
 st.markdown(
@@ -60,12 +60,13 @@ st.markdown(
 
     .stApp {{
         background:
-            linear-gradient(rgba(248,250,252,0.78), rgba(248,250,252,0.78)),
+            linear-gradient(rgba(5, 12, 22, 0.88), rgba(5, 12, 22, 0.92)),
             url("data:image/png;base64,{logo_base64}");
         background-repeat: no-repeat;
         background-position: center center;
-        background-size: 75%;
+        background-size: 78%;
         background-attachment: fixed;
+        color: #f8fafc;
     }}
 
     .block-container {{
@@ -76,30 +77,34 @@ st.markdown(
 
     [data-testid="stSidebar"] {{
         background:
-            linear-gradient(rgba(15,23,42,0.94), rgba(15,23,42,0.98)),
+            linear-gradient(rgba(3, 10, 20, 0.96), rgba(3, 10, 20, 0.98)),
             url("data:image/png;base64,{logo_base64}");
         background-repeat: no-repeat;
         background-position: center 96%;
         background-size: 88%;
-        border-right: 1px solid rgba(255,255,255,0.12);
+        border-right: 1px solid rgba(34, 211, 238, 0.30);
     }}
 
     [data-testid="stSidebar"] * {{
-        color: white !important;
+        color: #ffffff !important;
     }}
 
     h1, h2, h3 {{
-        color: #0f172a;
+        color: #ffffff !important;
         font-weight: 900;
         letter-spacing: -0.5px;
     }}
 
+    p, label, span, div {{
+        color: inherit;
+    }}
+
     .premium-card {{
-        background: rgba(255,255,255,0.88);
-        border: 1px solid rgba(255,255,255,0.75);
+        background: rgba(8, 20, 35, 0.88);
+        border: 1px solid rgba(34, 211, 238, 0.28);
         border-radius: 28px;
         padding: 34px;
-        box-shadow: 0 18px 48px rgba(15,23,42,0.12);
+        box-shadow: 0 20px 55px rgba(0,0,0,0.42);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
     }}
@@ -107,37 +112,38 @@ st.markdown(
     .login-title {{
         font-size: 48px;
         font-weight: 950;
-        color: #0f172a;
+        color: #ffffff;
         line-height: 1.05;
         margin-bottom: 12px;
+        text-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
     }}
 
     .login-subtitle {{
         font-size: 18px;
-        color: #64748b;
+        color: #cbd5e1;
         margin-bottom: 24px;
     }}
 
     .login-info {{
-        background: rgba(239,246,255,0.95);
-        border-left: 6px solid #2563eb;
-        color: #1e3a8a;
+        background: rgba(14, 165, 233, 0.14);
+        border-left: 6px solid #22d3ee;
+        color: #e0faff;
         padding: 14px 18px;
         border-radius: 16px;
         font-size: 15px;
         margin-bottom: 22px;
-        box-shadow: 0 8px 24px rgba(37,99,235,0.08);
+        box-shadow: 0 8px 24px rgba(34, 211, 238, 0.10);
     }}
 
     .logo-box {{
-        background: rgba(255,255,255,0.38);
-        border: 1px solid rgba(255,255,255,0.70);
+        background: rgba(8, 20, 35, 0.58);
+        border: 1px solid rgba(34, 211, 238, 0.32);
         border-radius: 32px;
         min-height: 520px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 18px 45px rgba(15,23,42,0.10);
+        box-shadow: 0 20px 55px rgba(0,0,0,0.38);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }}
@@ -146,67 +152,72 @@ st.markdown(
         width: 96%;
         max-width: 560px;
         opacity: 0.98;
-        filter: drop-shadow(0px 18px 32px rgba(15,23,42,0.25));
+        filter: drop-shadow(0px 18px 32px rgba(34, 211, 238, 0.22));
     }}
 
     .metric-card {{
-        background: rgba(255,255,255,0.94);
+        background: linear-gradient(145deg, rgba(10, 25, 45, 0.96), rgba(6, 18, 32, 0.96));
         border-radius: 22px;
         padding: 24px;
-        box-shadow: 0 12px 30px rgba(15,23,42,0.08);
-        border: 1px solid rgba(255,255,255,0.75);
-        border-left: 7px solid #2563eb;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.34);
+        border: 1px solid rgba(34, 211, 238, 0.24);
+        border-left: 7px solid #22d3ee;
         min-height: 128px;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }}
 
     .metric-title {{
-        color: #64748b;
+        color: #67e8f9;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 850;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.5px;
     }}
 
     .metric-value {{
-        color: #0f172a;
+        color: #ffffff;
         font-size: 30px;
         font-weight: 950;
         margin-top: 6px;
+        text-shadow: 0 0 14px rgba(34, 211, 238, 0.15);
     }}
 
     .metric-sub {{
-        color: #64748b;
+        color: #cbd5e1;
         font-size: 13px;
         margin-top: 3px;
     }}
 
     .success-box {{
-        background: rgba(236,253,245,0.95);
+        background: rgba(16, 185, 129, 0.13);
         border-left: 6px solid #10b981;
         padding: 14px 18px;
         border-radius: 16px;
-        color: #064e3b;
-        box-shadow: 0 8px 22px rgba(16,185,129,0.08);
+        color: #d1fae5;
+        box-shadow: 0 8px 22px rgba(16,185,129,0.10);
     }}
 
     .warning-box {{
-        background: rgba(255,251,235,0.95);
+        background: rgba(245, 158, 11, 0.14);
         border-left: 6px solid #f59e0b;
         padding: 14px 18px;
         border-radius: 16px;
-        color: #78350f;
-        box-shadow: 0 8px 22px rgba(245,158,11,0.08);
+        color: #fef3c7;
+        box-shadow: 0 8px 22px rgba(245,158,11,0.10);
     }}
 
     .danger-box {{
-        background: rgba(254,242,242,0.95);
+        background: rgba(239, 68, 68, 0.14);
         border-left: 6px solid #ef4444;
         padding: 14px 18px;
         border-radius: 16px;
-        color: #7f1d1d;
-        box-shadow: 0 8px 22px rgba(239,68,68,0.08);
+        color: #fee2e2;
+        box-shadow: 0 8px 22px rgba(239,68,68,0.10);
+    }}
+
+    .stMarkdown, .stText, .stCaption {{
+        color: #e5e7eb !important;
     }}
 
     .stTextInput input,
@@ -214,57 +225,95 @@ st.markdown(
     .stDateInput input,
     .stTextArea textarea {{
         border-radius: 14px !important;
-        border: 1px solid #cbd5e1 !important;
-        background: rgba(255,255,255,0.94) !important;
+        border: 1px solid rgba(34, 211, 238, 0.30) !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+        color: #ffffff !important;
+    }}
+
+    .stTextInput input::placeholder,
+    .stTextArea textarea::placeholder {{
+        color: #94a3b8 !important;
     }}
 
     .stSelectbox div[data-baseweb="select"] > div {{
         border-radius: 14px !important;
-        background: rgba(255,255,255,0.94) !important;
+        background: rgba(15, 23, 42, 0.92) !important;
+        border: 1px solid rgba(34, 211, 238, 0.30) !important;
+        color: #ffffff !important;
+    }}
+
+    .stSelectbox span {{
+        color: #ffffff !important;
+    }}
+
+    input {{
+        color-scheme: dark;
     }}
 
     .stButton > button {{
-        background: linear-gradient(90deg, #1d4ed8, #2563eb);
-        color: white;
+        background: linear-gradient(90deg, #0891b2, #22d3ee);
+        color: #02111f !important;
         border: none;
         border-radius: 14px;
         padding: 0.70rem 1rem;
-        font-weight: 850;
-        box-shadow: 0 10px 22px rgba(37,99,235,0.22);
+        font-weight: 900;
+        box-shadow: 0 10px 24px rgba(34,211,238,0.26);
         transition: all 0.2s ease-in-out;
     }}
 
     .stButton > button:hover {{
         transform: translateY(-1px);
-        background: linear-gradient(90deg, #1e40af, #3b82f6);
-        color: white;
+        background: linear-gradient(90deg, #22d3ee, #67e8f9);
+        color: #02111f !important;
     }}
 
     .stDownloadButton > button {{
-        background: linear-gradient(90deg, #047857, #10b981);
-        color: white;
+        background: linear-gradient(90deg, #059669, #34d399);
+        color: #02111f !important;
         border: none;
         border-radius: 14px;
         padding: 0.70rem 1rem;
-        font-weight: 850;
-        box-shadow: 0 10px 22px rgba(16,185,129,0.22);
+        font-weight: 900;
+        box-shadow: 0 10px 22px rgba(16,185,129,0.26);
     }}
 
     div[data-testid="stDataFrame"] {{
-        background: rgba(255,255,255,0.88);
+        background: rgba(8, 20, 35, 0.90);
         border-radius: 18px;
         padding: 8px;
-        box-shadow: 0 10px 25px rgba(15,23,42,0.06);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+        border: 1px solid rgba(34, 211, 238, 0.18);
     }}
 
     button[data-baseweb="tab"] {{
         font-size: 16px !important;
         font-weight: 850 !important;
+        color: #cbd5e1 !important;
+    }}
+
+    button[data-baseweb="tab"][aria-selected="true"] {{
+        color: #67e8f9 !important;
+        border-bottom: 2px solid #22d3ee !important;
+    }}
+
+    div[data-testid="stAlert"] {{
+        background: rgba(15, 23, 42, 0.88);
+        color: #ffffff;
+        border-radius: 16px;
+        border: 1px solid rgba(34, 211, 238, 0.20);
+    }}
+
+    div[data-testid="stAlert"] * {{
+        color: #ffffff !important;
+    }}
+
+    canvas {{
+        border-radius: 18px;
     }}
 
     @media (max-width: 900px) {{
         .stApp {{
-            background-size: 125%;
+            background-size: 135%;
         }}
 
         .login-title {{
@@ -514,13 +563,60 @@ TIPOS_USUARIO = [
 ]
 
 TIPOS_LANCAMENTO = {
-    "Receita": ["Venda", "Serviço", "Comissão", "Entrada", "Recebimento de parcela", "Outras receitas"],
-    "Custo": ["Produto vendido", "Fornecedor", "Matéria-prima", "Frete de compra", "Taxa de cartão", "Comissão paga"],
-    "Despesa fixa": ["Aluguel", "Internet", "Sistema", "Funcionário", "Contador", "Telefone", "MEI / Imposto fixo"],
-    "Despesa variável": ["Energia", "Água", "Marketing", "Manutenção", "Transporte", "Alimentação", "Outras despesas"],
-    "Investimento": ["Equipamento", "Curso", "Ferramenta", "Reforma", "Estoque", "Publicidade estratégica"],
-    "Dívida": ["Empréstimo", "Financiamento", "Cartão de crédito", "Juros", "Parcela de dívida"],
-    "Retirada do dono": ["Pró-labore", "Saque pessoal", "Distribuição de lucro"]
+    "Receita": [
+        "Venda",
+        "Serviço",
+        "Comissão",
+        "Entrada",
+        "Recebimento de parcela",
+        "Outras receitas"
+    ],
+    "Custo": [
+        "Produto vendido",
+        "Fornecedor",
+        "Matéria-prima",
+        "Frete de compra",
+        "Taxa de cartão",
+        "Comissão paga"
+    ],
+    "Despesa fixa": [
+        "Aluguel",
+        "Internet",
+        "Sistema",
+        "Funcionário",
+        "Contador",
+        "Telefone",
+        "MEI / Imposto fixo"
+    ],
+    "Despesa variável": [
+        "Energia",
+        "Água",
+        "Marketing",
+        "Manutenção",
+        "Transporte",
+        "Alimentação",
+        "Outras despesas"
+    ],
+    "Investimento": [
+        "Equipamento",
+        "Curso",
+        "Ferramenta",
+        "Reforma",
+        "Estoque",
+        "Publicidade estratégica"
+    ],
+    "Dívida": [
+        "Empréstimo",
+        "Financiamento",
+        "Cartão de crédito",
+        "Juros",
+        "Parcela de dívida"
+    ],
+    "Retirada do dono": [
+        "Pró-labore",
+        "Saque pessoal",
+        "Distribuição de lucro"
+    ]
 }
 
 FORMAS_PAGAMENTO = [
@@ -969,6 +1065,11 @@ def app():
 
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
+
+    # =================================================
+    # DASHBOARD PREMIUM
+    # =================================================
+
     if menu == "Dashboard":
         st.title("📊 Dashboard Financeiro Premium")
 
@@ -1102,7 +1203,16 @@ def app():
                         criticas["valor"] = criticas["valor"].apply(moeda)
 
                         st.dataframe(
-                            criticas[["vencimento", "tipo", "descricao", "cliente_fornecedor", "valor", "status_real"]],
+                            criticas[
+                                [
+                                    "vencimento",
+                                    "tipo",
+                                    "descricao",
+                                    "cliente_fornecedor",
+                                    "valor",
+                                    "status_real"
+                                ]
+                            ],
                             use_container_width=True,
                             hide_index=True
                         )
