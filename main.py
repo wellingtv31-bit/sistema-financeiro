@@ -110,6 +110,128 @@ st.markdown(
         margin-bottom: 12px;
     }
 
+    .public-topbar {
+        width: 100%;
+        border-radius: 24px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        background:
+            linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.98));
+        border: 1px solid rgba(212,175,55,0.30);
+        box-shadow: 0 18px 45px rgba(0,0,0,0.30);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+
+    .public-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .public-brand-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        border: 1px solid rgba(212,175,55,0.35);
+        background: rgba(2,6,23,0.72);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .public-brand-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 4px;
+    }
+
+    .public-brand-title {
+        font-size: 22px;
+        font-weight: 950;
+        color: var(--gold);
+        line-height: 1.1;
+    }
+
+    .public-brand-subtitle {
+        font-size: 13px;
+        color: #eadba6;
+        margin-top: 3px;
+    }
+
+    .public-badge {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(212,175,55,0.14);
+        border: 1px solid rgba(212,175,55,0.34);
+        color: #fff1bd;
+        font-size: 13px;
+        font-weight: 900;
+    }
+
+    .public-hero {
+        border-radius: 34px;
+        padding: 44px;
+        margin-bottom: 26px;
+        background:
+            radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 38%),
+            radial-gradient(circle at bottom left, rgba(212,175,55,0.08), transparent 36%),
+            linear-gradient(135deg, rgba(8,20,35,0.96), rgba(3,10,20,0.98));
+        border: 1px solid rgba(212,175,55,0.34);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.40), inset 0 0 28px rgba(212,175,55,0.04);
+    }
+
+    .public-tag {
+        display: inline-block;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(212,175,55,0.16);
+        border: 1px solid rgba(212,175,55,0.34);
+        color: #fff1bd;
+        font-weight: 900;
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    .public-title {
+        font-size: 52px;
+        font-weight: 950;
+        color: var(--gold);
+        line-height: 1.04;
+        margin-bottom: 18px;
+        max-width: 1060px;
+    }
+
+    .public-subtitle {
+        font-size: 19px;
+        color: #f4e8bd;
+        max-width: 1000px;
+        line-height: 1.65;
+        margin-bottom: 28px;
+    }
+
+    .public-highlight-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .public-highlight {
+        padding: 12px 16px;
+        border-radius: 18px;
+        background: rgba(15,23,42,0.82);
+        border: 1px solid rgba(212,175,55,0.28);
+        color: #fff1bd;
+        font-size: 14px;
+        font-weight: 850;
+    }
+
     .login-header {
         width: 100%;
         text-align: center;
@@ -680,6 +802,14 @@ st.markdown(
             font-size: 28px;
         }
 
+        .public-title {
+            font-size: 34px;
+        }
+
+        .public-hero {
+            padding: 28px;
+        }
+
         .app-title {
             font-size: 26px;
         }
@@ -1053,6 +1183,217 @@ STATUS_OPCOES = [
 
 
 # =====================================================
+# TELA PÚBLICA COMERCIAL
+# =====================================================
+
+def tela_publica_comercial():
+    logo_html = ""
+
+    if logo_base64:
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}">'
+    else:
+        logo_html = '<div style="font-weight:950;color:#d4af37;">GS</div>'
+
+    st.markdown(
+        f"""
+        <div class="public-topbar">
+            <div class="public-brand">
+                <div class="public-brand-logo">{logo_html}</div>
+                <div>
+                    <div class="public-brand-title">Global Software</div>
+                    <div class="public-brand-subtitle">Sistema Financeiro Premium para empresas</div>
+                </div>
+            </div>
+            <div class="public-badge">Apresentação comercial pública</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class="public-hero">
+            <div class="public-tag">GESTÃO FINANCEIRA • CRM • ESTOQUE • RELATÓRIOS</div>
+            <div class="public-title">Sua empresa ainda controla dinheiro no caderno, no WhatsApp ou em planilhas bagunçadas?</div>
+            <div class="public-subtitle">
+                O Sistema Financeiro Premium da Global Software organiza entradas, saídas, parcelas,
+                contas a pagar, contas a receber, clientes, estoque, relatórios e usuários em uma plataforma moderna,
+                visual e profissional.
+            </div>
+            <div class="public-highlight-row">
+                <div class="public-highlight">✅ Dashboard financeiro</div>
+                <div class="public-highlight">✅ Controle de parcelas</div>
+                <div class="public-highlight">✅ CRM de clientes</div>
+                <div class="public-highlight">✅ Estoque</div>
+                <div class="public-highlight">✅ Relatórios PDF</div>
+                <div class="public-highlight">✅ Usuários com permissões</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col_login, col_whats = st.columns([1, 1])
+
+    with col_login:
+        if st.button("Acessar área do sistema", use_container_width=True, key="btn_ir_login_publico"):
+            st.session_state.tela_login_ativa = True
+            st.rerun()
+
+    with col_whats:
+        texto_demo = (
+            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software. "
+            "Tenho interesse em organizar melhor as finanças da minha empresa."
+        )
+        telefone_global = st.text_input(
+            "Seu WhatsApp para demonstração",
+            placeholder="62999999999",
+            key="telefone_publico"
+        )
+
+        if st.button("Solicitar demonstração pelo WhatsApp", use_container_width=True, key="btn_demo_publico"):
+            if telefone_global:
+                link = f"https://wa.me/55{telefone_global}?text={quote(texto_demo)}"
+                st.markdown(f"[Abrir WhatsApp para solicitar demonstração]({link})")
+            else:
+                st.warning("Digite o telefone com DDD para gerar o link.")
+
+    st.write("")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        comercial_card(
+            "O problema",
+            "Muitas empresas vendem, mas não sabem quanto realmente lucram, quais contas estão vencidas e quanto têm a receber."
+        )
+
+    with c2:
+        comercial_card(
+            "A solução",
+            "O sistema reúne controle financeiro, clientes, estoque, parcelas e relatórios em uma única plataforma profissional."
+        )
+
+    with c3:
+        comercial_card(
+            "O resultado",
+            "Mais clareza, menos perda de dinheiro, melhor tomada de decisão e uma empresa preparada para crescer."
+        )
+
+    st.write("")
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 💼 O que o sistema entrega")
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    with m1:
+        comercial_card("Dashboard", "Indicadores de receita, despesas, lucro, caixa, contas vencidas, a pagar e a receber.")
+
+    with m2:
+        comercial_card("Financeiro completo", "Controle de receitas, custos, despesas fixas, variáveis, dívidas, investimentos e retiradas.")
+
+    with m3:
+        comercial_card("Parcelas", "Cadastro de lançamentos parcelados com vencimentos automáticos e acompanhamento.")
+
+    with m4:
+        comercial_card("Relatórios", "Geração de relatórios em PDF e CSV para análise e prestação de contas.")
+
+    st.write("")
+
+    m5, m6, m7, m8 = st.columns(4)
+
+    with m5:
+        comercial_card("CRM / Clientes", "Cadastro de clientes, fornecedores, telefone, documentos e observações.")
+
+    with m6:
+        comercial_card("Estoque", "Controle de produtos, quantidade, custo, preço de venda e fornecedor.")
+
+    with m7:
+        comercial_card("Usuários", "Permissões para administrador, gerente, financeiro e vendedor.")
+
+    with m8:
+        comercial_card("WhatsApp", "Geração de mensagens e links de cobrança para facilitar o atendimento.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 🎯 Para quem é indicado?")
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        comercial_card(
+            "Pequenas empresas",
+            "Para negócios que precisam sair do improviso e começar a controlar dinheiro com visão profissional."
+        )
+
+    with p2:
+        comercial_card(
+            "Lojas e comércios",
+            "Para empresas que vendem, compram, parcelam e precisam acompanhar pagamentos e recebimentos."
+        )
+
+    with p3:
+        comercial_card(
+            "Prestadores de serviço",
+            "Para profissionais que precisam controlar faturamento, despesas, clientes e relatórios."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 💰 Planos comerciais sugeridos")
+
+    plano1, plano2, plano3 = st.columns(3)
+
+    with plano1:
+        preco_card(
+            "Plano Inicial",
+            "R$ 97/mês",
+            "Ideal para pequenos negócios que precisam controlar entradas, saídas, clientes e relatórios básicos."
+        )
+
+    with plano2:
+        preco_card(
+            "Plano Profissional",
+            "R$ 197/mês",
+            "Ideal para empresas com parcelas, contas a receber, estoque, usuários e relatórios financeiros."
+        )
+
+    with plano3:
+        preco_card(
+            "Plano Premium",
+            "Sob consulta",
+            "Sistema personalizado com identidade visual, implantação, treinamento e futuras integrações."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 📲 Mensagem pronta para enviar a um cliente")
+
+    mensagem_padrao = (
+        "Olá! Tudo bem? Quero te apresentar o Sistema Financeiro Premium da Global Software. "
+        "Ele ajuda sua empresa a controlar entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque e relatórios em um só lugar. "
+        "É ideal para empresas que querem parar de perder controle financeiro e começar a tomar decisões com dados reais. "
+        "Posso te mostrar uma demonstração rápida?"
+    )
+
+    mensagem = st.text_area("Mensagem comercial", value=mensagem_padrao, height=150, key="msg_publica_comercial")
+    telefone_cliente = st.text_input("Telefone do cliente com DDD", placeholder="62999999999", key="tel_cliente_publico")
+
+    if st.button("Gerar link para enviar ao cliente", use_container_width=True, key="btn_link_cliente_publico"):
+        if telefone_cliente:
+            link = f"https://wa.me/55{telefone_cliente}?text={quote(mensagem)}"
+            st.markdown(f"[Abrir WhatsApp com mensagem comercial]({link})")
+        else:
+            st.warning("Digite o telefone do cliente com DDD.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# =====================================================
 # LOGIN
 # =====================================================
 
@@ -1071,6 +1412,13 @@ def tela_login():
         """,
         unsafe_allow_html=True
     )
+
+    col_voltar1, col_voltar2, col_voltar3 = st.columns([1, 1, 1])
+
+    with col_voltar2:
+        if st.button("Voltar para apresentação pública", use_container_width=True, key="btn_voltar_publica"):
+            st.session_state.tela_login_ativa = False
+            st.rerun()
 
     col1, col2 = st.columns([1.15, 0.85], gap="large")
 
@@ -1152,6 +1500,7 @@ def tela_login():
                 st.error("E-mail ou senha inválidos.")
             else:
                 st.session_state.usuario = usuario.iloc[0].to_dict()
+                st.session_state.tela_login_ativa = False
                 st.rerun()
 
     with aba2:
@@ -1494,7 +1843,7 @@ def gerar_pdf_relatorio(df, ind):
 
 
 # =====================================================
-# TELA COMERCIAL
+# TELA COMERCIAL INTERNA
 # =====================================================
 
 def tela_apresentacao_comercial():
@@ -2457,7 +2806,13 @@ def app():
 criar_tabelas()
 criar_admin_padrao()
 
-if "usuario" not in st.session_state:
-    tela_login()
-else:
+if "usuario" in st.session_state:
     app()
+else:
+    if "tela_login_ativa" not in st.session_state:
+        st.session_state.tela_login_ativa = False
+
+    if st.session_state.tela_login_ativa:
+        tela_login()
+    else:
+        tela_publica_comercial()
