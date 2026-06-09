@@ -44,1194 +44,629 @@ if not banner_base64:
 
 
 # =====================================================
-# CSS PREMIUM GLOBAL SOFTWARE
+# CSS PREMIUM
 # =====================================================
 
 st.markdown(
     """
-    <style>
-    #MainMenu, footer, header {
-        visibility: hidden;
-    }
-
-    :root {
-        --navy: #002b3d;
-        --navy2: #001d2b;
-        --navy3: #00384d;
-        --lime: #dfff6b;
-        --lime2: #c9ff4f;
-        --gold: #d4af37;
-        --gold-soft: #f3e3ad;
-        --white: #ffffff;
-        --soft: #f4f8fb;
-        --text-dark: #052c3d;
-        --text-gray: #6c7b86;
-        --border: #e5edf2;
-    }
-
-    .stApp {
-        background: linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
-        color: var(--gold-soft);
-    }
-
-    .block-container {
-        padding-top: 0.8rem;
-        padding-bottom: 2rem;
-        padding-left: 1.2rem;
-        padding-right: 1.2rem;
-        max-width: 1380px;
-    }
-
-    h1, h2, h3, h4 {
-        font-weight: 950 !important;
-    }
-
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(0,29,43,0.99), rgba(0,43,61,0.99));
-        border-right: 1px solid rgba(223,255,107,0.18);
-    }
-
-    section[data-testid="stSidebar"] * {
-        color: #f7ffe4 !important;
-    }
-
-    section[data-testid="stSidebar"] img {
-        border-radius: 18px;
-        border: 1px solid rgba(223,255,107,0.28);
-        margin-bottom: 12px;
-    }
-
-    /* =========================
-       LANDING PAGE PÚBLICA
-    ========================= */
-
-    .lp-wrap {
-        margin: -12px -6px 0 -6px;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .lp-topbar {
-        background: var(--navy2);
-        border-radius: 0 0 28px 28px;
-        padding: 26px 28px 10px 28px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        flex-wrap: wrap;
-    }
-
-    .lp-brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-
-    .lp-logo {
-        width: 58px;
-        height: 58px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(223,255,107,0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        color: var(--lime);
-        font-weight: 950;
-        font-size: 18px;
-    }
-
-    .lp-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        padding: 5px;
-    }
-
-    .lp-brand-title {
-        color: white;
-        font-size: 24px;
-        letter-spacing: 4px;
-        font-weight: 850;
-    }
-
-    .lp-brand-sub {
-        color: rgba(255,255,255,0.60);
-        font-size: 13px;
-        margin-top: 2px;
-    }
-
-    .lp-top-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .lp-pill {
-        color: var(--lime);
-        border: 1px solid rgba(223,255,107,0.32);
-        background: rgba(223,255,107,0.08);
-        padding: 10px 16px;
-        border-radius: 999px;
-        font-weight: 900;
-        font-size: 13px;
-    }
-
-    .lp-hero {
-        background:
-            radial-gradient(circle at 80% 25%, rgba(223,255,107,0.15), transparent 32%),
-            radial-gradient(circle at 20% 70%, rgba(212,175,55,0.12), transparent 34%),
-            linear-gradient(180deg, var(--navy2), var(--navy));
-        padding: 52px 28px 78px 28px;
-        border-radius: 0 0 42px 42px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .lp-hero-grid {
-        display: grid;
-        grid-template-columns: 1.05fr 0.95fr;
-        gap: 34px;
-        align-items: center;
-        max-width: 1220px;
-        margin: 0 auto;
-    }
-
-    .lp-kicker {
-        color: var(--lime);
-        letter-spacing: 5px;
-        font-size: 13px;
-        font-weight: 950;
-        margin-bottom: 22px;
-        text-transform: uppercase;
-    }
-
-    .lp-title {
-        color: white;
-        font-size: 62px;
-        line-height: 1.02;
-        font-weight: 950;
-        margin-bottom: 26px;
-        letter-spacing: -1.8px;
-    }
-
-    .lp-title span {
-        color: var(--lime);
-    }
-
-    .lp-subtitle {
-        color: rgba(255,255,255,0.72);
-        font-size: 22px;
-        line-height: 1.65;
-        max-width: 720px;
-        margin-bottom: 34px;
-    }
-
-    .lp-cta-row {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .lp-fake-btn-primary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        padding: 19px 34px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, rgba(223,255,107,0.95), rgba(201,255,79,0.95));
-        color: #002b3d;
-        font-weight: 950;
-        font-size: 17px;
-        box-shadow: 0 18px 45px rgba(223,255,107,0.22);
-        border: 1px solid rgba(223,255,107,0.55);
-    }
-
-    .lp-fake-btn-secondary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 18px 28px;
-        border-radius: 999px;
-        color: white;
-        border: 1px solid rgba(255,255,255,0.22);
-        background: rgba(255,255,255,0.05);
-        font-weight: 900;
-        font-size: 16px;
-    }
-
-    .lp-dashboard-mock {
-        min-height: 440px;
-        border-radius: 34px;
-        background:
-            linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)),
-            radial-gradient(circle at top right, rgba(223,255,107,0.18), transparent 42%);
-        border: 1px solid rgba(255,255,255,0.18);
-        box-shadow: 0 30px 100px rgba(0,0,0,0.35);
-        padding: 28px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .lp-mock-screen {
-        height: 100%;
-        border-radius: 26px;
-        background: rgba(255,255,255,0.92);
-        padding: 22px;
-        color: var(--text-dark);
-        transform: rotate(-3deg);
-        box-shadow: 0 28px 70px rgba(0,0,0,0.30);
-    }
-
-    .lp-mock-bar {
-        height: 12px;
-        width: 44%;
-        background: #dfe9ef;
-        border-radius: 20px;
-        margin-bottom: 20px;
-    }
-
-    .lp-mock-card-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        margin-bottom: 14px;
-    }
-
-    .lp-mock-card {
-        background: #f2f7fa;
-        border: 1px solid #e5edf2;
-        border-radius: 18px;
-        padding: 18px;
-        min-height: 94px;
-    }
-
-    .lp-mock-label {
-        color: #78909c;
-        font-size: 13px;
-        font-weight: 800;
-        margin-bottom: 8px;
-    }
-
-    .lp-mock-value {
-        color: #002b3d;
-        font-size: 24px;
-        font-weight: 950;
-    }
-
-    .lp-mock-chart {
-        height: 130px;
-        border-radius: 20px;
-        background:
-            linear-gradient(90deg, rgba(223,255,107,0.35), rgba(0,43,61,0.18)),
-            repeating-linear-gradient(90deg, transparent 0 38px, rgba(0,43,61,0.05) 38px 40px);
-        border: 1px solid #e3edf2;
-    }
-
-    .lp-trust {
-        background: var(--navy2);
-        padding: 58px 28px;
-        text-align: center;
-    }
-
-    .lp-trust-title {
-        color: white;
-        font-size: 44px;
-        line-height: 1.12;
-        font-weight: 950;
-    }
-
-    .lp-trust-title span {
-        color: var(--lime);
-    }
-
-    .lp-section-white {
-        background: #f7fbfd;
-        color: var(--text-dark);
-        padding: 74px 28px;
-        border-radius: 0;
-    }
-
-    .lp-section-dark {
-        background: var(--navy);
-        color: white;
-        padding: 74px 28px;
-        border-radius: 0;
-    }
-
-    .lp-container {
-        max-width: 1220px;
-        margin: 0 auto;
-    }
-
-    .lp-section-kicker {
-        text-align: center;
-        color: #7a8d98;
-        letter-spacing: 7px;
-        font-size: 14px;
-        text-transform: uppercase;
-        font-weight: 800;
-        margin-bottom: 18px;
-    }
-
-    .lp-section-kicker.dark {
-        color: rgba(255,255,255,0.42);
-    }
-
-    .lp-section-title {
-        text-align: center;
-        color: var(--text-dark);
-        font-size: 50px;
-        line-height: 1.14;
-        letter-spacing: -1.3px;
-        font-weight: 950;
-        max-width: 930px;
-        margin: 0 auto 44px auto;
-    }
-
-    .lp-section-title.dark {
-        color: white;
-    }
-
-    .lp-section-title span {
-        color: var(--lime2);
-    }
-
-    .lp-feature-tabs {
-        display: flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        justify-content: center;
-        margin-bottom: 34px;
-    }
-
-    .lp-tab-active,
-    .lp-tab {
-        padding: 18px 24px;
-        border-radius: 18px;
-        font-weight: 900;
-        display: inline-flex;
-        gap: 10px;
-        align-items: center;
-        box-shadow: 0 14px 30px rgba(0,0,0,0.06);
-    }
-
-    .lp-tab-active {
-        background: var(--navy);
-        color: white;
-        border: 1px solid var(--navy);
-    }
-
-    .lp-tab {
-        background: white;
-        color: #607682;
-        border: 1px solid var(--border);
-    }
-
-    .lp-feature-card-dark {
-        background:
-            radial-gradient(circle at top right, rgba(223,255,107,0.08), transparent 36%),
-            linear-gradient(180deg, #002b3d, #001d2b);
-        border: 1px solid rgba(223,255,107,0.16);
-        border-radius: 32px;
-        padding: 46px;
-        color: white;
-        box-shadow: 0 24px 70px rgba(0,0,0,0.24);
-    }
-
-    .lp-chip {
-        display: inline-flex;
-        gap: 10px;
-        align-items: center;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.13);
-        border-radius: 999px;
-        padding: 13px 20px;
-        color: rgba(255,255,255,0.70);
-        letter-spacing: 4px;
-        font-weight: 850;
-        font-size: 13px;
-        text-transform: uppercase;
-        margin-bottom: 28px;
-    }
-
-    .lp-feature-title {
-        color: white;
-        font-size: 43px;
-        line-height: 1.15;
-        font-weight: 950;
-        max-width: 690px;
-        margin-bottom: 34px;
-    }
-
-    .lp-check-list {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 28px;
-        max-width: 820px;
-    }
-
-    .lp-check-item {
-        display: grid;
-        grid-template-columns: 52px 1fr;
-        gap: 18px;
-        align-items: flex-start;
-    }
-
-    .lp-check-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(223,255,107,0.13);
-        border: 1px solid rgba(223,255,107,0.30);
-        color: var(--lime);
-        font-weight: 950;
-    }
-
-    .lp-check-title {
-        color: white;
-        font-size: 23px;
-        font-weight: 950;
-        margin-bottom: 8px;
-    }
-
-    .lp-check-text {
-        color: rgba(255,255,255,0.60);
-        font-size: 19px;
-        line-height: 1.55;
-    }
-
-    .lp-profile-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 22px;
-    }
-
-    .lp-profile-card {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        padding: 38px 32px;
-        box-shadow: 0 18px 55px rgba(0,43,61,0.06);
-        color: var(--text-dark);
-        min-height: 460px;
-    }
-
-    .lp-icon-box {
-        width: 72px;
-        height: 72px;
-        border-radius: 18px;
-        background: var(--navy);
-        color: var(--lime);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 34px;
-        margin-bottom: 32px;
-    }
-
-    .lp-profile-title {
-        font-size: 31px;
-        color: var(--text-dark);
-        font-weight: 950;
-        margin-bottom: 8px;
-    }
-
-    .lp-profile-sub {
-        color: #7b8c96;
-        font-size: 18px;
-        margin-bottom: 26px;
-    }
-
-    .lp-profile-feature {
-        margin-bottom: 18px;
-    }
-
-    .lp-profile-feature b {
-        display: block;
-        color: var(--text-dark);
-        font-size: 18px;
-        margin-bottom: 4px;
-    }
-
-    .lp-profile-feature span {
-        color: #6e7f8a;
-        font-size: 16px;
-        line-height: 1.45;
-    }
-
-    .lp-steps {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 22px;
-        margin-top: 38px;
-    }
-
-    .lp-step {
-        background: white;
-        border-radius: 26px;
-        border: 1px solid var(--border);
-        padding: 30px 24px;
-        text-align: center;
-        color: var(--text-dark);
-        min-height: 270px;
-        box-shadow: 0 18px 45px rgba(0,43,61,0.05);
-    }
-
-    .lp-step-icon {
-        width: 72px;
-        height: 72px;
-        border-radius: 20px;
-        background: var(--navy);
-        color: var(--lime);
+<style>
+#MainMenu, footer, header {
+    visibility: hidden;
+}
+
+:root {
+    --navy: #002b3d;
+    --navy2: #001d2b;
+    --navy3: #00384d;
+    --lime: #dfff6b;
+    --lime2: #c9ff4f;
+    --white: #ffffff;
+    --soft: #f4f8fb;
+    --text-dark: #052c3d;
+    --text-gray: #6c7b86;
+    --border: #e5edf2;
+}
+
+.stApp {
+    background: linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
+    color: #ffffff;
+}
+
+.block-container {
+    padding-top: 0.8rem;
+    padding-bottom: 2rem;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+    max-width: 1380px;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 950 !important;
+}
+
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, rgba(0,29,43,0.99), rgba(0,43,61,0.99));
+    border-right: 1px solid rgba(223,255,107,0.18);
+}
+
+section[data-testid="stSidebar"] * {
+    color: #f7ffe4 !important;
+}
+
+section[data-testid="stSidebar"] img {
+    border-radius: 18px;
+    border: 1px solid rgba(223,255,107,0.28);
+    margin-bottom: 12px;
+}
+
+.gs-card-dark {
+    border-radius: 28px;
+    padding: 32px;
+    background:
+        radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
+        linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
+    border: 1px solid rgba(223,255,107,0.22);
+    box-shadow: 0 18px 44px rgba(0,0,0,0.25);
+    color: white;
+}
+
+.gs-card-white {
+    border-radius: 28px;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e5edf2;
+    box-shadow: 0 18px 55px rgba(0,43,61,0.08);
+    color: #052c3d;
+}
+
+.gs-title-big {
+    font-size: 58px;
+    line-height: 1.04;
+    font-weight: 950;
+    color: white;
+    letter-spacing: -1.5px;
+}
+
+.gs-title-big span {
+    color: #dfff6b;
+}
+
+.gs-subtitle {
+    font-size: 21px;
+    line-height: 1.62;
+    color: rgba(255,255,255,0.72);
+}
+
+.gs-kicker {
+    color: #dfff6b;
+    letter-spacing: 5px;
+    font-size: 13px;
+    font-weight: 950;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.gs-section-white {
+    background: #f7fbfd;
+    border-radius: 34px;
+    padding: 54px 34px;
+    margin: 24px 0;
+    color: #052c3d;
+}
+
+.gs-section-dark {
+    background: #002b3d;
+    border-radius: 34px;
+    padding: 54px 34px;
+    margin: 24px 0;
+    color: white;
+}
+
+.gs-section-title {
+    font-size: 46px;
+    line-height: 1.12;
+    font-weight: 950;
+    color: #052c3d;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.gs-section-title-dark {
+    font-size: 46px;
+    line-height: 1.12;
+    font-weight: 950;
+    color: white;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.gs-muted {
+    color: #6c7b86;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.gs-muted-light {
+    color: rgba(255,255,255,0.65);
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.gs-btn-fake {
+    display: inline-block;
+    padding: 18px 32px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d;
+    font-size: 17px;
+    font-weight: 950;
+    box-shadow: 0 18px 45px rgba(223,255,107,0.20);
+    border: 1px solid rgba(223,255,107,0.50);
+}
+
+.gs-btn-dark {
+    display: inline-block;
+    padding: 18px 32px;
+    border-radius: 999px;
+    background: #002b3d;
+    color: #dfff6b;
+    font-size: 17px;
+    font-weight: 950;
+    box-shadow: 0 18px 45px rgba(0,43,61,0.20);
+    border: 1px solid rgba(223,255,107,0.30);
+}
+
+.gs-floating {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 22px;
+    z-index: 9999;
+    background: #002b3d;
+    color: #dfff6b !important;
+    border: 1px solid rgba(223,255,107,0.38);
+    box-shadow: 0 18px 55px rgba(0,43,61,0.36);
+    padding: 17px 34px;
+    border-radius: 999px;
+    font-weight: 950;
+    font-size: 17px;
+    text-decoration: none !important;
+}
+
+.gs-up {
+    position: fixed;
+    left: 22px;
+    bottom: 22px;
+    z-index: 9998;
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    background: #002b3d;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    text-decoration: none !important;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+}
+
+.app-header,
+.menu-panel,
+.page-panel,
+.commercial-panel,
+.form-box {
+    border-radius: 26px;
+    border: 1px solid rgba(223,255,107,0.18);
+    background: linear-gradient(180deg, rgba(0,43,61,0.92), rgba(0,29,43,0.96));
+    box-shadow: 0 22px 60px rgba(0,0,0,0.30);
+    color: #f7ffe4;
+}
+
+.app-header {
+    padding: 28px 30px;
+    margin-bottom: 20px;
+}
+
+.app-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.app-title {
+    font-size: 34px;
+    font-weight: 950;
+    color: white;
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.app-subtitle {
+    font-size: 15px;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+}
+
+.app-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.app-badge {
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(223,255,107,0.08);
+    border: 1px solid rgba(223,255,107,0.22);
+    color: #dfff6b;
+    font-size: 13px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.menu-panel {
+    padding: 18px;
+    margin-bottom: 22px;
+}
+
+.menu-title {
+    font-size: 16px;
+    font-weight: 950;
+    color: #dfff6b;
+    margin-bottom: 12px;
+}
+
+.page-panel,
+.commercial-panel,
+.form-box {
+    padding: 28px;
+    margin-bottom: 22px;
+}
+
+.commercial-card,
+.metric-card,
+.price-card {
+    border-radius: 24px;
+    padding: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
+        linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
+    border: 1px solid rgba(223,255,107,0.20);
+    box-shadow: 0 16px 38px rgba(0,0,0,0.22);
+    min-height: 155px;
+    color: white;
+}
+
+.commercial-card-title,
+.price-title,
+.metric-title {
+    color: #dfff6b;
+    font-size: 18px;
+    font-weight: 950;
+    margin-bottom: 9px;
+}
+
+.commercial-card-text,
+.price-desc,
+.metric-sub {
+    color: rgba(255,255,255,0.68);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.metric-value,
+.price-value {
+    color: white;
+    font-size: 29px;
+    font-weight: 950;
+    margin-top: 6px;
+}
+
+.success-box {
+    background: rgba(16,185,129,0.13);
+    border-left: 6px solid #10b981;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #d1fae5;
+}
+
+.warning-box {
+    background: rgba(245,158,11,0.14);
+    border-left: 6px solid #f59e0b;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #fef3c7;
+}
+
+.danger-box {
+    background: rgba(239,68,68,0.14);
+    border-left: 6px solid #ef4444;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #fee2e2;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 8px 0 4px 0;
+}
+
+.login-title {
+    font-size: 46px;
+    font-weight: 950;
+    color: white;
+    margin-bottom: 10px;
+    line-height: 1.05;
+}
+
+.login-subtitle {
+    font-size: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    color: rgba(255,255,255,0.70);
+    line-height: 1.6;
+}
+
+.login-info {
+    margin: 18px auto 28px auto;
+    max-width: 980px;
+    background: rgba(223,255,107,0.08);
+    border: 1px solid rgba(223,255,107,0.22);
+    border-radius: 18px;
+    padding: 14px 18px;
+    text-align: center;
+    color: #dfff6b;
+    font-size: 15px;
+}
+
+.hero-box {
+    min-height: 430px;
+    border-radius: 28px;
+    border: 1px solid rgba(223,255,107,0.22);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    background: rgba(0,29,43,0.72);
+}
+
+.hero-inner {
+    width: 100%;
+    display: flex;
+    align-items: end;
+    justify-content: start;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-color: rgba(0,29,43,0.76);
+    position: relative;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(0,29,43,0.02), rgba(0,29,43,0.70)),
+        linear-gradient(90deg, rgba(0,29,43,0.46), rgba(0,29,43,0.04));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 30px;
+    max-width: 88%;
+}
+
+.hero-content h3 {
+    font-size: 31px;
+    margin-bottom: 8px;
+    color: white !important;
+}
+
+.hero-content p {
+    margin: 0;
+    color: rgba(255,255,255,0.72) !important;
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.logo-box {
+    min-height: 430px;
+    border-radius: 28px;
+    border: 1px solid rgba(223,255,107,0.22);
+    background:
+        radial-gradient(circle at center, rgba(223,255,107,0.09), transparent 56%),
+        linear-gradient(180deg, rgba(0,43,61,0.55), rgba(0,29,43,0.90));
+    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.logo-box img {
+    width: 82%;
+    max-width: 380px;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34));
+}
+
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stTextArea textarea {
+    border-radius: 16px !important;
+    border: 1px solid rgba(0,43,61,0.20) !important;
+    background: rgba(255,255,255,0.98) !important;
+    color: #052c3d !important;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.04);
+}
+
+.stTextArea textarea {
+    min-height: 110px !important;
+}
+
+.stTextInput input::placeholder,
+.stTextArea textarea::placeholder {
+    color: #9aa9b1 !important;
+}
+
+.stSelectbox div[data-baseweb="select"] > div {
+    border-radius: 16px !important;
+    background: rgba(255,255,255,0.98) !important;
+    border: 1px solid rgba(0,43,61,0.20) !important;
+    color: #052c3d !important;
+    min-height: 44px;
+}
+
+.stSelectbox span,
+div[data-baseweb="select"] * {
+    color: #052c3d !important;
+}
+
+div[data-baseweb="menu"],
+ul[role="listbox"],
+div[role="listbox"] {
+    background: white !important;
+    border: 1px solid #e5edf2 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.15) !important;
+    color: #052c3d !important;
+}
+
+div[data-baseweb="menu"] *,
+ul[role="listbox"] *,
+div[role="listbox"] * {
+    background-color: white !important;
+    color: #052c3d !important;
+    font-weight: 800 !important;
+}
+
+.stButton > button {
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d !important;
+    border: none;
+    border-radius: 999px;
+    padding: 0.82rem 1.2rem;
+    font-weight: 950;
+    box-shadow: 0 12px 28px rgba(223,255,107,0.20);
+    transition: all 0.18s ease-in-out;
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(90deg, #efffa6, #dfff6b);
+    color: #002b3d !important;
+}
+
+.stDownloadButton > button {
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d !important;
+    border: none;
+    border-radius: 999px;
+    font-weight: 950;
+}
+
+div[data-testid="stDataFrame"] {
+    background: rgba(255,255,255,0.94);
+    border-radius: 20px;
+    padding: 8px;
+    border: 1px solid rgba(223,255,107,0.18);
+}
+
+div[role="radiogroup"] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+div[role="radiogroup"] label {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(223,255,107,0.18) !important;
+    border-radius: 999px !important;
+    padding: 10px 14px !important;
+    margin: 0 !important;
+    color: white !important;
+    font-weight: 850 !important;
+}
+
+div[role="radiogroup"] label:hover {
+    background: rgba(223,255,107,0.14) !important;
+    border: 1px solid rgba(223,255,107,0.38) !important;
+}
+
+div[role="radiogroup"] label * {
+    color: white !important;
+    font-weight: 850 !important;
+}
+
+button[data-baseweb="tab"] {
+    font-size: 15px !important;
+    font-weight: 900 !important;
+    color: rgba(255,255,255,0.70) !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #dfff6b !important;
+    border-bottom: 2px solid #dfff6b !important;
+}
+
+div[data-testid="stAlert"] {
+    background: rgba(255,255,255,0.95);
+    color: #052c3d;
+    border-radius: 16px;
+    border: 1px solid #e5edf2;
+}
+
+div[data-testid="stAlert"] * {
+    color: #052c3d !important;
+}
+
+@media (max-width: 980px) {
+    .gs-title-big {
+        font-size: 40px;
+    }
+
+    .gs-section-title,
+    .gs-section-title-dark {
         font-size: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px auto;
     }
 
-    .lp-step-small {
-        color: #92a1aa;
-        letter-spacing: 2px;
-        font-weight: 850;
-        font-size: 13px;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-    }
-
-    .lp-step-title {
-        color: var(--text-dark);
-        font-weight: 950;
-        font-size: 21px;
-        margin-bottom: 12px;
-    }
-
-    .lp-step-text {
-        color: #6d7f89;
+    .gs-floating {
+        width: calc(100% - 120px);
+        text-align: center;
+        padding: 15px 18px;
         font-size: 15px;
-        line-height: 1.55;
     }
 
-    .lp-compare {
-        background: white;
-        border: 1px solid var(--border);
-        border-radius: 30px;
-        overflow: hidden;
-        box-shadow: 0 18px 55px rgba(0,43,61,0.06);
-    }
-
-    .lp-compare-row {
-        display: grid;
-        grid-template-columns: 1.1fr 1fr 1fr;
-        border-bottom: 1px solid var(--border);
-        color: var(--text-dark);
-    }
-
-    .lp-compare-row:last-child {
-        border-bottom: none;
-    }
-
-    .lp-compare-cell {
-        padding: 24px;
-        font-size: 16px;
-        color: #667985;
-    }
-
-    .lp-compare-cell strong {
-        color: var(--text-dark);
-        font-size: 21px;
-        display: block;
-        margin-bottom: 8px;
-    }
-
-    .lp-good {
-        color: var(--navy);
-        font-weight: 850;
-    }
-
-    .lp-bad {
-        color: #9aa9b1;
-    }
-
-    .lp-testimonial-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 22px;
-    }
-
-    .lp-testimonial {
-        background: white;
-        color: var(--text-dark);
-        border-radius: 28px;
-        padding: 34px;
-        min-height: 300px;
-        border: 1px solid rgba(255,255,255,0.16);
-        box-shadow: 0 22px 60px rgba(0,0,0,0.16);
-    }
-
-    .lp-quote {
-        color: var(--lime);
-        font-size: 52px;
-        line-height: 0.7;
-        margin-bottom: 22px;
-        font-weight: 950;
-    }
-
-    .lp-testimonial-text {
-        color: #314b58;
-        font-size: 17px;
-        line-height: 1.65;
-        margin-bottom: 26px;
-    }
-
-    .lp-person {
-        border-top: 1px solid var(--border);
-        padding-top: 18px;
-        color: var(--text-dark);
-    }
-
-    .lp-person b {
-        font-size: 18px;
-    }
-
-    .lp-person span {
-        display: block;
-        color: #74858e;
-        font-size: 14px;
-        margin-top: 4px;
-    }
-
-    .lp-faq {
-        display: grid;
-        gap: 14px;
-        max-width: 920px;
-        margin: 0 auto;
-    }
-
-    .lp-faq-item {
-        background: white;
-        border: 1px solid var(--border);
-        color: var(--text-dark);
-        border-radius: 20px;
-        padding: 24px 26px;
-        font-size: 19px;
-        font-weight: 900;
-        display: flex;
-        justify-content: space-between;
-        gap: 14px;
-        align-items: center;
-    }
-
-    .lp-demo-box {
-        background: white;
-        border-radius: 34px;
-        padding: 38px;
-        max-width: 780px;
-        margin: 36px auto 0 auto;
-        color: var(--text-dark);
-        box-shadow: 0 24px 70px rgba(0,0,0,0.18);
-    }
-
-    .lp-final-title {
-        text-align: center;
-        color: white;
-        font-size: 48px;
-        line-height: 1.15;
-        font-weight: 950;
-        max-width: 900px;
-        margin: 0 auto 20px auto;
-    }
-
-    .lp-final-sub {
-        text-align: center;
-        color: rgba(255,255,255,0.60);
-        font-size: 20px;
-        line-height: 1.55;
-    }
-
-    .lp-floating {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
+    .gs-up {
+        width: 54px;
+        height: 54px;
+        left: 14px;
         bottom: 22px;
-        z-index: 9999;
-        background: var(--navy);
-        color: var(--lime) !important;
-        border: 1px solid rgba(223,255,107,0.38);
-        box-shadow: 0 18px 55px rgba(0,43,61,0.36);
-        padding: 17px 34px;
-        border-radius: 999px;
-        font-weight: 950;
-        font-size: 17px;
-        text-decoration: none !important;
     }
 
-    .lp-up {
-        position: fixed;
-        left: 22px;
-        bottom: 22px;
-        z-index: 9998;
-        width: 58px;
-        height: 58px;
-        border-radius: 999px;
-        background: var(--navy);
-        color: white !important;
-        border: 1px solid rgba(255,255,255,0.12);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        text-decoration: none !important;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.18);
-    }
-
-    /* =========================
-       SISTEMA INTERNO
-    ========================= */
-
-    .app-header,
-    .menu-panel,
-    .page-panel,
-    .commercial-panel,
-    .form-box {
-        border-radius: 26px;
-        border: 1px solid rgba(223,255,107,0.18);
-        background: linear-gradient(180deg, rgba(0,43,61,0.92), rgba(0,29,43,0.96));
-        box-shadow: 0 22px 60px rgba(0,0,0,0.30);
-        color: #f7ffe4;
-    }
-
-    .app-header {
-        padding: 28px 30px;
-        margin-bottom: 20px;
-    }
-
-    .app-header-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 18px;
-        flex-wrap: wrap;
-    }
-
+    .login-title,
     .app-title {
-        font-size: 34px;
-        font-weight: 950;
-        color: white;
-        line-height: 1.1;
-        margin-bottom: 6px;
+        font-size: 28px;
     }
 
-    .app-subtitle {
-        font-size: 15px;
-        color: rgba(255,255,255,0.68);
-        line-height: 1.5;
-    }
-
-    .app-badges {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .app-badge {
-        padding: 10px 14px;
-        border-radius: 999px;
-        background: rgba(223,255,107,0.08);
-        border: 1px solid rgba(223,255,107,0.22);
-        color: var(--lime);
-        font-size: 13px;
-        font-weight: 850;
-        white-space: nowrap;
-    }
-
-    .menu-panel {
-        padding: 18px;
-        margin-bottom: 22px;
-    }
-
-    .menu-title {
-        font-size: 16px;
-        font-weight: 950;
-        color: var(--lime);
-        margin-bottom: 12px;
-    }
-
-    .page-panel,
-    .commercial-panel,
-    .form-box {
-        padding: 28px;
-        margin-bottom: 22px;
-    }
-
-    .commercial-card,
-    .metric-card,
-    .price-card {
-        border-radius: 24px;
-        padding: 24px;
-        background:
-            radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
-            linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
-        border: 1px solid rgba(223,255,107,0.20);
-        box-shadow: 0 16px 38px rgba(0,0,0,0.22);
-        min-height: 155px;
-        color: white;
-    }
-
-    .commercial-card-title,
-    .price-title,
-    .metric-title {
-        color: var(--lime);
-        font-size: 18px;
-        font-weight: 950;
-        margin-bottom: 9px;
-    }
-
-    .commercial-card-text,
-    .price-desc,
-    .metric-sub {
-        color: rgba(255,255,255,0.68);
-        font-size: 14px;
-        line-height: 1.55;
-    }
-
-    .metric-value,
-    .price-value {
-        color: white;
-        font-size: 29px;
-        font-weight: 950;
-        margin-top: 6px;
-    }
-
-    .success-box {
-        background: rgba(16,185,129,0.13);
-        border-left: 6px solid #10b981;
-        padding: 14px 18px;
-        border-radius: 16px;
-        color: #d1fae5;
-    }
-
-    .warning-box {
-        background: rgba(245,158,11,0.14);
-        border-left: 6px solid #f59e0b;
-        padding: 14px 18px;
-        border-radius: 16px;
-        color: #fef3c7;
-    }
-
-    .danger-box {
-        background: rgba(239,68,68,0.14);
-        border-left: 6px solid #ef4444;
-        padding: 14px 18px;
-        border-radius: 16px;
-        color: #fee2e2;
-    }
-
-    .login-header {
-        text-align: center;
-        margin-bottom: 24px;
-        padding: 8px 0 4px 0;
-    }
-
-    .login-title {
-        font-size: 46px;
-        font-weight: 950;
-        color: white;
-        margin-bottom: 10px;
-        line-height: 1.05;
-    }
-
-    .login-subtitle {
-        font-size: 16px;
-        max-width: 900px;
-        margin: 0 auto;
-        color: rgba(255,255,255,0.70);
-        line-height: 1.6;
-    }
-
-    .login-info {
-        margin: 18px auto 28px auto;
-        max-width: 980px;
-        background: rgba(223,255,107,0.08);
-        border: 1px solid rgba(223,255,107,0.22);
-        border-radius: 18px;
-        padding: 14px 18px;
-        text-align: center;
-        color: var(--lime);
-        font-size: 15px;
-    }
-
-    .hero-box {
-        min-height: 430px;
-        border-radius: 28px;
-        border: 1px solid rgba(223,255,107,0.22);
-        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
-        overflow: hidden;
-        position: relative;
-        display: flex;
-        align-items: stretch;
-        justify-content: center;
-        background: rgba(0,29,43,0.72);
-    }
-
-    .hero-inner {
-        width: 100%;
-        display: flex;
-        align-items: end;
-        justify-content: start;
-        background-size: contain !important;
-        background-repeat: no-repeat !important;
-        background-position: center center !important;
-        background-color: rgba(0,29,43,0.76);
-        position: relative;
-    }
-
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(180deg, rgba(0,29,43,0.02), rgba(0,29,43,0.70)),
-            linear-gradient(90deg, rgba(0,29,43,0.46), rgba(0,29,43,0.04));
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        padding: 30px;
-        max-width: 88%;
-    }
-
-    .hero-content h3 {
-        font-size: 31px;
-        margin-bottom: 8px;
-        color: white !important;
-    }
-
-    .hero-content p {
-        margin: 0;
-        color: rgba(255,255,255,0.72) !important;
-        font-size: 15px;
-        line-height: 1.65;
-    }
-
+    .hero-box,
     .logo-box {
-        min-height: 430px;
-        border-radius: 28px;
-        border: 1px solid rgba(223,255,107,0.22);
-        background:
-            radial-gradient(circle at center, rgba(223,255,107,0.09), transparent 56%),
-            linear-gradient(180deg, rgba(0,43,61,0.55), rgba(0,29,43,0.90));
-        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        overflow: hidden;
+        min-height: 300px;
     }
-
-    .logo-box img {
-        width: 82%;
-        max-width: 380px;
-        display: block;
-        margin: 0 auto;
-        filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34));
-    }
-
-    .stTextInput input,
-    .stNumberInput input,
-    .stDateInput input,
-    .stTextArea textarea {
-        border-radius: 16px !important;
-        border: 1px solid rgba(0,43,61,0.20) !important;
-        background: rgba(255,255,255,0.98) !important;
-        color: #052c3d !important;
-        box-shadow: inset 0 0 12px rgba(0,0,0,0.04);
-    }
-
-    .stTextArea textarea {
-        min-height: 110px !important;
-    }
-
-    .stTextInput input::placeholder,
-    .stTextArea textarea::placeholder {
-        color: #9aa9b1 !important;
-    }
-
-    .stSelectbox div[data-baseweb="select"] > div {
-        border-radius: 16px !important;
-        background: rgba(255,255,255,0.98) !important;
-        border: 1px solid rgba(0,43,61,0.20) !important;
-        color: #052c3d !important;
-        min-height: 44px;
-    }
-
-    .stSelectbox span,
-    div[data-baseweb="select"] * {
-        color: #052c3d !important;
-    }
-
-    div[data-baseweb="menu"],
-    ul[role="listbox"],
-    div[role="listbox"] {
-        background: white !important;
-        border: 1px solid #e5edf2 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.15) !important;
-        color: #052c3d !important;
-    }
-
-    div[data-baseweb="menu"] *,
-    ul[role="listbox"] *,
-    div[role="listbox"] * {
-        background-color: white !important;
-        color: #052c3d !important;
-        font-weight: 800 !important;
-    }
-
-    .stButton > button {
-        background: linear-gradient(90deg, #dfff6b, #c9ff4f);
-        color: #002b3d !important;
-        border: none;
-        border-radius: 999px;
-        padding: 0.82rem 1.2rem;
-        font-weight: 950;
-        box-shadow: 0 12px 28px rgba(223,255,107,0.20);
-        transition: all 0.18s ease-in-out;
-    }
-
-    .stButton > button:hover {
-        transform: translateY(-1px);
-        background: linear-gradient(90deg, #efffa6, #dfff6b);
-        color: #002b3d !important;
-    }
-
-    .stDownloadButton > button {
-        background: linear-gradient(90deg, #dfff6b, #c9ff4f);
-        color: #002b3d !important;
-        border: none;
-        border-radius: 999px;
-        font-weight: 950;
-    }
-
-    div[data-testid="stDataFrame"] {
-        background: rgba(255,255,255,0.94);
-        border-radius: 20px;
-        padding: 8px;
-        border: 1px solid rgba(223,255,107,0.18);
-    }
-
-    div[role="radiogroup"] {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    div[role="radiogroup"] label {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(223,255,107,0.18) !important;
-        border-radius: 999px !important;
-        padding: 10px 14px !important;
-        margin: 0 !important;
-        color: white !important;
-        font-weight: 850 !important;
-    }
-
-    div[role="radiogroup"] label:hover {
-        background: rgba(223,255,107,0.14) !important;
-        border: 1px solid rgba(223,255,107,0.38) !important;
-    }
-
-    div[role="radiogroup"] label * {
-        color: white !important;
-        font-weight: 850 !important;
-    }
-
-    button[data-baseweb="tab"] {
-        font-size: 15px !important;
-        font-weight: 900 !important;
-        color: rgba(255,255,255,0.70) !important;
-    }
-
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: var(--lime) !important;
-        border-bottom: 2px solid var(--lime) !important;
-    }
-
-    div[data-testid="stAlert"] {
-        background: rgba(255,255,255,0.95);
-        color: #052c3d;
-        border-radius: 16px;
-        border: 1px solid #e5edf2;
-    }
-
-    div[data-testid="stAlert"] * {
-        color: #052c3d !important;
-    }
-
-    @media (max-width: 980px) {
-        .lp-hero-grid,
-        .lp-profile-grid,
-        .lp-steps,
-        .lp-testimonial-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .lp-title {
-            font-size: 42px;
-        }
-
-        .lp-subtitle {
-            font-size: 18px;
-        }
-
-        .lp-section-title,
-        .lp-final-title,
-        .lp-trust-title {
-            font-size: 34px;
-        }
-
-        .lp-dashboard-mock {
-            min-height: 360px;
-        }
-
-        .lp-compare-row {
-            grid-template-columns: 1fr;
-        }
-
-        .lp-floating {
-            width: calc(100% - 120px);
-            text-align: center;
-            padding: 15px 18px;
-            font-size: 15px;
-        }
-
-        .lp-up {
-            width: 54px;
-            height: 54px;
-            left: 14px;
-            bottom: 22px;
-        }
-
-        .login-title,
-        .app-title {
-            font-size: 28px;
-        }
-
-        .hero-box,
-        .logo-box {
-            min-height: 300px;
-        }
-    }
-    </style>
+}
+</style>
     """,
     unsafe_allow_html=True
 )
@@ -1315,11 +750,11 @@ def status_automatico(status, vencimento):
 def card(titulo, valor, subtitulo=""):
     st.markdown(
         f"""
-        <div class="metric-card">
-            <div class="metric-title">{titulo}</div>
-            <div class="metric-value">{valor}</div>
-            <div class="metric-sub">{subtitulo}</div>
-        </div>
+<div class="metric-card">
+    <div class="metric-title">{titulo}</div>
+    <div class="metric-value">{valor}</div>
+    <div class="metric-sub">{subtitulo}</div>
+</div>
         """,
         unsafe_allow_html=True
     )
@@ -1328,10 +763,10 @@ def card(titulo, valor, subtitulo=""):
 def comercial_card(titulo, texto):
     st.markdown(
         f"""
-        <div class="commercial-card">
-            <div class="commercial-card-title">{titulo}</div>
-            <div class="commercial-card-text">{texto}</div>
-        </div>
+<div class="commercial-card">
+    <div class="commercial-card-title">{titulo}</div>
+    <div class="commercial-card-text">{texto}</div>
+</div>
         """,
         unsafe_allow_html=True
     )
@@ -1340,11 +775,11 @@ def comercial_card(titulo, texto):
 def preco_card(titulo, valor, texto):
     st.markdown(
         f"""
-        <div class="price-card">
-            <div class="price-title">{titulo}</div>
-            <div class="price-value">{valor}</div>
-            <div class="price-desc">{texto}</div>
-        </div>
+<div class="price-card">
+    <div class="price-title">{titulo}</div>
+    <div class="price-value">{valor}</div>
+    <div class="price-desc">{texto}</div>
+</div>
         """,
         unsafe_allow_html=True
     )
@@ -1355,28 +790,28 @@ def cabecalho_interno(menu_atual):
 
     st.markdown(
         f"""
-        <div class="app-header">
-            <div class="app-header-top">
-                <div>
-                    <div class="app-title">Painel Global Software</div>
-                    <div class="app-subtitle">
-                        Área atual: <b>{menu_atual}</b>. Gestão completa, clara, segura e profissional.
-                    </div>
-                </div>
-                <div class="app-badges">
-                    <div class="app-badge">Empresa: {usuario['empresa_nome']}</div>
-                    <div class="app-badge">Usuário: {usuario['nome']}</div>
-                    <div class="app-badge">Perfil: {usuario['tipo']}</div>
-                </div>
+<div class="app-header">
+    <div class="app-header-top">
+        <div>
+            <div class="app-title">Painel Global Software</div>
+            <div class="app-subtitle">
+                Área atual: <b>{menu_atual}</b>. Gestão completa, clara, segura e profissional.
             </div>
         </div>
+        <div class="app-badges">
+            <div class="app-badge">Empresa: {usuario['empresa_nome']}</div>
+            <div class="app-badge">Usuário: {usuario['nome']}</div>
+            <div class="app-badge">Perfil: {usuario['tipo']}</div>
+        </div>
+    </div>
+</div>
         """,
         unsafe_allow_html=True
     )
 
 
 # =====================================================
-# BANCO DE DADOS E MIGRAÇÃO
+# BANCO DE DADOS
 # =====================================================
 
 def coluna_existe(tabela, coluna):
@@ -1579,484 +1014,467 @@ def criar_admin_padrao():
 TIPOS_USUARIO = ["Administrador", "Gerente", "Financeiro", "Vendedor"]
 
 TIPOS_LANCAMENTO = {
-    "Receita": [
-        "Venda",
-        "Serviço",
-        "Comissão",
-        "Entrada",
-        "Recebimento de parcela",
-        "Outras receitas"
-    ],
-    "Custo": [
-        "Produto vendido",
-        "Fornecedor",
-        "Matéria-prima",
-        "Frete de compra",
-        "Taxa de cartão",
-        "Comissão paga"
-    ],
-    "Despesa fixa": [
-        "Aluguel",
-        "Internet",
-        "Sistema",
-        "Funcionário",
-        "Contador",
-        "Telefone",
-        "MEI / Imposto fixo",
-        "Folha de pagamento"
-    ],
-    "Despesa variável": [
-        "Energia",
-        "Água",
-        "Marketing",
-        "Manutenção",
-        "Transporte",
-        "Alimentação",
-        "Outras despesas"
-    ],
-    "Investimento": [
-        "Equipamento",
-        "Curso",
-        "Ferramenta",
-        "Reforma",
-        "Estoque",
-        "Publicidade estratégica"
-    ],
-    "Dívida": [
-        "Empréstimo",
-        "Financiamento",
-        "Cartão de crédito",
-        "Juros",
-        "Parcela de dívida"
-    ],
-    "Retirada do dono": [
-        "Pró-labore",
-        "Saque pessoal",
-        "Distribuição de lucro"
-    ]
+    "Receita": ["Venda", "Serviço", "Comissão", "Entrada", "Recebimento de parcela", "Outras receitas"],
+    "Custo": ["Produto vendido", "Fornecedor", "Matéria-prima", "Frete de compra", "Taxa de cartão", "Comissão paga"],
+    "Despesa fixa": ["Aluguel", "Internet", "Sistema", "Funcionário", "Contador", "Telefone", "MEI / Imposto fixo", "Folha de pagamento"],
+    "Despesa variável": ["Energia", "Água", "Marketing", "Manutenção", "Transporte", "Alimentação", "Outras despesas"],
+    "Investimento": ["Equipamento", "Curso", "Ferramenta", "Reforma", "Estoque", "Publicidade estratégica"],
+    "Dívida": ["Empréstimo", "Financiamento", "Cartão de crédito", "Juros", "Parcela de dívida"],
+    "Retirada do dono": ["Pró-labore", "Saque pessoal", "Distribuição de lucro"]
 }
 
-FORMAS_PAGAMENTO = [
-    "Dinheiro",
-    "Pix",
-    "Cartão de débito",
-    "Cartão de crédito",
-    "Boleto",
-    "Transferência",
-    "Promissória",
-    "Outro"
-]
-
+FORMAS_PAGAMENTO = ["Dinheiro", "Pix", "Cartão de débito", "Cartão de crédito", "Boleto", "Transferência", "Promissória", "Outro"]
 CONTAS = ["Caixa", "Banco", "Conta digital", "Carteira", "Cartão", "Outro"]
 STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
 
 
 # =====================================================
-# TELA PÚBLICA LANDING PAGE PREMIUM
+# TELA PÚBLICA CORRIGIDA
 # =====================================================
 
-def logo_html_publica():
-    if logo_base64:
-        return f'<img src="data:image/png;base64,{logo_base64}">'
-    return "GS"
-
-
 def tela_publica_comercial():
+    st.markdown('<a class="gs-up" href="#topo">↑</a>', unsafe_allow_html=True)
+    st.markdown('<a class="gs-floating" href="#demo">Agendar Demonstração →</a>', unsafe_allow_html=True)
+
+    logo_html = "GS"
+    if logo_base64:
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="width:100%;height:100%;object-fit:contain;padding:5px;">'
+
     st.markdown(
         f"""
-        <div class="lp-wrap" id="topo">
-            <a class="lp-up" href="#topo">↑</a>
-            <a class="lp-floating" href="#demo">Agendar Demonstração →</a>
-
-            <div class="lp-topbar">
-                <div class="lp-brand">
-                    <div class="lp-logo">{logo_html_publica()}</div>
-                    <div>
-                        <div class="lp-brand-title">GLOBAL SOFTWARE</div>
-                        <div class="lp-brand-sub">Sistema financeiro completo para empresas</div>
-                    </div>
-                </div>
-                <div class="lp-top-actions">
-                    <div class="lp-pill">Gestão • Financeiro • Estoque • Folha</div>
-                </div>
+<div id="topo" class="gs-card-dark" style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,0.06);border:1px solid rgba(223,255,107,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#dfff6b;font-weight:950;font-size:18px;">
+                {logo_html}
             </div>
-
-            <section class="lp-hero">
-                <div class="lp-hero-grid">
-                    <div>
-                        <div class="lp-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
-                        <div class="lp-title">
-                            Software financeiro completo que sua empresa <span>precisa</span>.
-                        </div>
-                        <div class="lp-subtitle">
-                            Controle contas a pagar, receber, clientes inadimplentes, estoque, funcionários,
-                            folha de pagamento, metas, comissões, bônus e relatórios em uma única plataforma.
-                        </div>
-                        <div class="lp-cta-row">
-                            <div class="lp-fake-btn-primary">Agendar Demonstração →</div>
-                            <div class="lp-fake-btn-secondary">Acessar sistema</div>
-                        </div>
-                    </div>
-
-                    <div class="lp-dashboard-mock">
-                        <div class="lp-mock-screen">
-                            <div class="lp-mock-bar"></div>
-                            <div class="lp-mock-card-row">
-                                <div class="lp-mock-card">
-                                    <div class="lp-mock-label">Receita do mês</div>
-                                    <div class="lp-mock-value">R$ 84.750</div>
-                                </div>
-                                <div class="lp-mock-card">
-                                    <div class="lp-mock-label">Lucro previsto</div>
-                                    <div class="lp-mock-value">R$ 26.400</div>
-                                </div>
-                            </div>
-                            <div class="lp-mock-card-row">
-                                <div class="lp-mock-card">
-                                    <div class="lp-mock-label">Inadimplentes</div>
-                                    <div class="lp-mock-value">12</div>
-                                </div>
-                                <div class="lp-mock-card">
-                                    <div class="lp-mock-label">Folha do mês</div>
-                                    <div class="lp-mock-value">R$ 18.900</div>
-                                </div>
-                            </div>
-                            <div class="lp-mock-chart"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-trust">
-                <div class="lp-container">
-                    <div class="lp-trust-title">
-                        A plataforma para empresas que querem sair do <span>improviso</span>.
-                    </div>
-                </div>
-            </section>
+            <div>
+                <div style="color:white;font-size:24px;letter-spacing:4px;font-weight:850;">GLOBAL SOFTWARE</div>
+                <div style="color:rgba(255,255,255,0.60);font-size:13px;margin-top:2px;">Sistema financeiro completo para empresas</div>
+            </div>
         </div>
+        <div style="color:#dfff6b;border:1px solid rgba(223,255,107,0.32);background:rgba(223,255,107,0.08);padding:10px 16px;border-radius:999px;font-weight:900;font-size:13px;">
+            Gestão • Financeiro • Estoque • Folha
+        </div>
+    </div>
+</div>
         """,
         unsafe_allow_html=True
     )
 
-    col_acesso, col_demo = st.columns([1, 1])
+    col_hero, col_mock = st.columns([1.05, 0.95], gap="large")
 
+    with col_hero:
+        st.markdown(
+            """
+<div class="gs-card-dark" style="min-height:520px;display:flex;align-items:center;">
+    <div>
+        <div class="gs-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
+        <div class="gs-title-big">
+            Software financeiro completo que sua empresa <span>precisa</span>.
+        </div>
+        <br>
+        <div class="gs-subtitle">
+            Controle contas a pagar, receber, clientes inadimplentes, estoque, funcionários,
+            folha de pagamento, metas, comissões, bônus e relatórios em uma única plataforma.
+        </div>
+        <br><br>
+        <span class="gs-btn-fake">Agendar Demonstração →</span>
+        &nbsp;&nbsp;
+        <span class="gs-btn-dark">Acessar sistema</span>
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col_mock:
+        st.markdown(
+            """
+<div class="gs-card-white" style="min-height:520px;display:flex;align-items:center;">
+    <div style="width:100%;">
+        <div style="height:12px;width:44%;background:#dfe9ef;border-radius:20px;margin-bottom:22px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
+                <div style="color:#78909c;font-size:13px;font-weight:800;">Receita do mês</div>
+                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 84.750</div>
+            </div>
+            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
+                <div style="color:#78909c;font-size:13px;font-weight:800;">Lucro previsto</div>
+                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 26.400</div>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
+                <div style="color:#78909c;font-size:13px;font-weight:800;">Inadimplentes</div>
+                <div style="color:#002b3d;font-size:24px;font-weight:950;">12</div>
+            </div>
+            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
+                <div style="color:#78909c;font-size:13px;font-weight:800;">Folha do mês</div>
+                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 18.900</div>
+            </div>
+        </div>
+
+        <div style="height:170px;border-radius:20px;background:linear-gradient(90deg, rgba(223,255,107,0.35), rgba(0,43,61,0.18));border:1px solid #e3edf2;"></div>
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.write("")
+
+    col_acesso, col_vazio = st.columns([1, 1])
     with col_acesso:
         if st.button("Acessar área do sistema", use_container_width=True, key="btn_login_landing"):
             st.session_state.tela_login_ativa = True
             st.rerun()
 
-    with col_demo:
-        st.write("")
-
     st.markdown(
         """
-        <div class="lp-wrap">
-            <section class="lp-section-white">
-                <div class="lp-container">
-                    <div class="lp-section-kicker">FUNCIONALIDADES</div>
-                    <div class="lp-section-title">
-                        Tudo o que seu financeiro precisa, em uma única plataforma.
-                    </div>
-
-                    <div class="lp-feature-tabs">
-                        <div class="lp-tab-active">▣ Contas a Pagar</div>
-                        <div class="lp-tab">▤ Contas a Receber</div>
-                        <div class="lp-tab">↻ Inadimplentes</div>
-                        <div class="lp-tab">▥ Estoque</div>
-                        <div class="lp-tab">◉ Folha</div>
-                        <div class="lp-tab">▧ Relatórios</div>
-                    </div>
-
-                    <div class="lp-feature-card-dark">
-                        <div class="lp-chip">▣ Gestão Financeira</div>
-                        <div class="lp-feature-title">
-                            Controle ponta a ponta da operação financeira.
-                        </div>
-
-                        <div class="lp-check-list">
-                            <div class="lp-check-item">
-                                <div class="lp-check-icon">✓</div>
-                                <div>
-                                    <div class="lp-check-title">Contas a pagar e receber</div>
-                                    <div class="lp-check-text">Visualize vencimentos, status, formas de pagamento e valores pendentes com clareza.</div>
-                                </div>
-                            </div>
-
-                            <div class="lp-check-item">
-                                <div class="lp-check-icon">✓</div>
-                                <div>
-                                    <div class="lp-check-title">Clientes inadimplentes</div>
-                                    <div class="lp-check-text">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</div>
-                                </div>
-                            </div>
-
-                            <div class="lp-check-item">
-                                <div class="lp-check-icon">✓</div>
-                                <div>
-                                    <div class="lp-check-title">Contas pagas no mês</div>
-                                    <div class="lp-check-text">Acompanhe tudo que foi pago ou recebido no mês e veja o impacto no caixa.</div>
-                                </div>
-                            </div>
-
-                            <div class="lp-check-item">
-                                <div class="lp-check-icon">✓</div>
-                                <div>
-                                    <div class="lp-check-title">Relatórios e DRE gerencial</div>
-                                    <div class="lp-check-text">Exporte PDF, CSV e acompanhe receita, despesas, lucro e resultado da empresa.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-white">
-                <div class="lp-container">
-                    <div class="lp-section-kicker">PARA CADA PERFIL</div>
-                    <div class="lp-section-title">
-                        Valor real para cada nível da organização.
-                    </div>
-
-                    <div class="lp-profile-grid">
-                        <div class="lp-profile-card">
-                            <div class="lp-icon-box">▥</div>
-                            <div class="lp-profile-title">Estratégico</div>
-                            <div class="lp-profile-sub">Do achismo à previsibilidade.</div>
-
-                            <div class="lp-profile-feature">
-                                <b>DRE e fluxo de caixa</b>
-                                <span>Visão clara de receita, saídas, lucro, contas pagas e valores a receber.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>Decisão com dados</b>
-                                <span>O empresário sabe onde está ganhando, onde está perdendo e onde precisa agir.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>Crescimento organizado</b>
-                                <span>Menos improviso, mais gestão e mais previsibilidade para crescer.</span>
-                            </div>
-                        </div>
-
-                        <div class="lp-profile-card">
-                            <div class="lp-icon-box">👥</div>
-                            <div class="lp-profile-title">Gerencial</div>
-                            <div class="lp-profile-sub">O fim do caos operacional.</div>
-
-                            <div class="lp-profile-feature">
-                                <b>Clientes e inadimplência</b>
-                                <span>Cadastro completo, limite de crédito, status e acompanhamento de pendências.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>Controle de permissões</b>
-                                <span>Administrador, gerente, financeiro e vendedor com acessos separados.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>Estoque e operação</b>
-                                <span>Produtos, custo, preço de venda, estoque mínimo e lucro previsto.</span>
-                            </div>
-                        </div>
-
-                        <div class="lp-profile-card">
-                            <div class="lp-icon-box">⚙</div>
-                            <div class="lp-profile-title">Operacional</div>
-                            <div class="lp-profile-sub">Adeus ao trabalho manual.</div>
-
-                            <div class="lp-profile-feature">
-                                <b>Folha completa</b>
-                                <span>Salário, horas extras, comissão, bônus, premiação, descontos e metas.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>WhatsApp de cobrança</b>
-                                <span>Gere mensagens e links prontos para cobrar ou atender clientes.</span>
-                            </div>
-
-                            <div class="lp-profile-feature">
-                                <b>IA de ajuda</b>
-                                <span>O usuário pergunta como usar o sistema e recebe orientação dentro da plataforma.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-dark">
-                <div class="lp-container">
-                    <div class="lp-section-kicker dark">DEMONSTRAÇÃO</div>
-                    <div class="lp-section-title dark">
-                        Veja como a Global Software funciona na prática.
-                    </div>
-
-                    <div class="lp-feature-card-dark">
-                        <div style="text-align:center;">
-                            <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
-                            <div style="font-size:32px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
-                            <div style="font-size:20px;line-height:1.55;color:rgba(255,255,255,0.62);max-width:760px;margin:0 auto 30px auto;">
-                                Navegue pela demonstração e veja como controlar financeiro, estoque, clientes,
-                                funcionários, folha de pagamento e relatórios em um único lugar.
-                            </div>
-                            <div class="lp-fake-btn-primary">Demonstração Interativa →</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-white">
-                <div class="lp-container">
-                    <div class="lp-section-kicker">IMPLANTAÇÃO</div>
-                    <div class="lp-section-title">
-                        Um processo ágil, consultivo e feito junto com você.
-                    </div>
-
-                    <div class="lp-steps">
-                        <div class="lp-step">
-                            <div class="lp-step-icon">🚀</div>
-                            <div class="lp-step-small">ETAPA 1</div>
-                            <div class="lp-step-title">Configuração inicial</div>
-                            <div class="lp-step-text">Parametrizamos empresa, usuários, categorias, permissões e estrutura do sistema.</div>
-                        </div>
-
-                        <div class="lp-step">
-                            <div class="lp-step-icon">🎓</div>
-                            <div class="lp-step-small">ETAPA 2</div>
-                            <div class="lp-step-title">Treinamento mão na massa</div>
-                            <div class="lp-step-text">Ensinamos como cadastrar lançamentos, clientes, estoque, funcionários e folha.</div>
-                        </div>
-
-                        <div class="lp-step">
-                            <div class="lp-step-icon">▶</div>
-                            <div class="lp-step-small">ETAPA 3</div>
-                            <div class="lp-step-title">Go-live</div>
-                            <div class="lp-step-text">A empresa começa a usar o sistema com acompanhamento nos primeiros passos.</div>
-                        </div>
-
-                        <div class="lp-step">
-                            <div class="lp-step-icon">🎧</div>
-                            <div class="lp-step-small">ETAPA 4</div>
-                            <div class="lp-step-title">Suporte rápido</div>
-                            <div class="lp-step-text">Atendimento humano por WhatsApp, treinamento e melhoria contínua.</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-dark">
-                <div class="lp-container">
-                    <div class="lp-section-title dark" style="text-align:left;margin-left:0;">
-                        Veja o que nossos clientes dizem sobre a <span>transformação</span> financeira.
-                    </div>
-
-                    <div class="lp-testimonial-grid">
-                        <div class="lp-testimonial">
-                            <div class="lp-quote">“</div>
-                            <div class="lp-testimonial-text">
-                                Antes era tudo no caderno e no WhatsApp. Agora consigo ver contas, clientes,
-                                pagamentos e estoque em poucos minutos.
-                            </div>
-                            <div class="lp-person">
-                                <b>Cliente varejo</b>
-                                <span>Pequena empresa</span>
-                            </div>
-                        </div>
-
-                        <div class="lp-testimonial">
-                            <div class="lp-quote">“</div>
-                            <div class="lp-testimonial-text">
-                                A folha de pagamento ficou muito mais organizada. Comissão, bônus e metas ficaram claros para todos.
-                            </div>
-                            <div class="lp-person">
-                                <b>Gestor comercial</b>
-                                <span>Equipe de vendas</span>
-                            </div>
-                        </div>
-
-                        <div class="lp-testimonial">
-                            <div class="lp-quote">“</div>
-                            <div class="lp-testimonial-text">
-                                O dashboard mostrou onde a empresa estava perdendo dinheiro. Foi uma virada na nossa gestão.
-                            </div>
-                            <div class="lp-person">
-                                <b>Empresário</b>
-                                <span>Prestação de serviços</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-white">
-                <div class="lp-container">
-                    <div class="lp-section-title">
-                        Por que a Global Software?
-                    </div>
-
-                    <div class="lp-compare">
-                        <div class="lp-compare-row">
-                            <div class="lp-compare-cell"><strong>Controle financeiro</strong></div>
-                            <div class="lp-compare-cell lp-good">✓ Global Software<br>Financeiro, clientes, estoque e folha no mesmo lugar.</div>
-                            <div class="lp-compare-cell lp-bad">× Planilhas<br>Dados espalhados e difíceis de acompanhar.</div>
-                        </div>
-
-                        <div class="lp-compare-row">
-                            <div class="lp-compare-cell"><strong>Implantação</strong></div>
-                            <div class="lp-compare-cell lp-good">✓ Rápida e guiada<br>Configuração e treinamento com orientação.</div>
-                            <div class="lp-compare-cell lp-bad">× Sistemas comuns<br>Cliente recebe acesso e precisa se virar sozinho.</div>
-                        </div>
-
-                        <div class="lp-compare-row">
-                            <div class="lp-compare-cell"><strong>Usuários e permissões</strong></div>
-                            <div class="lp-compare-cell lp-good">✓ Controle por função<br>Administrador, gerente, financeiro e vendedor.</div>
-                            <div class="lp-compare-cell lp-bad">× Sem controle<br>Todo mundo vê tudo ou ninguém sabe usar.</div>
-                        </div>
-
-                        <div class="lp-compare-row">
-                            <div class="lp-compare-cell"><strong>Suporte</strong></div>
-                            <div class="lp-compare-cell lp-good">✓ Humano e direto<br>Ajuda por WhatsApp e IA de tutorial interno.</div>
-                            <div class="lp-compare-cell lp-bad">× Demorado<br>Sem orientação prática para o dia a dia.</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-white">
-                <div class="lp-container">
-                    <div class="lp-section-title">
-                        Perguntas Frequentes
-                    </div>
-
-                    <div class="lp-faq">
-                        <div class="lp-faq-item">Quanto tempo leva para começar a usar? <span>⌄</span></div>
-                        <div class="lp-faq-item">Consigo cadastrar vários usuários? <span>⌄</span></div>
-                        <div class="lp-faq-item">O sistema controla clientes inadimplentes? <span>⌄</span></div>
-                        <div class="lp-faq-item">Tem controle de estoque e folha de pagamento? <span>⌄</span></div>
-                        <div class="lp-faq-item">Consigo gerar relatórios? <span>⌄</span></div>
-                        <div class="lp-faq-item">Tem treinamento para minha equipe? <span>⌄</span></div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="lp-section-dark" id="demo">
-                <div class="lp-container">
-                    <div class="lp-final-title">
-                        Pronto para profissionalizar o financeiro da sua empresa?
-                    </div>
-                    <div class="lp-final-sub">
-                        Agende uma demonstração gratuita e veja a Global Software na prática.
-                    </div>
-                </div>
-            </section>
-        </div>
+<div class="gs-section-dark">
+    <div style="text-align:center;font-size:42px;line-height:1.18;font-weight:950;color:white;">
+        A plataforma para empresas que querem sair do <span style="color:#dfff6b;">improviso</span>.
+    </div>
+</div>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown('<div class="lp-wrap"><div class="lp-section-dark" style="padding-top:0;"><div class="lp-demo-box">', unsafe_allow_html=True)
+    st.markdown(
+        """
+<div class="gs-section-white">
+    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
+        FUNCIONALIDADES
+    </div>
+    <div class="gs-section-title">
+        Tudo o que seu financeiro precisa, em uma única plataforma.
+    </div>
+    <br>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
 
+    f1, f2, f3 = st.columns(3)
+
+    with f1:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">▣</div>
+    <h3 style="color:#052c3d;">Contas a pagar e receber</h3>
+    <p class="gs-muted">Visualize vencimentos, status, formas de pagamento, valores pendentes e contas pagas no mês.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with f2:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">↻</div>
+    <h3 style="color:#052c3d;">Clientes inadimplentes</h3>
+    <p class="gs-muted">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with f3:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">▥</div>
+    <h3 style="color:#052c3d;">Estoque completo</h3>
+    <p class="gs-muted">Controle produtos, quantidade, custo, preço de venda, estoque mínimo e lucro previsto.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.write("")
+
+    f4, f5, f6 = st.columns(3)
+
+    with f4:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">👥</div>
+    <h3 style="color:#052c3d;">Clientes e CRM</h3>
+    <p class="gs-muted">Cadastre clientes, fornecedores, contatos, limite de crédito, documentos e observações.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with f5:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">🧾</div>
+    <h3 style="color:#052c3d;">Folha de pagamento</h3>
+    <p class="gs-muted">Salário, horas extras, comissão, bônus, premiação, metas, descontos e total líquido.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with f6:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">🤖</div>
+    <h3 style="color:#052c3d;">IA de ajuda</h3>
+    <p class="gs-muted">O usuário pergunta como usar o sistema e recebe orientação dentro da própria plataforma.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        """
+<div class="gs-section-white">
+    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
+        PARA CADA PERFIL
+    </div>
+    <div class="gs-section-title">
+        Valor real para cada nível da organização.
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">▥</div>
+    <h2 style="color:#052c3d;">Estratégico</h2>
+    <p class="gs-muted"><b>Do achismo à previsibilidade.</b></p>
+    <p class="gs-muted">DRE, fluxo de caixa, receita, saídas, lucro, contas pagas e valores a receber em uma visão clara.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with p2:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">👥</div>
+    <h2 style="color:#052c3d;">Gerencial</h2>
+    <p class="gs-muted"><b>O fim do caos operacional.</b></p>
+    <p class="gs-muted">Clientes, inadimplência, estoque, usuários, permissões e controle de processos internos.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with p3:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">⚙</div>
+    <h2 style="color:#052c3d;">Operacional</h2>
+    <p class="gs-muted"><b>Adeus ao trabalho manual.</b></p>
+    <p class="gs-muted">Lançamentos, cobranças por WhatsApp, folha completa, metas, premiações e relatórios.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        """
+<div class="gs-section-dark">
+    <div style="text-align:center;color:rgba(255,255,255,0.42);letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
+        DEMONSTRAÇÃO
+    </div>
+    <div class="gs-section-title-dark">
+        Veja como a Global Software funciona na prática.
+    </div>
+    <br>
+    <div class="gs-card-dark" style="text-align:center;">
+        <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
+        <div style="font-size:32px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
+        <div style="font-size:20px;line-height:1.55;color:rgba(255,255,255,0.62);max-width:760px;margin:0 auto 30px auto;">
+            Navegue pela demonstração e veja como controlar financeiro, estoque, clientes,
+            funcionários, folha de pagamento e relatórios em um único lugar.
+        </div>
+        <span class="gs-btn-fake">Demonstração Interativa →</span>
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+<div class="gs-section-white">
+    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
+        IMPLANTAÇÃO
+    </div>
+    <div class="gs-section-title">
+        Um processo ágil, consultivo e feito junto com você.
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    e1, e2, e3, e4 = st.columns(4)
+
+    etapas = [
+        ("🚀", "ETAPA 1", "Configuração inicial", "Parametrizamos empresa, usuários, categorias, permissões e estrutura do sistema."),
+        ("🎓", "ETAPA 2", "Treinamento mão na massa", "Ensinamos como cadastrar lançamentos, clientes, estoque, funcionários e folha."),
+        ("▶", "ETAPA 3", "Go-live", "A empresa começa a usar o sistema com acompanhamento nos primeiros passos."),
+        ("🎧", "ETAPA 4", "Suporte rápido", "Atendimento humano por WhatsApp, treinamento e melhoria contínua."),
+    ]
+
+    for coluna, etapa in zip([e1, e2, e3, e4], etapas):
+        with coluna:
+            icone, etapa_nome, titulo, texto = etapa
+            st.markdown(
+                f"""
+<div class="gs-card-white" style="text-align:center;min-height:290px;">
+    <div style="width:72px;height:72px;border-radius:20px;background:#002b3d;color:#dfff6b;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;">{icone}</div>
+    <div style="color:#92a1aa;letter-spacing:2px;font-weight:850;font-size:13px;text-transform:uppercase;margin-bottom:10px;">{etapa_nome}</div>
+    <h3 style="color:#052c3d;">{titulo}</h3>
+    <p class="gs-muted">{texto}</p>
+</div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    st.markdown(
+        """
+<div class="gs-section-dark">
+    <div class="gs-section-title-dark" style="text-align:left;">
+        Veja o que nossos clientes dizem sobre a <span style="color:#dfff6b;">transformação</span> financeira.
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    d1, d2, d3 = st.columns(3)
+
+    depoimentos = [
+        ("Cliente varejo", "Pequena empresa", "Antes era tudo no caderno e no WhatsApp. Agora consigo ver contas, clientes, pagamentos e estoque em poucos minutos."),
+        ("Gestor comercial", "Equipe de vendas", "A folha de pagamento ficou muito mais organizada. Comissão, bônus e metas ficaram claros para todos."),
+        ("Empresário", "Prestação de serviços", "O dashboard mostrou onde a empresa estava perdendo dinheiro. Foi uma virada na nossa gestão."),
+    ]
+
+    for coluna, dep in zip([d1, d2, d3], depoimentos):
+        with coluna:
+            nome, cargo, texto = dep
+            st.markdown(
+                f"""
+<div class="gs-card-white">
+    <div style="color:#dfff6b;font-size:52px;line-height:0.7;margin-bottom:22px;font-weight:950;">“</div>
+    <p class="gs-muted" style="font-size:17px;">{texto}</p>
+    <hr style="border:none;border-top:1px solid #e5edf2;margin:22px 0;">
+    <h3 style="color:#052c3d;margin-bottom:0;">{nome}</h3>
+    <p class="gs-muted">{cargo}</p>
+</div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    st.markdown(
+        """
+<div class="gs-section-white">
+    <div class="gs-section-title">
+        Por que a Global Software?
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <h3 style="color:#052c3d;">✅ Global Software</h3>
+    <p class="gs-muted"><b>Financeiro completo</b><br>Entradas, saídas, parcelas, contas pagas, contas a receber e inadimplentes.</p>
+    <p class="gs-muted"><b>Gestão operacional</b><br>Clientes, estoque, funcionários, folha de pagamento, metas e relatórios.</p>
+    <p class="gs-muted"><b>Suporte e treinamento</b><br>Implantação guiada, WhatsApp e IA de ajuda dentro do sistema.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with c2:
+        st.markdown(
+            """
+<div class="gs-card-white">
+    <h3 style="color:#052c3d;">❌ Planilhas soltas</h3>
+    <p class="gs-muted"><b>Dados espalhados</b><br>Caderno, WhatsApp, planilhas diferentes e pouca visão do negócio.</p>
+    <p class="gs-muted"><b>Controle manual</b><br>Mais chance de esquecer vencimentos, perder cobrança e não acompanhar lucro real.</p>
+    <p class="gs-muted"><b>Difícil de crescer</b><br>Quanto mais a empresa cresce, mais confuso o controle fica.</p>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        """
+<div class="gs-section-white">
+    <div class="gs-section-title">
+        Perguntas Frequentes
+    </div>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    perguntas = [
+        "Quanto tempo leva para começar a usar?",
+        "Consigo cadastrar vários usuários?",
+        "O sistema controla clientes inadimplentes?",
+        "Tem controle de estoque e folha de pagamento?",
+        "Consigo gerar relatórios?",
+        "Tem treinamento para minha equipe?",
+    ]
+
+    for pergunta in perguntas:
+        st.markdown(
+            f"""
+<div class="gs-card-white" style="padding:22px 26px;margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;color:#052c3d;font-size:20px;font-weight:950;">
+        {pergunta}
+        <span>⌄</span>
+    </div>
+</div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown(
+        """
+<div id="demo" class="gs-section-dark">
+    <div class="gs-section-title-dark">
+        Pronto para profissionalizar o financeiro da sua empresa?
+    </div>
+    <p class="gs-muted-light" style="text-align:center;font-size:20px;">
+        Agende uma demonstração gratuita e veja a Global Software na prática.
+    </p>
+</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('<div class="gs-card-white">', unsafe_allow_html=True)
     st.markdown("### Agendar demonstração")
 
     col1, col2 = st.columns(2)
@@ -2082,20 +1500,20 @@ def tela_publica_comercial():
     if st.button("Agendar Demonstração pelo WhatsApp", use_container_width=True, key="btn_agendar_demo_final"):
         if telefone:
             texto = (
-                f"Olá! Quero agendar uma demonstração da Global Software.%0A%0A"
-                f"Nome: {nome}%0A"
-                f"Empresa: {empresa}%0A"
-                f"Segmento: {segmento}%0A"
-                f"E-mail: {email}%0A"
-                f"Necessidade principal: {necessidade}%0A%0A"
+                f"Olá! Quero agendar uma demonstração da Global Software.\n\n"
+                f"Nome: {nome}\n"
+                f"Empresa: {empresa}\n"
+                f"Segmento: {segmento}\n"
+                f"E-mail: {email}\n"
+                f"Necessidade principal: {necessidade}\n\n"
                 f"Quero ver como o sistema pode ajudar minha empresa."
             )
-            link = f"https://wa.me/55{telefone}?text={texto}"
+            link = f"https://wa.me/55{telefone}?text={quote(texto)}"
             st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
         else:
             st.warning("Digite o telefone com DDD para gerar o link.")
 
-    st.markdown("</div></div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # =====================================================
@@ -2105,15 +1523,15 @@ def tela_publica_comercial():
 def tela_login():
     st.markdown(
         """
-        <div class="login-header">
-            <div class="login-title">💼 Sistema Financeiro Premium</div>
-            <div class="login-subtitle">
-                Gestão completa de financeiro, clientes, estoque, funcionários, folha de pagamento, metas e relatórios.
-            </div>
-            <div class="login-info">
-                <b>Login padrão:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
-            </div>
-        </div>
+<div class="login-header">
+    <div class="login-title">💼 Sistema Financeiro Premium</div>
+    <div class="login-subtitle">
+        Gestão completa de financeiro, clientes, estoque, funcionários, folha de pagamento, metas e relatórios.
+    </div>
+    <div class="login-info">
+        <b>Login padrão:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
+    </div>
+</div>
         """,
         unsafe_allow_html=True
     )
@@ -2129,24 +1547,23 @@ def tela_login():
 
     with col1:
         hero_bg = ""
-
         if banner_base64:
             hero_bg = f"background-image: url('data:image/png;base64,{banner_base64}');"
 
         st.markdown(
             f"""
-            <div class="hero-box">
-                <div class="hero-inner" style="{hero_bg}">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <h3>Gestão inteligente e profissional</h3>
-                        <p>
-                            Controle financeiro completo, clientes, estoque, funcionários, folha de pagamento,
-                            metas, relatórios e IA de ajuda.
-                        </p>
-                    </div>
-                </div>
-            </div>
+<div class="hero-box">
+    <div class="hero-inner" style="{hero_bg}">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h3>Gestão inteligente e profissional</h3>
+            <p>
+                Controle financeiro completo, clientes, estoque, funcionários, folha de pagamento,
+                metas, relatórios e IA de ajuda.
+            </p>
+        </div>
+    </div>
+</div>
             """,
             unsafe_allow_html=True
         )
@@ -2155,21 +1572,21 @@ def tela_login():
         if logo_base64:
             st.markdown(
                 f"""
-                <div class="logo-box">
-                    <img src="data:image/png;base64,{logo_base64}">
-                </div>
+<div class="logo-box">
+    <img src="data:image/png;base64,{logo_base64}">
+</div>
                 """,
                 unsafe_allow_html=True
             )
         else:
             st.markdown(
                 """
-                <div class="logo-box">
-                    <div style="text-align:center;">
-                        <h3>GLOBAL SOFTWARE</h3>
-                        <p>Sua logo aparecerá aqui quando o arquivo <b>logo.png</b> estiver na pasta do projeto.</p>
-                    </div>
-                </div>
+<div class="logo-box">
+    <div style="text-align:center;">
+        <h3>GLOBAL SOFTWARE</h3>
+        <p>Sua logo aparecerá aqui quando o arquivo <b>logo.png</b> estiver na pasta do projeto.</p>
+    </div>
+</div>
                 """,
                 unsafe_allow_html=True
             )
@@ -2266,7 +1683,7 @@ def tela_login():
 
 
 # =====================================================
-# USUÁRIO / PERMISSÕES
+# PERMISSÕES
 # =====================================================
 
 def empresa_id_atual():
@@ -2306,44 +1723,19 @@ def menus_por_tipo_usuario():
 
     permissoes = {
         "Administrador": menus_administrador,
-
         "Gerente": [
-            "Dashboard",
-            "Entradas e Saídas",
-            "Contas Pagas no Mês",
-            "Clientes / CRM",
-            "Clientes Inadimplentes",
-            "Estoque",
-            "Funcionários",
-            "Folha de Pagamento",
-            "Metas e Premiações",
-            "Parcelas",
-            "Pix e WhatsApp",
-            "Relatórios",
-            "IA Financeira",
-            "Ajuda / Tutorial",
-            "Configurações"
+            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
+            "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
+            "Metas e Premiações", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "IA Financeira", "Ajuda / Tutorial", "Configurações"
         ],
-
         "Financeiro": [
-            "Dashboard",
-            "Entradas e Saídas",
-            "Contas Pagas no Mês",
-            "Clientes Inadimplentes",
-            "Folha de Pagamento",
-            "Parcelas",
-            "Pix e WhatsApp",
-            "Relatórios",
-            "IA Financeira",
-            "Ajuda / Tutorial"
+            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
+            "Folha de Pagamento", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "IA Financeira", "Ajuda / Tutorial"
         ],
-
         "Vendedor": [
-            "Dashboard",
-            "Clientes / CRM",
-            "Clientes Inadimplentes",
-            "Pix e WhatsApp",
-            "Ajuda / Tutorial"
+            "Dashboard", "Clientes / CRM", "Clientes Inadimplentes", "Pix e WhatsApp", "Ajuda / Tutorial"
         ]
     }
 
@@ -2369,48 +1761,21 @@ def carregar_lancamentos():
         df["data"] = pd.to_datetime(df["data"])
         df["vencimento"] = pd.to_datetime(df["vencimento"])
         df["mes"] = df["data"].dt.strftime("%Y-%m")
-        df["status_real"] = df.apply(
-            lambda x: status_automatico(x["status"], x["vencimento"]),
-            axis=1
-        )
+        df["status_real"] = df.apply(lambda x: status_automatico(x["status"], x["vencimento"]), axis=1)
 
     return df
 
 
 def carregar_clientes():
-    return consultar(
-        """
-        SELECT *
-        FROM clientes
-        WHERE empresa_id = ?
-        ORDER BY nome ASC
-        """,
-        (empresa_id_atual(),)
-    )
+    return consultar("SELECT * FROM clientes WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
 
 
 def carregar_estoque():
-    return consultar(
-        """
-        SELECT *
-        FROM estoque
-        WHERE empresa_id = ?
-        ORDER BY produto ASC
-        """,
-        (empresa_id_atual(),)
-    )
+    return consultar("SELECT * FROM estoque WHERE empresa_id = ? ORDER BY produto ASC", (empresa_id_atual(),))
 
 
 def carregar_funcionarios():
-    return consultar(
-        """
-        SELECT *
-        FROM funcionarios
-        WHERE empresa_id = ?
-        ORDER BY nome ASC
-        """,
-        (empresa_id_atual(),)
-    )
+    return consultar("SELECT * FROM funcionarios WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
 
 
 def carregar_folha():
@@ -2471,7 +1836,6 @@ def calcular_indicadores(df):
     ]["valor"].sum()
 
     pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
-
     receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
     pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
     vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
@@ -2509,7 +1873,6 @@ def gerar_pdf_relatorio(df, ind):
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     largura, altura = A4
-
     y = altura - 2 * cm
 
     pdf.setFont("Helvetica-Bold", 16)
@@ -2567,77 +1930,43 @@ def gerar_pdf_relatorio(df, ind):
 
 
 # =====================================================
-# IA DE AJUDA LOCAL
+# IA AJUDA
 # =====================================================
 
 def responder_ajuda(pergunta):
     p = pergunta.lower()
 
     if "lançamento" in p or "entrada" in p or "saída" in p or "despesa" in p or "receita" in p:
-        return (
-            "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. "
-            "Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status. "
-            "Se for parcelado, informe o total de parcelas."
-        )
+        return "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status."
 
     if "cliente" in p and "inadimplente" in p:
-        return (
-            "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. "
-            "O sistema considera inadimplente todo cliente que possui Receita vencida."
-        )
+        return "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. O sistema considera inadimplente todo cliente que possui Receita vencida."
 
     if "cliente" in p or "crm" in p:
-        return (
-            "Para cadastrar clientes, vá em **Clientes / CRM**. "
-            "Preencha nome, telefone, e-mail, documento, limite de crédito, tipo e observação."
-        )
+        return "Para cadastrar clientes, vá em **Clientes / CRM**. Preencha nome, telefone, e-mail, documento, limite de crédito, tipo e observação."
 
     if "estoque" in p or "produto" in p:
-        return (
-            "Para controlar estoque, acesse **Estoque**. "
-            "Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
-        )
+        return "Para controlar estoque, acesse **Estoque**. Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
 
     if "funcionário" in p or "funcionario" in p:
-        return (
-            "Para cadastrar funcionários, acesse **Funcionários**. "
-            "Informe nome, cargo, telefone, documento, data de admissão, salário base, tipo de contrato e status."
-        )
+        return "Para cadastrar funcionários, acesse **Funcionários**. Informe nome, cargo, telefone, documento, data de admissão, salário base, tipo de contrato e status."
 
     if "folha" in p or "pagamento" in p or "salário" in p or "salario" in p:
-        return (
-            "Para montar a folha de pagamento, acesse **Folha de Pagamento**. "
-            "Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
-        )
+        return "Para montar a folha de pagamento, acesse **Folha de Pagamento**. Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
 
     if "meta" in p or "premiação" in p or "premiacao" in p or "bônus" in p or "bonus" in p:
-        return (
-            "Para cadastrar metas e premiações, vá em **Metas e Premiações**. "
-            "Selecione funcionário, informe meta, realizado, prêmio e status."
-        )
+        return "Para cadastrar metas e premiações, vá em **Metas e Premiações**. Selecione funcionário, informe meta, realizado, prêmio e status."
 
     if "relatório" in p or "relatorio" in p or "pdf" in p:
-        return (
-            "Para gerar relatório, acesse **Relatórios**. "
-            "Você pode baixar PDF financeiro e arquivos CSV."
-        )
+        return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
 
     if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
-        return (
-            "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. "
-            "Digite telefone, nome, valor, vencimento e gere o link pronto."
-        )
+        return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
 
     if "dashboard" in p or "painel" in p:
-        return (
-            "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, "
-            "clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
-        )
+        return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
 
-    return (
-        "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, "
-        "relatórios, WhatsApp e dashboard. Exemplo: **como cadastrar funcionário?**"
-    )
+    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, relatórios, WhatsApp e dashboard."
 
 
 # =====================================================
@@ -2651,13 +1980,13 @@ def tela_apresentacao_comercial():
 
     st.markdown(
         """
-        <div class="commercial-panel">
-            <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
-            <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
-            Use esta página como roteiro para vender o sistema. Mostre que a Global Software não é apenas
-            um financeiro, mas uma central de controle para a empresa.
-            </p>
-        </div>
+<div class="commercial-panel">
+    <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
+    <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
+    Use esta página como roteiro para vender o sistema. Mostre que a Global Software não é apenas
+    um financeiro, mas uma central de controle para a empresa.
+    </p>
+</div>
         """,
         unsafe_allow_html=True
     )
@@ -2665,22 +1994,13 @@ def tela_apresentacao_comercial():
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        comercial_card(
-            "Dor principal",
-            "A empresa vende, mas não sabe exatamente quanto lucra, quem deve, o que venceu e para onde o dinheiro vai."
-        )
+        comercial_card("Dor principal", "A empresa vende, mas não sabe exatamente quanto lucra, quem deve, o que venceu e para onde o dinheiro vai.")
 
     with c2:
-        comercial_card(
-            "Solução",
-            "Financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios em uma plataforma."
-        )
+        comercial_card("Solução", "Financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios em uma plataforma.")
 
     with c3:
-        comercial_card(
-            "Resultado",
-            "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer."
-        )
+        comercial_card("Resultado", "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer.")
 
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
     st.markdown("## Roteiro de venda")
@@ -2707,25 +2027,13 @@ Não é apenas um sistema. É uma central de controle para a empresa crescer com
     p1, p2, p3 = st.columns(3)
 
     with p1:
-        preco_card(
-            "Plano Gestão Inicial",
-            "R$ 147/mês",
-            "Financeiro, clientes, contas a pagar, contas a receber, inadimplentes e relatórios básicos."
-        )
+        preco_card("Plano Gestão Inicial", "R$ 147/mês", "Financeiro, clientes, contas a pagar, contas a receber, inadimplentes e relatórios básicos.")
 
     with p2:
-        preco_card(
-            "Plano Gestão Completa",
-            "R$ 297/mês",
-            "Inclui financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios."
-        )
+        preco_card("Plano Gestão Completa", "R$ 297/mês", "Inclui financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios.")
 
     with p3:
-        preco_card(
-            "Plano Premium Personalizado",
-            "Sob consulta",
-            "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras."
-        )
+        preco_card("Plano Premium Personalizado", "Sob consulta", "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -2776,7 +2084,6 @@ def app():
     )
 
     st.session_state.menu_atual = menu
-
     st.write("")
 
     col_sair1, col_sair2, col_sair3 = st.columns([6, 1, 1])
@@ -2792,29 +2099,20 @@ def app():
 
     menu = st.session_state.menu_atual
 
-    # =================================================
-    # DASHBOARD
-    # =================================================
-
     if menu == "Dashboard":
         st.title("📊 Dashboard Executivo Premium")
 
         inadimplentes_df = pd.DataFrame()
         if not df.empty:
-            inadimplentes_df = df[
-                (df["tipo"] == "Receita") &
-                (df["status_real"] == "Vencido")
-            ]
+            inadimplentes_df = df[(df["tipo"] == "Receita") & (df["status_real"] == "Vencido")]
 
         total_estoque_custo = 0
-        total_estoque_venda = 0
         itens_baixo = 0
 
         if not estoque.empty:
             estoque["valor_custo_total"] = estoque["quantidade"] * estoque["custo_unitario"]
             estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
             total_estoque_custo = estoque["valor_custo_total"].sum()
-            total_estoque_venda = estoque["valor_venda_total"].sum()
             itens_baixo = estoque[estoque["quantidade"] <= estoque["estoque_minimo"]].shape[0]
 
         folha_mes = 0
@@ -2893,10 +2191,6 @@ def app():
                     use_container_width=True,
                     hide_index=True
                 )
-
-    # =================================================
-    # ENTRADAS E SAÍDAS
-    # =================================================
 
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
@@ -3006,13 +2300,7 @@ def app():
                 )
 
             with col_e2:
-                novo_valor = st.number_input(
-                    "Novo valor",
-                    min_value=0.0,
-                    value=float(item["valor"]),
-                    step=1.0,
-                    key="edit_valor"
-                )
+                novo_valor = st.number_input("Novo valor", min_value=0.0, value=float(item["valor"]), step=1.0, key="edit_valor")
 
             with col_e3:
                 nova_desc = st.text_input("Nova descrição", value=item["descricao"], key="edit_desc")
@@ -3032,16 +2320,9 @@ def app():
                 st.rerun()
 
             if col_b.button("Excluir lançamento", key="btn_excluir_lancamento"):
-                executar(
-                    "DELETE FROM lancamentos WHERE id = ? AND empresa_id = ?",
-                    (int(id_edit), empresa_id_atual())
-                )
+                executar("DELETE FROM lancamentos WHERE id = ? AND empresa_id = ?", (int(id_edit), empresa_id_atual()))
                 st.warning("Excluído.")
                 st.rerun()
-
-    # =================================================
-    # CONTAS PAGAS
-    # =================================================
 
     elif menu == "Contas Pagas no Mês":
         st.title("✅ Contas Pagas no Mês")
@@ -3072,10 +2353,6 @@ def app():
                     hide_index=True
                 )
 
-    # =================================================
-    # CLIENTES
-    # =================================================
-
     elif menu == "Clientes / CRM":
         st.title("👥 Clientes / CRM")
 
@@ -3101,18 +2378,7 @@ def app():
                     (empresa_id, nome, telefone, email, documento, tipo, observacao, criado_em, limite_credito, status_cliente)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (
-                        empresa_id_atual(),
-                        nome,
-                        telefone,
-                        email,
-                        documento,
-                        tipo_cliente,
-                        obs,
-                        datetime.now().isoformat(),
-                        limite_credito,
-                        status_cliente
-                    )
+                    (empresa_id_atual(), nome, telefone, email, documento, tipo_cliente, obs, datetime.now().isoformat(), limite_credito, status_cliente)
                 )
                 st.success("Cliente salvo.")
                 st.rerun()
@@ -3122,20 +2388,13 @@ def app():
         else:
             st.dataframe(clientes, use_container_width=True, hide_index=True)
 
-    # =================================================
-    # INADIMPLENTES
-    # =================================================
-
     elif menu == "Clientes Inadimplentes":
         st.title("🚨 Clientes Inadimplentes")
 
         if df.empty:
             st.info("Nenhum lançamento cadastrado.")
         else:
-            inad = df[
-                (df["tipo"] == "Receita") &
-                (df["status_real"] == "Vencido")
-            ].copy()
+            inad = df[(df["tipo"] == "Receita") & (df["status_real"] == "Vencido")].copy()
 
             if inad.empty:
                 st.success("Nenhum cliente inadimplente encontrado.")
@@ -3144,8 +2403,10 @@ def app():
                 qtd_clientes = inad["cliente_fornecedor"].nunique()
 
                 c1, c2 = st.columns(2)
+
                 with c1:
                     card("Clientes inadimplentes", str(qtd_clientes), "Clientes com receita vencida")
+
                 with c2:
                     card("Valor inadimplente", moeda(total_inad), "Total vencido")
 
@@ -3153,11 +2414,7 @@ def app():
                 resumo["valor_formatado"] = resumo["valor"].apply(moeda)
 
                 st.subheader("Resumo por cliente")
-                st.dataframe(
-                    resumo[["cliente_fornecedor", "valor_formatado"]],
-                    use_container_width=True,
-                    hide_index=True
-                )
+                st.dataframe(resumo[["cliente_fornecedor", "valor_formatado"]], use_container_width=True, hide_index=True)
 
                 st.subheader("Detalhamento")
                 inad["vencimento"] = inad["vencimento"].dt.strftime("%d/%m/%Y")
@@ -3168,10 +2425,6 @@ def app():
                     use_container_width=True,
                     hide_index=True
                 )
-
-    # =================================================
-    # ESTOQUE
-    # =================================================
 
     elif menu == "Estoque":
         st.title("📦 Controle de Estoque Completo")
@@ -3201,19 +2454,7 @@ def app():
                     (empresa_id, produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, observacao, criado_em, estoque_minimo, codigo)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (
-                        empresa_id_atual(),
-                        produto,
-                        categoria,
-                        quantidade,
-                        custo_unitario,
-                        preco_venda,
-                        fornecedor,
-                        obs,
-                        datetime.now().isoformat(),
-                        estoque_minimo,
-                        codigo
-                    )
+                    (empresa_id_atual(), produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, obs, datetime.now().isoformat(), estoque_minimo, codigo)
                 )
                 st.success("Produto salvo.")
                 st.rerun()
@@ -3224,24 +2465,20 @@ def app():
             estoque["valor_custo_total"] = estoque["quantidade"] * estoque["custo_unitario"]
             estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
             estoque["lucro_previsto"] = estoque["valor_venda_total"] - estoque["valor_custo_total"]
-            estoque["alerta"] = estoque.apply(
-                lambda x: "Baixo estoque" if x["quantidade"] <= x["estoque_minimo"] else "OK",
-                axis=1
-            )
+            estoque["alerta"] = estoque.apply(lambda x: "Baixo estoque" if x["quantidade"] <= x["estoque_minimo"] else "OK", axis=1)
 
             c1, c2, c3 = st.columns(3)
+
             with c1:
                 card("Valor em custo", moeda(estoque["valor_custo_total"].sum()), "Valor investido no estoque")
+
             with c2:
                 card("Valor em venda", moeda(estoque["valor_venda_total"].sum()), "Potencial de venda")
+
             with c3:
                 card("Lucro previsto", moeda(estoque["lucro_previsto"].sum()), "Venda menos custo")
 
             st.dataframe(estoque, use_container_width=True, hide_index=True)
-
-    # =================================================
-    # FUNCIONÁRIOS
-    # =================================================
 
     elif menu == "Funcionários":
         st.title("👨‍💼 Cadastro de Funcionários")
@@ -3271,19 +2508,7 @@ def app():
                     (empresa_id, nome, cargo, telefone, documento, data_admissao, salario_base, tipo_contrato, status, observacao, criado_em)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (
-                        empresa_id_atual(),
-                        nome,
-                        cargo,
-                        telefone,
-                        documento,
-                        str(data_admissao),
-                        salario_base,
-                        tipo_contrato,
-                        status_fun,
-                        obs,
-                        datetime.now().isoformat()
-                    )
+                    (empresa_id_atual(), nome, cargo, telefone, documento, str(data_admissao), salario_base, tipo_contrato, status_fun, obs, datetime.now().isoformat())
                 )
                 st.success("Funcionário salvo.")
                 st.rerun()
@@ -3294,20 +2519,13 @@ def app():
             funcionarios["salario_formatado"] = funcionarios["salario_base"].apply(moeda)
             st.dataframe(funcionarios, use_container_width=True, hide_index=True)
 
-    # =================================================
-    # FOLHA
-    # =================================================
-
     elif menu == "Folha de Pagamento":
         st.title("🧾 Folha de Pagamento Completa")
 
         if funcionarios.empty:
             st.warning("Cadastre funcionários antes de lançar folha de pagamento.")
         else:
-            func_dict = {
-                f"{row['nome']} - {row['cargo']}": int(row["id"])
-                for _, row in funcionarios.iterrows()
-            }
+            func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
 
             with st.form("form_folha"):
                 col1, col2, col3 = st.columns(3)
@@ -3317,13 +2535,7 @@ def app():
                     funcionario_id = func_dict[funcionario_label]
                     mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="folha_mes")
                     funcionario_row = funcionarios[funcionarios["id"] == funcionario_id].iloc[0]
-                    salario = st.number_input(
-                        "Salário base",
-                        min_value=0.0,
-                        value=float(funcionario_row["salario_base"] or 0),
-                        step=100.0,
-                        key="folha_salario"
-                    )
+                    salario = st.number_input("Salário base", min_value=0.0, value=float(funcionario_row["salario_base"] or 0), step=100.0, key="folha_salario")
 
                 with col2:
                     horas_extras = st.number_input("Horas extras", min_value=0.0, step=1.0, key="folha_horas")
@@ -3348,15 +2560,7 @@ def app():
                 with col6:
                     observacao = st.text_area("Observação", key="folha_obs")
 
-                bruto, liquido = calcular_folha_total(
-                    salario,
-                    horas_extras,
-                    valor_hora_extra,
-                    comissao,
-                    bonus,
-                    premiacao,
-                    desconto
-                )
+                bruto, liquido = calcular_folha_total(salario, horas_extras, valor_hora_extra, comissao, bonus, premiacao, desconto)
 
                 st.info(f"Total bruto: {moeda(bruto)} | Total líquido: {moeda(liquido)}")
 
@@ -3437,20 +2641,13 @@ def app():
 
             st.dataframe(folha, use_container_width=True, hide_index=True)
 
-    # =================================================
-    # METAS
-    # =================================================
-
     elif menu == "Metas e Premiações":
         st.title("🎯 Metas e Premiações")
 
         if funcionarios.empty:
             st.warning("Cadastre funcionários antes de criar metas.")
         else:
-            func_dict = {
-                f"{row['nome']} - {row['cargo']}": int(row["id"])
-                for _, row in funcionarios.iterrows()
-            }
+            func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
 
             with st.form("form_meta"):
                 col1, col2, col3 = st.columns(3)
@@ -3476,17 +2673,7 @@ def app():
                         (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
-                        (
-                            empresa_id_atual(),
-                            funcionario_id,
-                            mes_ref,
-                            descricao,
-                            meta_valor,
-                            realizado,
-                            premio,
-                            status_meta,
-                            datetime.now().isoformat()
-                        )
+                        (empresa_id_atual(), funcionario_id, mes_ref, descricao, meta_valor, realizado, premio, status_meta, datetime.now().isoformat())
                     )
                     st.success("Meta salva.")
                     st.rerun()
@@ -3497,16 +2684,8 @@ def app():
             metas["meta_formatada"] = metas["meta_valor"].apply(moeda)
             metas["realizado_formatado"] = metas["realizado"].apply(moeda)
             metas["premio_formatado"] = metas["premio"].apply(moeda)
-            metas["percentual"] = metas.apply(
-                lambda x: percentual((x["realizado"] / x["meta_valor"] * 100) if x["meta_valor"] else 0),
-                axis=1
-            )
-
+            metas["percentual"] = metas.apply(lambda x: percentual((x["realizado"] / x["meta_valor"] * 100) if x["meta_valor"] else 0), axis=1)
             st.dataframe(metas, use_container_width=True, hide_index=True)
-
-    # =================================================
-    # PARCELAS
-    # =================================================
 
     elif menu == "Parcelas":
         st.title("📆 Controle de Parcelas")
@@ -3528,10 +2707,6 @@ def app():
                     use_container_width=True,
                     hide_index=True
                 )
-
-    # =================================================
-    # PIX E WHATSAPP
-    # =================================================
 
     elif menu == "Pix e WhatsApp":
         st.title("📲 Pix e WhatsApp")
@@ -3567,10 +2742,6 @@ def app():
                 texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
                 st.code(texto)
 
-    # =================================================
-    # RELATÓRIOS
-    # =================================================
-
     elif menu == "Relatórios":
         st.title("📄 Relatórios e Exportações")
 
@@ -3579,62 +2750,22 @@ def app():
         if pdf is None:
             st.warning("Biblioteca reportlab não instalada. Confira o requirements.txt.")
         else:
-            st.download_button(
-                "Baixar relatório PDF",
-                data=pdf,
-                file_name="relatorio_financeiro.pdf",
-                mime="application/pdf",
-                key="download_pdf"
-            )
+            st.download_button("Baixar relatório PDF", data=pdf, file_name="relatorio_financeiro.pdf", mime="application/pdf", key="download_pdf")
 
         if not df.empty:
-            st.download_button(
-                "Baixar lançamentos CSV",
-                data=df.to_csv(index=False).encode("utf-8"),
-                file_name="lancamentos.csv",
-                mime="text/csv",
-                key="download_csv_lancamentos"
-            )
+            st.download_button("Baixar lançamentos CSV", data=df.to_csv(index=False).encode("utf-8"), file_name="lancamentos.csv", mime="text/csv", key="download_csv_lancamentos")
 
         if not clientes.empty:
-            st.download_button(
-                "Baixar clientes CSV",
-                data=clientes.to_csv(index=False).encode("utf-8"),
-                file_name="clientes.csv",
-                mime="text/csv",
-                key="download_csv_clientes"
-            )
+            st.download_button("Baixar clientes CSV", data=clientes.to_csv(index=False).encode("utf-8"), file_name="clientes.csv", mime="text/csv", key="download_csv_clientes")
 
         if not estoque.empty:
-            st.download_button(
-                "Baixar estoque CSV",
-                data=estoque.to_csv(index=False).encode("utf-8"),
-                file_name="estoque.csv",
-                mime="text/csv",
-                key="download_csv_estoque"
-            )
+            st.download_button("Baixar estoque CSV", data=estoque.to_csv(index=False).encode("utf-8"), file_name="estoque.csv", mime="text/csv", key="download_csv_estoque")
 
         if not funcionarios.empty:
-            st.download_button(
-                "Baixar funcionários CSV",
-                data=funcionarios.to_csv(index=False).encode("utf-8"),
-                file_name="funcionarios.csv",
-                mime="text/csv",
-                key="download_csv_funcionarios"
-            )
+            st.download_button("Baixar funcionários CSV", data=funcionarios.to_csv(index=False).encode("utf-8"), file_name="funcionarios.csv", mime="text/csv", key="download_csv_funcionarios")
 
         if not folha.empty:
-            st.download_button(
-                "Baixar folha CSV",
-                data=folha.to_csv(index=False).encode("utf-8"),
-                file_name="folha_pagamento.csv",
-                mime="text/csv",
-                key="download_csv_folha"
-            )
-
-    # =================================================
-    # IA FINANCEIRA
-    # =================================================
+            st.download_button("Baixar folha CSV", data=folha.to_csv(index=False).encode("utf-8"), file_name="folha_pagamento.csv", mime="text/csv", key="download_csv_folha")
 
     elif menu == "IA Financeira":
         st.title("🤖 IA Financeira")
@@ -3643,32 +2774,11 @@ def app():
             st.info("Cadastre lançamentos para receber uma análise.")
         else:
             if ind["lucro"] < 0:
-                st.markdown(
-                    """
-                    <div class="danger-box">
-                    A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown('<div class="danger-box">A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>', unsafe_allow_html=True)
             elif ind["vencidas"] > 0:
-                st.markdown(
-                    """
-                    <div class="warning-box">
-                    Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown('<div class="warning-box">Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.</div>', unsafe_allow_html=True)
             else:
-                st.markdown(
-                    """
-                    <div class="success-box">
-                    O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.markdown('<div class="success-box">O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.</div>', unsafe_allow_html=True)
 
             st.write(f"**Receita:** {moeda(ind['receita'])}")
             st.write(f"**Saídas:** {moeda(ind['saidas'])}")
@@ -3683,51 +2793,46 @@ def app():
                 resposta = responder_ajuda(pergunta)
                 st.info(resposta)
 
-    # =================================================
-    # AJUDA
-    # =================================================
-
     elif menu == "Ajuda / Tutorial":
         st.title("🆘 Ajuda / Tutorial do Sistema")
 
         st.markdown(
             """
-            ### Como usar o sistema
+### Como usar o sistema
 
-            **1. Dashboard**  
-            Mostra os principais indicadores da empresa.
+**1. Dashboard**  
+Mostra os principais indicadores da empresa.
 
-            **2. Entradas e Saídas**  
-            Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
+**2. Entradas e Saídas**  
+Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
 
-            **3. Contas Pagas no Mês**  
-            Veja tudo que foi pago ou recebido no mês selecionado.
+**3. Contas Pagas no Mês**  
+Veja tudo que foi pago ou recebido no mês selecionado.
 
-            **4. Clientes / CRM**  
-            Cadastre clientes, fornecedores, contatos e limite de crédito.
+**4. Clientes / CRM**  
+Cadastre clientes, fornecedores, contatos e limite de crédito.
 
-            **5. Clientes Inadimplentes**  
-            Mostra clientes com receitas vencidas.
+**5. Clientes Inadimplentes**  
+Mostra clientes com receitas vencidas.
 
-            **6. Estoque**  
-            Controle produtos, quantidade, estoque mínimo, custo e preço de venda.
+**6. Estoque**  
+Controle produtos, quantidade, estoque mínimo, custo e preço de venda.
 
-            **7. Funcionários**  
-            Cadastre a equipe da empresa.
+**7. Funcionários**  
+Cadastre a equipe da empresa.
 
-            **8. Folha de Pagamento**  
-            Calcule salário, horas extras, comissão, bônus, premiação, descontos e total líquido.
+**8. Folha de Pagamento**  
+Calcule salário, horas extras, comissão, bônus, premiação, descontos e total líquido.
 
-            **9. Metas e Premiações**  
-            Controle metas da equipe, realizado, prêmio e status.
+**9. Metas e Premiações**  
+Controle metas da equipe, realizado, prêmio e status.
 
-            **10. Relatórios**  
-            Baixe PDF e planilhas CSV.
+**10. Relatórios**  
+Baixe PDF e planilhas CSV.
             """
         )
 
         st.divider()
-
         st.subheader("🤖 IA de Ajuda do Sistema")
 
         pergunta = st.text_area(
@@ -3742,17 +2847,9 @@ def app():
             else:
                 st.warning("Digite sua dúvida para a IA responder.")
 
-    # =================================================
-    # APRESENTAÇÃO
-    # =================================================
-
     elif menu == "Apresentação Comercial":
         st.title("🚀 Apresentação Comercial")
         tela_apresentacao_comercial()
-
-    # =================================================
-    # USUÁRIOS
-    # =================================================
 
     elif menu == "Usuários":
         st.title("👤 Usuários e Permissões")
@@ -3785,15 +2882,7 @@ def app():
                                 (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
                                 VALUES (?, ?, ?, ?, ?, ?, ?)
                                 """,
-                                (
-                                    empresa_id_atual(),
-                                    nome,
-                                    email,
-                                    hash_senha(senha),
-                                    tipo_user,
-                                    int(ativo),
-                                    datetime.now().isoformat()
-                                )
+                                (empresa_id_atual(), nome, email, hash_senha(senha), tipo_user, int(ativo), datetime.now().isoformat())
                             )
                             st.success("Usuário criado com sucesso.")
                             st.rerun()
@@ -3814,10 +2903,6 @@ def app():
                 st.info("Nenhum usuário cadastrado.")
             else:
                 st.dataframe(usuarios, use_container_width=True, hide_index=True)
-
-    # =================================================
-    # CONFIGURAÇÕES
-    # =================================================
 
     elif menu == "Configurações":
         st.title("⚙️ Configurações")
