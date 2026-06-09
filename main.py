@@ -1204,7 +1204,7 @@ def tela_publica_comercial():
                     <div class="public-brand-subtitle">Sistema Financeiro Premium para empresas</div>
                 </div>
             </div>
-            <div class="public-badge">Apresentação comercial pública</div>
+            <div class="public-badge">Apresentação pública</div>
         </div>
         """,
         unsafe_allow_html=True
@@ -1214,11 +1214,10 @@ def tela_publica_comercial():
         """
         <div class="public-hero">
             <div class="public-tag">GESTÃO FINANCEIRA • CRM • ESTOQUE • RELATÓRIOS</div>
-            <div class="public-title">Sua empresa ainda controla dinheiro no caderno, no WhatsApp ou em planilhas bagunçadas?</div>
+            <div class="public-title">Sistema financeiro profissional para empresas que querem crescer com controle.</div>
             <div class="public-subtitle">
-                O Sistema Financeiro Premium da Global Software organiza entradas, saídas, parcelas,
-                contas a pagar, contas a receber, clientes, estoque, relatórios e usuários em uma plataforma moderna,
-                visual e profissional.
+                Organize entradas, saídas, parcelas, contas a pagar, contas a receber,
+                clientes, estoque, relatórios e usuários em uma plataforma moderna e visual.
             </div>
             <div class="public-highlight-row">
                 <div class="public-highlight">✅ Dashboard financeiro</div>
@@ -1242,11 +1241,11 @@ def tela_publica_comercial():
 
     with col_whats:
         texto_demo = (
-            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software. "
-            "Tenho interesse em organizar melhor as finanças da minha empresa."
+            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software."
         )
+
         telefone_global = st.text_input(
-            "Seu WhatsApp para demonstração",
+            "WhatsApp para demonstração",
             placeholder="62999999999",
             key="telefone_publico"
         )
@@ -1265,7 +1264,7 @@ def tela_publica_comercial():
     with c1:
         comercial_card(
             "O problema",
-            "Muitas empresas vendem, mas não sabem quanto realmente lucram, quais contas estão vencidas e quanto têm a receber."
+            "Muitas empresas vendem, mas não sabem exatamente quanto lucram, quais contas estão vencidas e quanto têm a receber."
         )
 
     with c2:
@@ -1283,7 +1282,7 @@ def tela_publica_comercial():
     st.write("")
 
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 💼 O que o sistema entrega")
+    st.markdown("## 💼 Módulos principais")
 
     m1, m2, m3, m4 = st.columns(4)
 
@@ -1291,104 +1290,13 @@ def tela_publica_comercial():
         comercial_card("Dashboard", "Indicadores de receita, despesas, lucro, caixa, contas vencidas, a pagar e a receber.")
 
     with m2:
-        comercial_card("Financeiro completo", "Controle de receitas, custos, despesas fixas, variáveis, dívidas, investimentos e retiradas.")
+        comercial_card("Financeiro", "Controle de receitas, custos, despesas fixas, variáveis, dívidas, investimentos e retiradas.")
 
     with m3:
-        comercial_card("Parcelas", "Cadastro de lançamentos parcelados com vencimentos automáticos e acompanhamento.")
+        comercial_card("Clientes", "Cadastro de clientes, fornecedores, telefone, documentos e observações.")
 
     with m4:
-        comercial_card("Relatórios", "Geração de relatórios em PDF e CSV para análise e prestação de contas.")
-
-    st.write("")
-
-    m5, m6, m7, m8 = st.columns(4)
-
-    with m5:
-        comercial_card("CRM / Clientes", "Cadastro de clientes, fornecedores, telefone, documentos e observações.")
-
-    with m6:
-        comercial_card("Estoque", "Controle de produtos, quantidade, custo, preço de venda e fornecedor.")
-
-    with m7:
-        comercial_card("Usuários", "Permissões para administrador, gerente, financeiro e vendedor.")
-
-    with m8:
-        comercial_card("WhatsApp", "Geração de mensagens e links de cobrança para facilitar o atendimento.")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 🎯 Para quem é indicado?")
-
-    p1, p2, p3 = st.columns(3)
-
-    with p1:
-        comercial_card(
-            "Pequenas empresas",
-            "Para negócios que precisam sair do improviso e começar a controlar dinheiro com visão profissional."
-        )
-
-    with p2:
-        comercial_card(
-            "Lojas e comércios",
-            "Para empresas que vendem, compram, parcelam e precisam acompanhar pagamentos e recebimentos."
-        )
-
-    with p3:
-        comercial_card(
-            "Prestadores de serviço",
-            "Para profissionais que precisam controlar faturamento, despesas, clientes e relatórios."
-        )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 💰 Planos comerciais sugeridos")
-
-    plano1, plano2, plano3 = st.columns(3)
-
-    with plano1:
-        preco_card(
-            "Plano Inicial",
-            "R$ 97/mês",
-            "Ideal para pequenos negócios que precisam controlar entradas, saídas, clientes e relatórios básicos."
-        )
-
-    with plano2:
-        preco_card(
-            "Plano Profissional",
-            "R$ 197/mês",
-            "Ideal para empresas com parcelas, contas a receber, estoque, usuários e relatórios financeiros."
-        )
-
-    with plano3:
-        preco_card(
-            "Plano Premium",
-            "Sob consulta",
-            "Sistema personalizado com identidade visual, implantação, treinamento e futuras integrações."
-        )
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 📲 Mensagem pronta para enviar a um cliente")
-
-    mensagem_padrao = (
-        "Olá! Tudo bem? Quero te apresentar o Sistema Financeiro Premium da Global Software. "
-        "Ele ajuda sua empresa a controlar entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque e relatórios em um só lugar. "
-        "É ideal para empresas que querem parar de perder controle financeiro e começar a tomar decisões com dados reais. "
-        "Posso te mostrar uma demonstração rápida?"
-    )
-
-    mensagem = st.text_area("Mensagem comercial", value=mensagem_padrao, height=150, key="msg_publica_comercial")
-    telefone_cliente = st.text_input("Telefone do cliente com DDD", placeholder="62999999999", key="tel_cliente_publico")
-
-    if st.button("Gerar link para enviar ao cliente", use_container_width=True, key="btn_link_cliente_publico"):
-        if telefone_cliente:
-            link = f"https://wa.me/55{telefone_cliente}?text={quote(mensagem)}"
-            st.markdown(f"[Abrir WhatsApp com mensagem comercial]({link})")
-        else:
-            st.warning("Digite o telefone do cliente com DDD.")
+        comercial_card("Relatórios", "Relatórios em PDF e CSV para análise, acompanhamento e prestação de contas.")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1581,7 +1489,7 @@ def tipo_usuario_atual():
 def menus_por_tipo_usuario():
     tipo = tipo_usuario_atual()
 
-    todos_menus = [
+    menus_administrador = [
         "Dashboard",
         "Apresentação Comercial",
         "Entradas e Saídas",
@@ -1599,11 +1507,10 @@ def menus_por_tipo_usuario():
     ]
 
     permissoes = {
-        "Administrador": todos_menus,
+        "Administrador": menus_administrador,
 
         "Gerente": [
             "Dashboard",
-            "Apresentação Comercial",
             "Entradas e Saídas",
             "Parcelas",
             "Contas a Pagar/Receber",
@@ -1631,7 +1538,6 @@ def menus_por_tipo_usuario():
 
         "Vendedor": [
             "Dashboard",
-            "Apresentação Comercial",
             "Contas a Receber",
             "CRM / Clientes",
             "WhatsApp Manual"
@@ -1843,10 +1749,14 @@ def gerar_pdf_relatorio(df, ind):
 
 
 # =====================================================
-# TELA COMERCIAL INTERNA
+# TELA COMERCIAL INTERNA - SOMENTE ADMIN
 # =====================================================
 
 def tela_apresentacao_comercial():
+    if tipo_usuario_atual() != "Administrador":
+        st.warning("Esta área é exclusiva para administrador.")
+        return
+
     st.markdown(
         """
         <div class="commercial-hero">
