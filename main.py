@@ -46,7 +46,7 @@ if not banner_base64:
 
 
 # =====================================================
-# ESTILO VISUAL
+# ESTILO VISUAL PREMIUM
 # =====================================================
 
 st.markdown(
@@ -80,12 +80,21 @@ st.markdown(
     }}
 
     section[data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, #020617 0%, #071526 100%);
-        border-right: 1px solid rgba(34,211,238,0.20);
+        background:
+            linear-gradient(180deg, rgba(2,6,23,0.98) 0%, rgba(7,21,38,0.98) 100%);
+        border-right: 1px solid rgba(34,211,238,0.22);
+        box-shadow: 10px 0 28px rgba(0,0,0,0.25);
     }}
 
     section[data-testid="stSidebar"] * {{
         color: #ffffff !important;
+    }}
+
+    section[data-testid="stSidebar"] img {{
+        border-radius: 18px;
+        border: 1px solid rgba(34,211,238,0.22);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+        margin-bottom: 12px;
     }}
 
     h1, h2, h3, h4 {{
@@ -239,6 +248,68 @@ st.markdown(
         color: #cbd5e1;
         font-size: 15px;
         margin-bottom: 18px;
+    }}
+
+    .app-header {{
+        width: 100%;
+        border-radius: 26px;
+        padding: 26px 28px;
+        margin-bottom: 24px;
+        background:
+            linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.96)),
+            radial-gradient(circle at top right, rgba(34,211,238,0.16), transparent 35%);
+        border: 1px solid rgba(34,211,238,0.28);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.32);
+    }}
+
+    .app-header-top {{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }}
+
+    .app-title {{
+        font-size: 34px;
+        font-weight: 950;
+        color: #ffffff;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }}
+
+    .app-subtitle {{
+        font-size: 15px;
+        color: #cbd5e1;
+        line-height: 1.5;
+    }}
+
+    .app-badges {{
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }}
+
+    .app-badge {{
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(15,23,42,0.78);
+        border: 1px solid rgba(34,211,238,0.26);
+        color: #e0faff;
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+    }}
+
+    .page-panel {{
+        border-radius: 24px;
+        padding: 22px;
+        margin-bottom: 22px;
+        background:
+            linear-gradient(180deg, rgba(8,20,35,0.72), rgba(4,14,26,0.82));
+        border: 1px solid rgba(34,211,238,0.18);
+        box-shadow: 0 14px 34px rgba(0,0,0,0.22);
     }}
 
     .metric-card {{
@@ -398,6 +469,14 @@ st.markdown(
         .hero-content h3 {{
             font-size: 24px;
         }}
+
+        .app-title {{
+            font-size: 26px;
+        }}
+
+        .app-badges {{
+            justify-content: flex-start;
+        }}
     }}
     </style>
     """,
@@ -487,6 +566,31 @@ def card(titulo, valor, subtitulo=""):
             <div class="metric-title">{titulo}</div>
             <div class="metric-value">{valor}</div>
             <div class="metric-sub">{subtitulo}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def cabecalho_interno(menu_atual):
+    usuario = st.session_state.usuario
+
+    st.markdown(
+        f"""
+        <div class="app-header">
+            <div class="app-header-top">
+                <div>
+                    <div class="app-title">Bem-vindo ao painel financeiro</div>
+                    <div class="app-subtitle">
+                        Área atual: <b>{menu_atual}</b>. Controle sua empresa com visão clara, segura e profissional.
+                    </div>
+                </div>
+                <div class="app-badges">
+                    <div class="app-badge">Empresa: {usuario['empresa_nome']}</div>
+                    <div class="app-badge">Usuário: {usuario['nome']}</div>
+                    <div class="app-badge">Perfil: {usuario['tipo']}</div>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -1180,6 +1284,8 @@ def app():
         del st.session_state.usuario
         st.rerun()
 
+    cabecalho_interno(menu)
+
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
 
@@ -1189,6 +1295,7 @@ def app():
         if df.empty:
             st.info("Nenhum lançamento cadastrado ainda. Cadastre entradas e saídas para visualizar o painel.")
         else:
+            st.markdown('<div class="page-panel">', unsafe_allow_html=True)
             st.markdown("### 🔎 Filtros do painel")
 
             col_f1, col_f2, col_f3 = st.columns(3)
@@ -1214,8 +1321,7 @@ def app():
                 df_periodo = df_periodo[df_periodo["tipo"] == tipo_filtro]
 
             ind = calcular_indicadores(df_periodo)
-
-            st.divider()
+            st.markdown("</div>", unsafe_allow_html=True)
 
             c1, c2, c3, c4 = st.columns(4)
 
