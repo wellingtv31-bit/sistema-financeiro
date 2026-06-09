@@ -40,7 +40,7 @@ logo_base64 = imagem_base64("logo.png")
 
 
 # =====================================================
-# ESTILO VISUAL PREMIUM V3 - FUNDO ESCURO + CORES DA LOGO
+# ESTILO VISUAL PREMIUM - FUNDO ESCURO PADRONIZADO
 # =====================================================
 
 st.markdown(
@@ -60,29 +60,29 @@ st.markdown(
 
     .stApp {{
         background:
-            linear-gradient(rgba(5, 12, 22, 0.88), rgba(5, 12, 22, 0.92)),
-            url("data:image/png;base64,{logo_base64}");
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: 78%;
-        background-attachment: fixed;
+            radial-gradient(circle at top left, rgba(34,211,238,0.16), transparent 35%),
+            linear-gradient(135deg, #030712 0%, #071526 45%, #020617 100%);
         color: #f8fafc;
     }}
 
     .block-container {{
-        padding-top: 2rem;
+        padding-top: 2.2rem;
         padding-bottom: 3rem;
-        max-width: 1280px;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1180px;
+        margin: 25px auto 0 auto;
+        background: rgba(8, 20, 35, 0.88);
+        border: 1px solid rgba(34, 211, 238, 0.26);
+        border-radius: 30px;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
     }}
 
     [data-testid="stSidebar"] {{
-        background:
-            linear-gradient(rgba(3, 10, 20, 0.96), rgba(3, 10, 20, 0.98)),
-            url("data:image/png;base64,{logo_base64}");
-        background-repeat: no-repeat;
-        background-position: center 96%;
-        background-size: 88%;
-        border-right: 1px solid rgba(34, 211, 238, 0.30);
+        background: linear-gradient(180deg, #020617 0%, #071526 100%);
+        border-right: 1px solid rgba(34,211,238,0.25);
     }}
 
     [data-testid="stSidebar"] * {{
@@ -95,64 +95,75 @@ st.markdown(
         letter-spacing: -0.5px;
     }}
 
-    p, label, span, div {{
-        color: inherit;
+    label, p, span {{
+        color: #e5e7eb !important;
     }}
 
-    .premium-card {{
-        background: rgba(8, 20, 35, 0.88);
-        border: 1px solid rgba(34, 211, 238, 0.28);
-        border-radius: 28px;
-        padding: 34px;
-        box-shadow: 0 20px 55px rgba(0,0,0,0.42);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-    }}
-
-    .login-title {{
-        font-size: 48px;
-        font-weight: 950;
-        color: #ffffff;
-        line-height: 1.05;
-        margin-bottom: 12px;
-        text-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
-    }}
-
-    .login-subtitle {{
-        font-size: 18px;
-        color: #cbd5e1;
+    .topo-login {{
+        text-align: center;
         margin-bottom: 24px;
     }}
 
+    .login-title {{
+        font-size: 42px;
+        font-weight: 950;
+        color: #ffffff;
+        line-height: 1.08;
+        margin-bottom: 12px;
+        text-shadow: 0 0 18px rgba(34, 211, 238, 0.28);
+    }}
+
+    .login-subtitle {{
+        font-size: 17px;
+        color: #cbd5e1;
+        max-width: 820px;
+        margin: 0 auto 18px auto;
+        line-height: 1.5;
+    }}
+
     .login-info {{
-        background: rgba(14, 165, 233, 0.14);
-        border-left: 6px solid #22d3ee;
+        background: linear-gradient(90deg, rgba(8,145,178,0.22), rgba(34,211,238,0.18));
+        border: 1px solid rgba(34, 211, 238, 0.36);
         color: #e0faff;
-        padding: 14px 18px;
+        padding: 13px 18px;
         border-radius: 16px;
         font-size: 15px;
-        margin-bottom: 22px;
-        box-shadow: 0 8px 24px rgba(34, 211, 238, 0.10);
+        margin: 0 auto 24px auto;
+        max-width: 760px;
+        box-shadow: 0 8px 26px rgba(34, 211, 238, 0.10);
+        text-align: center;
+    }}
+
+    .premium-card {{
+        background: rgba(2, 6, 23, 0.38);
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        min-height: 470px;
     }}
 
     .logo-box {{
-        background: rgba(8, 20, 35, 0.58);
-        border: 1px solid rgba(34, 211, 238, 0.32);
-        border-radius: 32px;
-        min-height: 520px;
+        background: rgba(2, 6, 23, 0.48);
+        border: 1px solid rgba(34, 211, 238, 0.36);
+        border-radius: 26px;
+        min-height: 470px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 20px 55px rgba(0,0,0,0.38);
+        box-shadow: 0 18px 45px rgba(0,0,0,0.32);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+        padding: 28px;
     }}
 
     .logo-box img {{
-        width: 96%;
-        max-width: 560px;
+        width: 86%;
+        max-width: 390px;
         opacity: 0.98;
-        filter: drop-shadow(0px 18px 32px rgba(34, 211, 238, 0.22));
+        filter: drop-shadow(0px 18px 32px rgba(34, 211, 238, 0.18));
     }}
 
     .metric-card {{
@@ -216,18 +227,19 @@ st.markdown(
         box-shadow: 0 8px 22px rgba(239,68,68,0.10);
     }}
 
-    .stMarkdown, .stText, .stCaption {{
-        color: #e5e7eb !important;
-    }}
-
     .stTextInput input,
     .stNumberInput input,
     .stDateInput input,
     .stTextArea textarea {{
         border-radius: 14px !important;
-        border: 1px solid rgba(34, 211, 238, 0.30) !important;
-        background: rgba(15, 23, 42, 0.92) !important;
+        border: 1px solid rgba(34, 211, 238, 0.35) !important;
+        background: rgba(15, 23, 42, 0.94) !important;
         color: #ffffff !important;
+        height: 44px;
+    }}
+
+    .stTextArea textarea {{
+        min-height: 110px !important;
     }}
 
     .stTextInput input::placeholder,
@@ -237,9 +249,10 @@ st.markdown(
 
     .stSelectbox div[data-baseweb="select"] > div {{
         border-radius: 14px !important;
-        background: rgba(15, 23, 42, 0.92) !important;
-        border: 1px solid rgba(34, 211, 238, 0.30) !important;
+        background: rgba(15, 23, 42, 0.94) !important;
+        border: 1px solid rgba(34, 211, 238, 0.35) !important;
         color: #ffffff !important;
+        min-height: 44px;
     }}
 
     .stSelectbox span {{
@@ -286,7 +299,7 @@ st.markdown(
     }}
 
     button[data-baseweb="tab"] {{
-        font-size: 16px !important;
+        font-size: 15px !important;
         font-weight: 850 !important;
         color: #cbd5e1 !important;
     }}
@@ -307,17 +320,15 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    canvas {{
-        border-radius: 18px;
-    }}
-
     @media (max-width: 900px) {{
-        .stApp {{
-            background-size: 135%;
+        .block-container {{
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin-top: 10px;
         }}
 
         .login-title {{
-            font-size: 34px;
+            font-size: 32px;
         }}
 
         .login-subtitle {{
@@ -330,6 +341,7 @@ st.markdown(
 
         .premium-card {{
             padding: 22px;
+            min-height: auto;
         }}
     }}
     </style>
@@ -651,13 +663,9 @@ STATUS_OPCOES = [
 # =====================================================
 
 def tela_login():
-    col1, col2 = st.columns([1.15, 1], gap="large")
-
-    with col1:
-        st.markdown('<div class="premium-card">', unsafe_allow_html=True)
-
-        st.markdown(
-            """
+    st.markdown(
+        """
+        <div class="topo-login">
             <div class="login-title">💼 Sistema Financeiro Premium</div>
             <div class="login-subtitle">
                 Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes e permissões.
@@ -665,9 +673,15 @@ def tela_login():
             <div class="login-info">
                 <b>Login padrão para teste:</b> admin@empresa.com &nbsp; | &nbsp; <b>Senha:</b> 123456
             </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col1, col2 = st.columns([1, 1], gap="large")
+
+    with col1:
+        st.markdown('<div class="premium-card">', unsafe_allow_html=True)
 
         aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
 
