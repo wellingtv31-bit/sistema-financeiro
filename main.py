@@ -46,7 +46,7 @@ if not banner_base64:
 
 
 # =====================================================
-# ESTILO VISUAL PREMIUM
+# ESTILO VISUAL PREMIUM V3 - PRETO + DOURADO
 # =====================================================
 
 st.markdown(
@@ -64,84 +64,100 @@ st.markdown(
         visibility: hidden;
     }}
 
+    :root {{
+        --gold: #d4af37;
+        --gold-light: #f7df8a;
+        --gold-soft: #f3e3ad;
+        --gold-dark: #9f7418;
+        --bg-dark: #020617;
+        --panel: rgba(8, 20, 35, 0.88);
+        --panel-strong: rgba(3, 10, 20, 0.96);
+        --border-gold: rgba(212, 175, 55, 0.32);
+    }}
+
     .stApp {{
         background:
-            radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 35%),
-            linear-gradient(135deg, #020617 0%, #071526 45%, #020617 100%);
-        color: #f5e7b2;
+            radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 34%),
+            radial-gradient(circle at bottom right, rgba(212,175,55,0.08), transparent 32%),
+            linear-gradient(135deg, #020617 0%, #071526 42%, #020617 100%);
+        color: var(--gold-soft);
     }}
 
     .block-container {{
-        padding-top: 1.6rem;
+        padding-top: 1.4rem;
         padding-bottom: 2rem;
-        padding-left: 1.6rem;
-        padding-right: 1.6rem;
-        max-width: 1350px;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        max-width: 1360px;
     }}
 
     section[data-testid="stSidebar"] {{
         background:
-            linear-gradient(180deg, rgba(2,6,23,0.98) 0%, rgba(7,21,38,0.98) 100%);
-        border-right: 1px solid rgba(212,175,55,0.28);
-        box-shadow: 10px 0 28px rgba(0,0,0,0.25);
+            linear-gradient(180deg, rgba(2,6,23,0.99) 0%, rgba(7,21,38,0.99) 100%);
+        border-right: 1px solid rgba(212,175,55,0.26);
+        box-shadow: 10px 0 28px rgba(0,0,0,0.28);
     }}
 
     section[data-testid="stSidebar"] * {{
-        color: #f5e7b2 !important;
+        color: var(--gold-soft) !important;
     }}
 
     section[data-testid="stSidebar"] img {{
         border-radius: 18px;
-        border: 1px solid rgba(212,175,55,0.28);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.28);
+        border: 1px solid rgba(212,175,55,0.34);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.34);
         margin-bottom: 12px;
     }}
 
     h1, h2, h3, h4 {{
-        color: #d4af37 !important;
-        font-weight: 900 !important;
+        color: var(--gold) !important;
+        font-weight: 950 !important;
         letter-spacing: -0.4px;
+        text-shadow: 0 0 18px rgba(212,175,55,0.10);
     }}
 
     p, label, span, div {{
-        color: #f5e7b2;
+        color: var(--gold-soft);
     }}
 
     .login-header {{
         width: 100%;
         text-align: center;
         margin-bottom: 24px;
-        padding: 10px 0 4px 0;
+        padding: 8px 0 4px 0;
     }}
 
     .login-title {{
-        font-size: 44px;
+        font-size: 46px;
         font-weight: 950;
-        color: #d4af37;
+        color: var(--gold);
         margin-bottom: 10px;
         line-height: 1.05;
-        text-shadow: 0 0 18px rgba(212,175,55,0.18);
+        text-shadow: 0 0 22px rgba(212,175,55,0.20);
     }}
 
     .login-subtitle {{
         font-size: 16px;
         max-width: 900px;
         margin: 0 auto;
-        color: #e7d79b;
+        color: #eadba6;
         line-height: 1.6;
     }}
 
     .login-info {{
         margin: 18px auto 28px auto;
         max-width: 980px;
-        background: linear-gradient(90deg, rgba(212,175,55,0.18), rgba(212,175,55,0.08));
-        border: 1px solid rgba(212,175,55,0.35);
-        border-radius: 16px;
+        background:
+            linear-gradient(90deg, rgba(212,175,55,0.20), rgba(212,175,55,0.08));
+        border: 1px solid rgba(212,175,55,0.38);
+        border-radius: 18px;
         padding: 14px 18px;
         text-align: center;
-        color: #f8edc8;
+        color: #fff3c4;
         font-size: 15px;
-        box-shadow: 0 10px 24px rgba(212,175,55,0.10);
+        box-shadow:
+            0 10px 26px rgba(0,0,0,0.28),
+            inset 0 0 18px rgba(212,175,55,0.04);
     }}
 
     .login-main-wrap {{
@@ -150,13 +166,15 @@ st.markdown(
     }}
 
     .hero-box {{
-        min-height: 440px;
-        border-radius: 26px;
-        border: 1px solid rgba(212,175,55,0.28);
+        min-height: 445px;
+        border-radius: 28px;
+        border: 1px solid rgba(212,175,55,0.32);
         background:
-            linear-gradient(180deg, rgba(2,6,23,0.28), rgba(2,6,23,0.76)),
-            linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.04));
-        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+            linear-gradient(180deg, rgba(2,6,23,0.22), rgba(2,6,23,0.80)),
+            linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.03));
+        box-shadow:
+            0 26px 70px rgba(0,0,0,0.40),
+            0 0 0 1px rgba(212,175,55,0.05);
         overflow: hidden;
         position: relative;
         display: flex;
@@ -172,7 +190,7 @@ st.markdown(
         background-size: contain !important;
         background-repeat: no-repeat !important;
         background-position: center center !important;
-        background-color: rgba(2, 6, 23, 0.72);
+        background-color: rgba(2, 6, 23, 0.76);
         position: relative;
     }}
 
@@ -180,38 +198,41 @@ st.markdown(
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(2,6,23,0.04), rgba(2,6,23,0.50)),
-            linear-gradient(90deg, rgba(2,6,23,0.30), rgba(2,6,23,0.04));
+            linear-gradient(180deg, rgba(2,6,23,0.02), rgba(2,6,23,0.58)),
+            linear-gradient(90deg, rgba(2,6,23,0.36), rgba(2,6,23,0.04));
     }}
 
     .hero-content {{
         position: relative;
         z-index: 2;
-        padding: 28px;
+        padding: 30px;
         max-width: 88%;
     }}
 
     .hero-content h3 {{
-        font-size: 30px;
+        font-size: 31px;
         margin-bottom: 8px;
-        color: #d4af37 !important;
+        color: var(--gold) !important;
+        text-shadow: 0 0 18px rgba(212,175,55,0.18);
     }}
 
     .hero-content p {{
         margin: 0;
-        color: #f2e6ba !important;
+        color: #f4e8bd !important;
         font-size: 15px;
-        line-height: 1.6;
+        line-height: 1.65;
     }}
 
     .logo-box {{
-        min-height: 440px;
-        border-radius: 26px;
-        border: 1px solid rgba(212,175,55,0.28);
+        min-height: 445px;
+        border-radius: 28px;
+        border: 1px solid rgba(212,175,55,0.34);
         background:
-            linear-gradient(180deg, rgba(2,6,23,0.38), rgba(2,6,23,0.78)),
-            linear-gradient(135deg, rgba(212,175,55,0.05), rgba(212,175,55,0.02));
-        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+            radial-gradient(circle at center, rgba(212,175,55,0.08), transparent 56%),
+            linear-gradient(180deg, rgba(2,6,23,0.40), rgba(2,6,23,0.82));
+        box-shadow:
+            0 26px 70px rgba(0,0,0,0.40),
+            inset 0 0 30px rgba(212,175,55,0.04);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -224,42 +245,49 @@ st.markdown(
         max-width: 380px;
         display: block;
         margin: 0 auto;
-        filter: drop-shadow(0 18px 30px rgba(0,0,0,0.28));
+        filter:
+            drop-shadow(0 20px 34px rgba(0,0,0,0.34))
+            drop-shadow(0 0 18px rgba(212,175,55,0.12));
     }}
 
     .form-box {{
         margin-top: 28px;
-        padding: 28px;
-        border-radius: 26px;
-        border: 1px solid rgba(212,175,55,0.24);
+        padding: 30px;
+        border-radius: 28px;
+        border: 1px solid rgba(212,175,55,0.28);
         background:
-            linear-gradient(180deg, rgba(8,20,35,0.88), rgba(4,14,26,0.92));
-        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+            linear-gradient(180deg, rgba(8,20,35,0.90), rgba(4,14,26,0.94));
+        box-shadow:
+            0 26px 70px rgba(0,0,0,0.38),
+            inset 0 0 20px rgba(212,175,55,0.03);
     }}
 
     .section-title {{
-        font-size: 26px;
-        font-weight: 900;
-        color: #d4af37;
+        font-size: 27px;
+        font-weight: 950;
+        color: var(--gold);
         margin-bottom: 8px;
+        text-shadow: 0 0 14px rgba(212,175,55,0.12);
     }}
 
     .section-subtitle {{
-        color: #e7d79b;
+        color: #eadba6;
         font-size: 15px;
         margin-bottom: 18px;
     }}
 
     .app-header {{
         width: 100%;
-        border-radius: 26px;
-        padding: 26px 28px;
+        border-radius: 28px;
+        padding: 28px 30px;
         margin-bottom: 20px;
         background:
-            linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.96)),
-            radial-gradient(circle at top right, rgba(212,175,55,0.16), transparent 35%);
-        border: 1px solid rgba(212,175,55,0.28);
-        box-shadow: 0 24px 60px rgba(0,0,0,0.32);
+            linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.98)),
+            radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 36%);
+        border: 1px solid rgba(212,175,55,0.32);
+        box-shadow:
+            0 26px 70px rgba(0,0,0,0.34),
+            inset 0 0 24px rgba(212,175,55,0.03);
     }}
 
     .app-header-top {{
@@ -271,16 +299,17 @@ st.markdown(
     }}
 
     .app-title {{
-        font-size: 34px;
+        font-size: 35px;
         font-weight: 950;
-        color: #d4af37;
+        color: var(--gold);
         line-height: 1.1;
         margin-bottom: 6px;
+        text-shadow: 0 0 18px rgba(212,175,55,0.14);
     }}
 
     .app-subtitle {{
         font-size: 15px;
-        color: #f0dfac;
+        color: #eadba6;
         line-height: 1.5;
     }}
 
@@ -294,68 +323,78 @@ st.markdown(
     .app-badge {{
         padding: 10px 14px;
         border-radius: 999px;
-        background: rgba(15,23,42,0.78);
-        border: 1px solid rgba(212,175,55,0.26);
-        color: #f5e7b2;
+        background: rgba(15,23,42,0.82);
+        border: 1px solid rgba(212,175,55,0.30);
+        color: #f7e7b2;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 850;
         white-space: nowrap;
+        box-shadow: inset 0 0 12px rgba(212,175,55,0.04);
     }}
 
     .menu-panel {{
-        border-radius: 24px;
-        padding: 18px;
+        border-radius: 26px;
+        padding: 19px;
         margin-bottom: 22px;
         background:
-            linear-gradient(180deg, rgba(8,20,35,0.82), rgba(4,14,26,0.90));
-        border: 1px solid rgba(212,175,55,0.20);
-        box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+            linear-gradient(180deg, rgba(8,20,35,0.84), rgba(4,14,26,0.92));
+        border: 1px solid rgba(212,175,55,0.24);
+        box-shadow:
+            0 16px 40px rgba(0,0,0,0.24),
+            inset 0 0 18px rgba(212,175,55,0.03);
     }}
 
     .menu-title {{
         font-size: 16px;
-        font-weight: 900;
-        color: #d4af37;
+        font-weight: 950;
+        color: var(--gold);
         margin-bottom: 10px;
     }}
 
     .page-panel {{
-        border-radius: 24px;
-        padding: 22px;
+        border-radius: 26px;
+        padding: 24px;
         margin-bottom: 22px;
         background:
-            linear-gradient(180deg, rgba(8,20,35,0.72), rgba(4,14,26,0.82));
-        border: 1px solid rgba(212,175,55,0.18);
-        box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+            linear-gradient(180deg, rgba(8,20,35,0.76), rgba(4,14,26,0.86));
+        border: 1px solid rgba(212,175,55,0.22);
+        box-shadow:
+            0 16px 40px rgba(0,0,0,0.22),
+            inset 0 0 18px rgba(212,175,55,0.02);
     }}
 
     .metric-card {{
-        background: linear-gradient(145deg, rgba(10, 25, 45, 0.96), rgba(6, 18, 32, 0.96));
-        border-radius: 22px;
+        background:
+            radial-gradient(circle at top right, rgba(212,175,55,0.10), transparent 42%),
+            linear-gradient(145deg, rgba(10,25,45,0.98), rgba(5,15,28,0.98));
+        border-radius: 24px;
         padding: 24px;
-        box-shadow: 0 14px 34px rgba(0,0,0,0.34);
-        border: 1px solid rgba(212,175,55,0.24);
-        border-left: 7px solid #d4af37;
-        min-height: 128px;
+        box-shadow:
+            0 16px 38px rgba(0,0,0,0.36),
+            inset 0 0 18px rgba(212,175,55,0.03);
+        border: 1px solid rgba(212,175,55,0.28);
+        border-left: 7px solid var(--gold);
+        min-height: 130px;
     }}
 
     .metric-title {{
-        color: #d4af37;
+        color: var(--gold);
         font-size: 14px;
-        font-weight: 850;
+        font-weight: 900;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }}
 
     .metric-value {{
-        color: #f8edc8;
+        color: #fff1bd;
         font-size: 30px;
         font-weight: 950;
         margin-top: 6px;
+        text-shadow: 0 0 16px rgba(212,175,55,0.08);
     }}
 
     .metric-sub {{
-        color: #e7d79b;
+        color: #eadba6;
         font-size: 13px;
         margin-top: 3px;
     }}
@@ -388,10 +427,11 @@ st.markdown(
     .stNumberInput input,
     .stDateInput input,
     .stTextArea textarea {{
-        border-radius: 14px !important;
-        border: 1px solid rgba(212,175,55,0.32) !important;
-        background: rgba(15, 23, 42, 0.94) !important;
-        color: #f8edc8 !important;
+        border-radius: 15px !important;
+        border: 1px solid rgba(212,175,55,0.34) !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+        color: #fff1bd !important;
+        box-shadow: inset 0 0 12px rgba(0,0,0,0.20);
     }}
 
     .stTextArea textarea {{
@@ -404,70 +444,74 @@ st.markdown(
     }}
 
     .stSelectbox div[data-baseweb="select"] > div {{
-        border-radius: 14px !important;
-        background: rgba(15, 23, 42, 0.94) !important;
-        border: 1px solid rgba(212,175,55,0.32) !important;
-        color: #f8edc8 !important;
+        border-radius: 15px !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+        border: 1px solid rgba(212,175,55,0.34) !important;
+        color: #fff1bd !important;
         min-height: 44px;
     }}
 
     .stSelectbox span {{
-        color: #f8edc8 !important;
+        color: #fff1bd !important;
     }}
 
     .stButton > button {{
-        background: linear-gradient(90deg, #b8860b, #d4af37);
+        background: linear-gradient(90deg, #9f7418, #d4af37, #f0d878);
         color: #111827 !important;
         border: none;
-        border-radius: 14px;
-        padding: 0.72rem 1rem;
-        font-weight: 900;
-        box-shadow: 0 10px 24px rgba(212,175,55,0.18);
+        border-radius: 15px;
+        padding: 0.74rem 1rem;
+        font-weight: 950;
+        box-shadow:
+            0 12px 28px rgba(212,175,55,0.20),
+            inset 0 0 10px rgba(255,255,255,0.10);
         transition: all 0.18s ease-in-out;
     }}
 
     .stButton > button:hover {{
         transform: translateY(-1px);
-        background: linear-gradient(90deg, #d4af37, #f0d878);
+        background: linear-gradient(90deg, #d4af37, #f0d878, #fff0a8);
         color: #111827 !important;
+        box-shadow: 0 14px 32px rgba(212,175,55,0.28);
     }}
 
     .stDownloadButton > button {{
-        background: linear-gradient(90deg, #b8860b, #d4af37);
+        background: linear-gradient(90deg, #9f7418, #d4af37, #f0d878);
         color: #111827 !important;
         border: none;
-        border-radius: 14px;
-        padding: 0.72rem 1rem;
-        font-weight: 900;
+        border-radius: 15px;
+        padding: 0.74rem 1rem;
+        font-weight: 950;
     }}
 
     div[data-testid="stDataFrame"] {{
-        background: rgba(8, 20, 35, 0.90);
-        border-radius: 18px;
+        background: rgba(8, 20, 35, 0.92);
+        border-radius: 20px;
         padding: 8px;
-        border: 1px solid rgba(212,175,55,0.18);
+        border: 1px solid rgba(212,175,55,0.22);
+        box-shadow: 0 14px 34px rgba(0,0,0,0.24);
     }}
 
     button[data-baseweb="tab"] {{
         font-size: 15px !important;
-        font-weight: 850 !important;
-        color: #e7d79b !important;
+        font-weight: 900 !important;
+        color: #eadba6 !important;
     }}
 
     button[data-baseweb="tab"][aria-selected="true"] {{
-        color: #d4af37 !important;
-        border-bottom: 2px solid #d4af37 !important;
+        color: var(--gold) !important;
+        border-bottom: 2px solid var(--gold) !important;
     }}
 
     div[data-testid="stAlert"] {{
-        background: rgba(15, 23, 42, 0.88);
-        color: #f8edc8;
+        background: rgba(15, 23, 42, 0.90);
+        color: #fff1bd;
         border-radius: 16px;
-        border: 1px solid rgba(212,175,55,0.20);
+        border: 1px solid rgba(212,175,55,0.22);
     }}
 
     div[data-testid="stAlert"] * {{
-        color: #f8edc8 !important;
+        color: #fff1bd !important;
     }}
 
     @media (max-width: 900px) {{
@@ -1034,7 +1078,6 @@ def menus_por_tipo_usuario():
 
     permissoes = {
         "Administrador": todos_menus,
-
         "Gerente": [
             "Dashboard",
             "Entradas e Saídas",
@@ -1049,7 +1092,6 @@ def menus_por_tipo_usuario():
             "WhatsApp Manual",
             "Configurações"
         ],
-
         "Financeiro": [
             "Dashboard",
             "Entradas e Saídas",
@@ -1061,7 +1103,6 @@ def menus_por_tipo_usuario():
             "IA Financeira",
             "WhatsApp Manual"
         ],
-
         "Vendedor": [
             "Dashboard",
             "Contas a Receber",
