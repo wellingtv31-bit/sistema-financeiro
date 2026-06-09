@@ -22,9 +22,8 @@ st.set_page_config(
 )
 
 DB_PATH = "sistema_financeiro.db"
-
-# WhatsApp comercial que vai receber os leads da demonstração
 WHATSAPP_COMERCIAL = "5564992774409"
+TAG_DEMO = "__DEMO_GLOBAL_SOFTWARE__"
 
 
 # =====================================================
@@ -47,26 +46,13 @@ if not banner_base64:
 
 
 # =====================================================
-# CSS PREMIUM SEGURO
+# CSS PREMIUM
 # =====================================================
 
 st.markdown("""
 <style>
 #MainMenu, footer, header {
     visibility: hidden;
-}
-
-:root {
-    --navy: #002b3d;
-    --navy2: #001d2b;
-    --navy3: #00384d;
-    --lime: #dfff6b;
-    --lime2: #c9ff4f;
-    --white: #ffffff;
-    --soft: #f4f8fb;
-    --text-dark: #052c3d;
-    --text-gray: #6c7b86;
-    --border: #e5edf2;
 }
 
 .stApp {
@@ -78,9 +64,7 @@ st.markdown("""
 
 .block-container {
     padding-top: 1rem;
-    padding-bottom: 2rem;
-    padding-left: 1.2rem;
-    padding-right: 1.2rem;
+    padding-bottom: 2.5rem;
     max-width: 1380px;
 }
 
@@ -261,7 +245,6 @@ section[data-testid="stSidebar"] img {
 
 .app-header,
 .menu-panel,
-.page-panel,
 .commercial-panel,
 .form-box {
     border-radius: 26px;
@@ -328,7 +311,6 @@ section[data-testid="stSidebar"] img {
     margin-bottom: 12px;
 }
 
-.page-panel,
 .commercial-panel,
 .form-box {
     padding: 28px;
@@ -516,16 +498,6 @@ section[data-testid="stSidebar"] img {
     border: 1px solid rgba(0,43,61,0.20) !important;
     background: rgba(255,255,255,0.98) !important;
     color: #052c3d !important;
-    box-shadow: inset 0 0 12px rgba(0,0,0,0.04);
-}
-
-.stTextArea textarea {
-    min-height: 110px !important;
-}
-
-.stTextInput input::placeholder,
-.stTextArea textarea::placeholder {
-    color: #9aa9b1 !important;
 }
 
 .stSelectbox div[data-baseweb="select"] > div {
@@ -547,7 +519,6 @@ div[role="listbox"] {
     background: white !important;
     border: 1px solid #e5edf2 !important;
     border-radius: 16px !important;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.15) !important;
     color: #052c3d !important;
 }
 
@@ -567,7 +538,6 @@ div[role="listbox"] * {
     padding: 0.82rem 1.2rem;
     font-weight: 950;
     box-shadow: 0 12px 28px rgba(223,255,107,0.20);
-    transition: all 0.18s ease-in-out;
 }
 
 .stButton > button:hover {
@@ -607,25 +577,9 @@ div[role="radiogroup"] label {
     font-weight: 850 !important;
 }
 
-div[role="radiogroup"] label:hover {
-    background: rgba(223,255,107,0.14) !important;
-    border: 1px solid rgba(223,255,107,0.38) !important;
-}
-
 div[role="radiogroup"] label * {
     color: white !important;
     font-weight: 850 !important;
-}
-
-button[data-baseweb="tab"] {
-    font-size: 15px !important;
-    font-weight: 900 !important;
-    color: rgba(255,255,255,0.70) !important;
-}
-
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #dfff6b !important;
-    border-bottom: 2px solid #dfff6b !important;
 }
 
 div[data-testid="stAlert"] {
@@ -654,13 +608,6 @@ div[data-testid="stAlert"] * {
         text-align: center;
         padding: 14px 16px;
         font-size: 14px;
-    }
-
-    .gs-up {
-        width: 52px;
-        height: 52px;
-        left: 14px;
-        bottom: 22px;
     }
 
     .login-title,
@@ -1026,7 +973,482 @@ STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
 
 
 # =====================================================
-# TELA PÚBLICA SEGURA
+# DADOS DE EXEMPLO
+# =====================================================
+
+def existe_dados_exemplo():
+    df = consultar(
+        "SELECT COUNT(*) as total FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id_atual(), f"%{TAG_DEMO}%")
+    )
+    return int(df.iloc[0]["total"]) > 0
+
+
+def carregar_dados_exemplo():
+    if existe_dados_exemplo():
+        return False, "Os dados de exemplo já foram carregados. Para carregar novamente, limpe os dados demo primeiro."
+
+    empresa_id = empresa_id_atual()
+    usuario_id = usuario_id_atual()
+    hoje = date.today()
+    mes_ref = mes_atual_str()
+    criado = datetime.now().isoformat()
+
+    clientes_demo = [
+        ("Mercado Boa Compra", "64990000001", "financeiro@boacompra.com", "11.111.111/0001-11", "Cliente", 15000, "Ativo"),
+        ("Oficina Central", "64990000002", "contato@oficinacentral.com", "22.222.222/0001-22", "Cliente", 8000, "Ativo"),
+        ("Auto Peças Goiás", "64990000003", "vendas@autopecasgoias.com", "33.333.333/0001-33", "Fornecedor", 0, "Ativo"),
+        ("Clínica Vida", "64990000004", "adm@clinicavida.com", "44.444.444/0001-44", "Cliente", 12000, "Ativo"),
+        ("Construtora Sol", "64990000005", "financeiro@construtorasol.com", "55.555.555/0001-55", "Cliente", 30000, "Ativo"),
+        ("Loja Estilo", "64990000006", "contato@lojaestilo.com", "66.666.666/0001-66", "Cliente", 6000, "Ativo"),
+        ("Restaurante Sabor", "64990000007", "adm@restaurantesabor.com", "77.777.777/0001-77", "Cliente", 9000, "Ativo"),
+        ("Transportes Forte", "64990000008", "financeiro@transportesforte.com", "88.888.888/0001-88", "Cliente", 20000, "Ativo"),
+    ]
+
+    for nome, telefone, email, documento, tipo, limite, status in clientes_demo:
+        executar(
+            """
+            INSERT INTO clientes
+            (empresa_id, nome, telefone, email, documento, tipo, observacao, criado_em, limite_credito, status_cliente)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, nome, telefone, email, documento, tipo, f"Cliente de demonstração {TAG_DEMO}", criado, limite, status)
+        )
+
+    estoque_demo = [
+        ("Sistema Financeiro Premium", "GS-001", "Software", 18, 250, 1490, "Global Software", 5),
+        ("Implantação Sistema", "GS-002", "Serviço", 10, 120, 800, "Equipe Interna", 3),
+        ("Treinamento Equipe", "GS-003", "Serviço", 8, 80, 500, "Equipe Interna", 3),
+        ("Suporte Premium", "GS-004", "Assinatura", 25, 60, 297, "Global Software", 8),
+        ("Automação WhatsApp", "GS-005", "Integração", 4, 300, 1200, "Parceiro API", 5),
+        ("Relatório Personalizado", "GS-006", "Serviço", 2, 150, 650, "Global Software", 3),
+    ]
+
+    for produto, codigo, categoria, qtd, custo, venda, fornecedor, minimo in estoque_demo:
+        executar(
+            """
+            INSERT INTO estoque
+            (empresa_id, produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, observacao, criado_em, estoque_minimo, codigo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, produto, categoria, qtd, custo, venda, fornecedor, f"Produto de demonstração {TAG_DEMO}", criado, minimo, codigo)
+        )
+
+    funcionarios_demo = [
+        ("Ana Paula", "Financeiro", "64991000001", "000.000.001-00", hoje - timedelta(days=420), 3200, "CLT", "Ativo"),
+        ("Carlos Mendes", "Vendedor", "64991000002", "000.000.002-00", hoje - timedelta(days=300), 2200, "Comissionado", "Ativo"),
+        ("Juliana Rocha", "Gerente", "64991000003", "000.000.003-00", hoje - timedelta(days=520), 4500, "CLT", "Ativo"),
+        ("Pedro Lima", "Suporte", "64991000004", "000.000.004-00", hoje - timedelta(days=180), 2500, "PJ", "Ativo"),
+    ]
+
+    funcionario_ids = []
+
+    for nome, cargo, telefone, documento, admissao, salario, contrato, status in funcionarios_demo:
+        executar(
+            """
+            INSERT INTO funcionarios
+            (empresa_id, nome, cargo, telefone, documento, data_admissao, salario_base, tipo_contrato, status, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, nome, cargo, telefone, documento, str(admissao), salario, contrato, status, f"Funcionário de demonstração {TAG_DEMO}", criado)
+        )
+
+        ultimo = consultar(
+            "SELECT id FROM funcionarios WHERE empresa_id = ? AND nome = ? ORDER BY id DESC LIMIT 1",
+            (empresa_id, nome)
+        )
+        funcionario_ids.append(int(ultimo.iloc[0]["id"]))
+
+    lancamentos_demo = [
+        (hoje - timedelta(days=45), hoje - timedelta(days=45), "Receita", "Venda", "Venda sistema financeiro - Mercado Boa Compra", "Mercado Boa Compra", 8900, "Pix", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=38), hoje - timedelta(days=38), "Receita", "Serviço", "Implantação sistema - Clínica Vida", "Clínica Vida", 5200, "Transferência", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=32), hoje - timedelta(days=32), "Receita", "Venda", "Licença premium - Construtora Sol", "Construtora Sol", 12400, "Boleto", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=25), hoje - timedelta(days=25), "Receita", "Serviço", "Treinamento equipe - Loja Estilo", "Loja Estilo", 2500, "Pix", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=20), hoje - timedelta(days=20), "Receita", "Venda", "Automação financeira - Restaurante Sabor", "Restaurante Sabor", 6900, "Boleto", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=12), hoje - timedelta(days=12), "Receita", "Comissão", "Comissão implantação - Transportes Forte", "Transportes Forte", 1800, "Pix", "Banco", "Recebido", 1, 1),
+
+        (hoje - timedelta(days=15), hoje - timedelta(days=15), "Despesa fixa", "Aluguel", "Aluguel escritório", "Imobiliária Goiás", 2800, "Boleto", "Banco", "Pago", 1, 1),
+        (hoje - timedelta(days=14), hoje - timedelta(days=14), "Despesa fixa", "Internet", "Internet fibra empresarial", "Operadora", 220, "Pix", "Banco", "Pago", 1, 1),
+        (hoje - timedelta(days=10), hoje - timedelta(days=10), "Despesa variável", "Marketing", "Campanha tráfego pago", "Meta Ads", 1600, "Cartão de crédito", "Cartão", "Pago", 1, 1),
+        (hoje - timedelta(days=8), hoje - timedelta(days=8), "Despesa fixa", "Sistema", "Ferramentas e hospedagem", "Serviços Cloud", 690, "Cartão de crédito", "Cartão", "Pago", 1, 1),
+        (hoje - timedelta(days=5), hoje - timedelta(days=5), "Custo", "Fornecedor", "Custos de implantação e API", "Parceiro API", 1350, "Pix", "Banco", "Pago", 1, 1),
+
+        (hoje - timedelta(days=35), hoje - timedelta(days=12), "Receita", "Recebimento de parcela", "Parcela vencida - Oficina Central", "Oficina Central", 2700, "Boleto", "Banco", "Pendente", 1, 3),
+        (hoje - timedelta(days=30), hoje - timedelta(days=7), "Receita", "Recebimento de parcela", "Mensalidade vencida - Loja Estilo", "Loja Estilo", 1490, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje - timedelta(days=24), hoje - timedelta(days=3), "Receita", "Serviço", "Suporte premium vencido - Restaurante Sabor", "Restaurante Sabor", 297, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje - timedelta(days=18), hoje - timedelta(days=1), "Receita", "Venda", "Licença pendente - Transportes Forte", "Transportes Forte", 3900, "Boleto", "Banco", "Pendente", 1, 1),
+
+        (hoje, hoje + timedelta(days=3), "Receita", "Venda", "Nova proposta - Clínica Vida", "Clínica Vida", 7800, "Pix", "Banco", "Pendente", 1, 1),
+        (hoje, hoje + timedelta(days=7), "Despesa fixa", "Contador", "Honorários contábeis", "Contabilidade Prime", 650, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje, hoje + timedelta(days=10), "Despesa variável", "Manutenção", "Manutenção equipamentos", "Técnico Local", 480, "Pix", "Caixa", "Pendente", 1, 1),
+    ]
+
+    for data_lanc, venc, tipo, categoria, descricao, cliente, valor, forma, conta, status, parc_atual, parc_total in lancamentos_demo:
+        executar(
+            """
+            INSERT INTO lancamentos
+            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+            parcela_total, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                empresa_id,
+                usuario_id,
+                str(data_lanc),
+                str(venc),
+                tipo,
+                categoria,
+                descricao,
+                cliente,
+                float(valor),
+                forma,
+                conta,
+                status,
+                parc_atual,
+                parc_total,
+                f"Lançamento de demonstração {TAG_DEMO}",
+                criado
+            )
+        )
+
+    folha_demo = [
+        (funcionario_ids[0], 3200, 6, 25, 0, 200, 0, 150, 0, "Não", "Pago"),
+        (funcionario_ids[1], 2200, 4, 22, 1800, 300, 500, 100, 15000, "Sim", "Pago"),
+        (funcionario_ids[2], 4500, 2, 35, 0, 500, 800, 250, 30000, "Sim", "Pago"),
+        (funcionario_ids[3], 2500, 3, 25, 0, 150, 0, 100, 0, "Não", "Pendente"),
+    ]
+
+    for func_id, salario, horas, valor_hora, comissao, bonus, premiacao, desconto, meta, meta_batida, status in folha_demo:
+        bruto = salario + (horas * valor_hora) + comissao + bonus + premiacao
+        liquido = bruto - desconto
+        executar(
+            """
+            INSERT INTO folha_pagamento
+            (empresa_id, funcionario_id, mes_referencia, salario_base, horas_extras, valor_hora_extra,
+            comissao, bonus, premiacao, desconto, meta_valor, meta_batida, total_bruto, total_liquido,
+            status, data_pagamento, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                empresa_id,
+                func_id,
+                mes_ref,
+                salario,
+                horas,
+                valor_hora,
+                comissao,
+                bonus,
+                premiacao,
+                desconto,
+                meta,
+                meta_batida,
+                bruto,
+                liquido,
+                status,
+                str(hoje),
+                f"Folha de demonstração {TAG_DEMO}",
+                criado
+            )
+        )
+
+    metas_demo = [
+        (funcionario_ids[1], "Meta de vendas de software", 25000, 18400, 800, "Em andamento"),
+        (funcionario_ids[2], "Meta de implantação mensal", 30000, 33000, 1200, "Batida"),
+        (funcionario_ids[0], "Meta de redução de inadimplência", 10000, 7200, 500, "Em andamento"),
+        (funcionario_ids[3], "Meta de tickets de suporte", 100, 88, 300, "Em andamento"),
+    ]
+
+    for func_id, desc, meta, realizado, premio, status in metas_demo:
+        executar(
+            """
+            INSERT INTO metas
+            (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, func_id, mes_ref, f"[DEMO] {desc} {TAG_DEMO}", meta, realizado, premio, status, criado)
+        )
+
+    return True, "Dados de exemplo carregados com sucesso."
+
+
+def limpar_dados_exemplo():
+    empresa_id = empresa_id_atual()
+
+    executar(
+        "DELETE FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM clientes WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM estoque WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM folha_pagamento WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM metas WHERE empresa_id = ? AND descricao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM funcionarios WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    return True, "Dados de exemplo removidos com sucesso."
+
+
+# =====================================================
+# CARREGAMENTO
+# =====================================================
+
+def empresa_id_atual():
+    return int(st.session_state.usuario["empresa_id"])
+
+
+def usuario_id_atual():
+    return int(st.session_state.usuario["id"])
+
+
+def tipo_usuario_atual():
+    return st.session_state.usuario["tipo"]
+
+
+def carregar_lancamentos():
+    df = consultar(
+        """
+        SELECT *
+        FROM lancamentos
+        WHERE empresa_id = ?
+        ORDER BY vencimento ASC, data DESC, id DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+    if not df.empty:
+        df["data"] = pd.to_datetime(df["data"])
+        df["vencimento"] = pd.to_datetime(df["vencimento"])
+        df["mes"] = df["data"].dt.strftime("%Y-%m")
+        df["status_real"] = df.apply(lambda x: status_automatico(x["status"], x["vencimento"]), axis=1)
+
+    return df
+
+
+def carregar_clientes():
+    return consultar("SELECT * FROM clientes WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
+
+
+def carregar_estoque():
+    return consultar("SELECT * FROM estoque WHERE empresa_id = ? ORDER BY produto ASC", (empresa_id_atual(),))
+
+
+def carregar_funcionarios():
+    return consultar("SELECT * FROM funcionarios WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
+
+
+def carregar_folha():
+    return consultar(
+        """
+        SELECT f.*, fun.nome as funcionario_nome, fun.cargo
+        FROM folha_pagamento f
+        LEFT JOIN funcionarios fun ON fun.id = f.funcionario_id
+        WHERE f.empresa_id = ?
+        ORDER BY f.mes_referencia DESC, fun.nome ASC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def carregar_metas():
+    return consultar(
+        """
+        SELECT m.*, fun.nome as funcionario_nome
+        FROM metas m
+        LEFT JOIN funcionarios fun ON fun.id = m.funcionario_id
+        WHERE m.empresa_id = ?
+        ORDER BY m.mes_referencia DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+# =====================================================
+# CÁLCULOS
+# =====================================================
+
+def calcular_indicadores(df):
+    if df.empty:
+        return {
+            "receita": 0,
+            "saidas": 0,
+            "lucro": 0,
+            "caixa": 0,
+            "pagas_mes": 0,
+            "receber": 0,
+            "pagar": 0,
+            "vencidas": 0
+        }
+
+    receita = df[df["tipo"] == "Receita"]["valor"].sum()
+    saidas = df[df["tipo"] != "Receita"]["valor"].sum()
+    lucro = receita - saidas
+    caixa = lucro
+
+    inicio = pd.to_datetime(inicio_mes())
+    fim = pd.to_datetime(date.today())
+
+    pagas_mes = df[
+        (df["status"].isin(["Pago", "Recebido"])) &
+        (df["data"] >= inicio) &
+        (df["data"] <= fim)
+    ]["valor"].sum()
+
+    pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
+    receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
+    pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
+    vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
+
+    return {
+        "receita": receita,
+        "saidas": saidas,
+        "lucro": lucro,
+        "caixa": caixa,
+        "pagas_mes": pagas_mes,
+        "receber": receber,
+        "pagar": pagar,
+        "vencidas": vencidas
+    }
+
+
+def calcular_folha_total(salario, horas, valor_hora, comissao, bonus, premiacao, desconto):
+    bruto = salario + (horas * valor_hora) + comissao + bonus + premiacao
+    liquido = bruto - desconto
+    return bruto, liquido
+
+
+# =====================================================
+# PDF
+# =====================================================
+
+def gerar_pdf_relatorio(df, ind):
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.units import cm
+    except Exception:
+        return None
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    largura, altura = A4
+    y = altura - 2 * cm
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(2 * cm, y, "Relatório Financeiro - Global Software")
+    y -= 1 * cm
+
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(2 * cm, y, f"Empresa: {st.session_state.usuario['empresa_nome']}")
+    y -= 0.5 * cm
+    pdf.drawString(2 * cm, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    y -= 1 * cm
+
+    linhas = [
+        ("Receita", moeda(ind["receita"])),
+        ("Saídas", moeda(ind["saidas"])),
+        ("Lucro", moeda(ind["lucro"])),
+        ("Caixa", moeda(ind["caixa"])),
+        ("Contas pagas no mês", moeda(ind["pagas_mes"])),
+        ("A receber", moeda(ind["receber"])),
+        ("A pagar", moeda(ind["pagar"])),
+        ("Vencidas", moeda(ind["vencidas"])),
+    ]
+
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Resumo")
+    y -= 0.7 * cm
+    pdf.setFont("Helvetica", 10)
+
+    for nome, valor in linhas:
+        pdf.drawString(2 * cm, y, f"{nome}: {valor}")
+        y -= 0.45 * cm
+
+    y -= 0.5 * cm
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Últimos lançamentos")
+    y -= 0.7 * cm
+    pdf.setFont("Helvetica", 8)
+
+    if not df.empty:
+        ultimos = df.sort_values("data", ascending=False).head(18)
+
+        for _, row in ultimos.iterrows():
+            linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
+            pdf.drawString(2 * cm, y, linha[:110])
+            y -= 0.35 * cm
+
+            if y < 2 * cm:
+                pdf.showPage()
+                y = altura - 2 * cm
+                pdf.setFont("Helvetica", 8)
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
+
+
+# =====================================================
+# IA AJUDA
+# =====================================================
+
+def responder_ajuda(pergunta):
+    p = pergunta.lower()
+
+    if "lançamento" in p or "entrada" in p or "saída" in p or "despesa" in p or "receita" in p:
+        return "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status."
+
+    if "cliente" in p and "inadimplente" in p:
+        return "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. O sistema considera inadimplente todo cliente que possui Receita vencida."
+
+    if "cliente" in p or "crm" in p:
+        return "Para cadastrar clientes, vá em **Clientes / CRM**. Preencha nome, telefone, e-mail, documento, limite de crédito, tipo e observação."
+
+    if "estoque" in p or "produto" in p:
+        return "Para controlar estoque, acesse **Estoque**. Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
+
+    if "funcionário" in p or "funcionario" in p:
+        return "Para cadastrar funcionários, acesse **Funcionários**. Informe nome, cargo, telefone, documento, data de admissão, salário base, tipo de contrato e status."
+
+    if "folha" in p or "pagamento" in p or "salário" in p or "salario" in p:
+        return "Para montar a folha de pagamento, acesse **Folha de Pagamento**. Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
+
+    if "meta" in p or "premiação" in p or "premiacao" in p or "bônus" in p or "bonus" in p:
+        return "Para cadastrar metas e premiações, vá em **Metas e Premiações**. Selecione funcionário, informe meta, realizado, prêmio e status."
+
+    if "relatório" in p or "relatorio" in p or "pdf" in p:
+        return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
+
+    if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
+        return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
+
+    if "dashboard" in p or "painel" in p:
+        return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
+
+    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, relatórios, WhatsApp e dashboard."
+
+
+# =====================================================
+# TELA PÚBLICA
 # =====================================================
 
 def tela_publica_comercial():
@@ -1102,6 +1524,7 @@ def tela_publica_comercial():
         st.info("Painel demonstrativo com indicadores financeiros, inadimplentes, estoque e folha.")
 
     col_acesso, col_vazio = st.columns([1, 1])
+
     with col_acesso:
         if st.button("Acessar área do sistema", use_container_width=True, key="btn_login_landing"):
             st.session_state.tela_login_ativa = True
@@ -1181,198 +1604,6 @@ def tela_publica_comercial():
     <div style="font-size:42px;color:#002b3d;">🤖</div>
     <h3 style="color:#052c3d;">IA de ajuda</h3>
     <p class="gs-muted">O usuário pergunta como usar o sistema e recebe orientação dentro da própria plataforma.</p>
-</div>
-""")
-
-    html("""
-<div class="gs-section-white">
-    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
-        PARA CADA PERFIL
-    </div>
-    <div class="gs-section-title">
-        Valor real para cada nível da organização.
-    </div>
-</div>
-""")
-
-    p1, p2, p3 = st.columns(3)
-
-    with p1:
-        html("""
-<div class="gs-card-white">
-    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">▥</div>
-    <h2 style="color:#052c3d;">Estratégico</h2>
-    <p class="gs-muted"><b>Do achismo à previsibilidade.</b></p>
-    <p class="gs-muted">DRE, fluxo de caixa, receita, saídas, lucro, contas pagas e valores a receber em uma visão clara.</p>
-</div>
-""")
-
-    with p2:
-        html("""
-<div class="gs-card-white">
-    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">👥</div>
-    <h2 style="color:#052c3d;">Gerencial</h2>
-    <p class="gs-muted"><b>O fim do caos operacional.</b></p>
-    <p class="gs-muted">Clientes, inadimplência, estoque, usuários, permissões e controle de processos internos.</p>
-</div>
-""")
-
-    with p3:
-        html("""
-<div class="gs-card-white">
-    <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">⚙</div>
-    <h2 style="color:#052c3d;">Operacional</h2>
-    <p class="gs-muted"><b>Adeus ao trabalho manual.</b></p>
-    <p class="gs-muted">Lançamentos, cobranças por WhatsApp, folha completa, metas, premiações e relatórios.</p>
-</div>
-""")
-
-    html("""
-<div class="gs-section-dark">
-    <div style="text-align:center;color:rgba(255,255,255,0.42);letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
-        DEMONSTRAÇÃO
-    </div>
-    <div class="gs-section-title-dark">
-        Veja como a Global Software funciona na prática.
-    </div>
-</div>
-""")
-
-    demo1, demo2 = st.columns([1, 1])
-
-    with demo1:
-        html("""
-<div class="gs-card-dark" style="text-align:center;">
-    <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
-    <div style="font-size:30px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
-    <p class="gs-muted-light">Navegue pela demonstração e veja como controlar financeiro, estoque, clientes, funcionários e folha.</p>
-    <span class="gs-btn-fake">Demonstração Interativa →</span>
-</div>
-""")
-
-    with demo2:
-        st.markdown("### O que o cliente vê na prática")
-        st.success("✅ Dashboard executivo")
-        st.success("✅ Clientes inadimplentes")
-        st.success("✅ Estoque e lucro previsto")
-        st.success("✅ Folha de pagamento completa")
-        st.success("✅ Relatórios e IA de ajuda")
-
-    html("""
-<div class="gs-section-white">
-    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
-        IMPLANTAÇÃO
-    </div>
-    <div class="gs-section-title">
-        Um processo ágil, consultivo e feito junto com você.
-    </div>
-</div>
-""")
-
-    e1, e2, e3, e4 = st.columns(4)
-
-    etapas = [
-        ("🚀", "ETAPA 1", "Configuração inicial", "Parametrizamos empresa, usuários, categorias e permissões."),
-        ("🎓", "ETAPA 2", "Treinamento", "Ensinamos como cadastrar lançamentos, clientes, estoque e folha."),
-        ("▶", "ETAPA 3", "Go-live", "A empresa começa a usar o sistema com acompanhamento."),
-        ("🎧", "ETAPA 4", "Suporte rápido", "Atendimento humano por WhatsApp e melhoria contínua."),
-    ]
-
-    for coluna, etapa in zip([e1, e2, e3, e4], etapas):
-        with coluna:
-            icone, etapa_nome, titulo, texto = etapa
-            html(f"""
-<div class="gs-card-white" style="text-align:center;min-height:290px;">
-    <div style="width:72px;height:72px;border-radius:20px;background:#002b3d;color:#dfff6b;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;">{icone}</div>
-    <div style="color:#92a1aa;letter-spacing:2px;font-weight:850;font-size:13px;text-transform:uppercase;margin-bottom:10px;">{etapa_nome}</div>
-    <h3 style="color:#052c3d;">{titulo}</h3>
-    <p class="gs-muted">{texto}</p>
-</div>
-""")
-
-    html("""
-<div class="gs-section-dark">
-    <div class="gs-section-title-dark" style="text-align:left;">
-        Veja o que nossos clientes dizem sobre a <span style="color:#dfff6b;">transformação</span> financeira.
-    </div>
-</div>
-""")
-
-    d1, d2, d3 = st.columns(3)
-
-    depoimentos = [
-        ("Cliente varejo", "Pequena empresa", "Antes era tudo no caderno e no WhatsApp. Agora consigo ver contas, clientes, pagamentos e estoque em poucos minutos."),
-        ("Gestor comercial", "Equipe de vendas", "A folha de pagamento ficou muito mais organizada. Comissão, bônus e metas ficaram claros para todos."),
-        ("Empresário", "Prestação de serviços", "O dashboard mostrou onde a empresa estava perdendo dinheiro. Foi uma virada na nossa gestão."),
-    ]
-
-    for coluna, dep in zip([d1, d2, d3], depoimentos):
-        with coluna:
-            nome, cargo, texto = dep
-            html(f"""
-<div class="gs-card-white">
-    <div style="color:#dfff6b;font-size:52px;line-height:0.7;margin-bottom:22px;font-weight:950;">“</div>
-    <p class="gs-muted" style="font-size:17px;">{texto}</p>
-    <hr style="border:none;border-top:1px solid #e5edf2;margin:22px 0;">
-    <h3 style="color:#052c3d;margin-bottom:0;">{nome}</h3>
-    <p class="gs-muted">{cargo}</p>
-</div>
-""")
-
-    html("""
-<div class="gs-section-white">
-    <div class="gs-section-title">
-        Por que a Global Software?
-    </div>
-</div>
-""")
-
-    c1, c2 = st.columns(2)
-
-    with c1:
-        html("""
-<div class="gs-card-white">
-    <h3 style="color:#052c3d;">✅ Global Software</h3>
-    <p class="gs-muted"><b>Financeiro completo</b><br>Entradas, saídas, parcelas, contas pagas, contas a receber e inadimplentes.</p>
-    <p class="gs-muted"><b>Gestão operacional</b><br>Clientes, estoque, funcionários, folha de pagamento, metas e relatórios.</p>
-    <p class="gs-muted"><b>Suporte e treinamento</b><br>Implantação guiada, WhatsApp e IA de ajuda dentro do sistema.</p>
-</div>
-""")
-
-    with c2:
-        html("""
-<div class="gs-card-white">
-    <h3 style="color:#052c3d;">❌ Planilhas soltas</h3>
-    <p class="gs-muted"><b>Dados espalhados</b><br>Caderno, WhatsApp, planilhas diferentes e pouca visão do negócio.</p>
-    <p class="gs-muted"><b>Controle manual</b><br>Mais chance de esquecer vencimentos, perder cobrança e não acompanhar lucro real.</p>
-    <p class="gs-muted"><b>Difícil de crescer</b><br>Quanto mais a empresa cresce, mais confuso o controle fica.</p>
-</div>
-""")
-
-    html("""
-<div class="gs-section-white">
-    <div class="gs-section-title">
-        Perguntas Frequentes
-    </div>
-</div>
-""")
-
-    perguntas = [
-        "Quanto tempo leva para começar a usar?",
-        "Consigo cadastrar vários usuários?",
-        "O sistema controla clientes inadimplentes?",
-        "Tem controle de estoque e folha de pagamento?",
-        "Consigo gerar relatórios?",
-        "Tem treinamento para minha equipe?",
-    ]
-
-    for pergunta in perguntas:
-        html(f"""
-<div class="gs-card-white" style="padding:22px 26px;margin-bottom:12px;">
-    <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;color:#052c3d;font-size:20px;font-weight:950;">
-        {pergunta}
-        <span>⌄</span>
-    </div>
 </div>
 """)
 
@@ -1585,18 +1816,6 @@ def tela_login():
 # PERMISSÕES
 # =====================================================
 
-def empresa_id_atual():
-    return int(st.session_state.usuario["empresa_id"])
-
-
-def usuario_id_atual():
-    return int(st.session_state.usuario["id"])
-
-
-def tipo_usuario_atual():
-    return st.session_state.usuario["tipo"]
-
-
 def menus_por_tipo_usuario():
     tipo = tipo_usuario_atual()
 
@@ -1639,233 +1858,6 @@ def menus_por_tipo_usuario():
     }
 
     return permissoes.get(tipo, ["Dashboard"])
-
-
-# =====================================================
-# CARREGAMENTO
-# =====================================================
-
-def carregar_lancamentos():
-    df = consultar(
-        """
-        SELECT *
-        FROM lancamentos
-        WHERE empresa_id = ?
-        ORDER BY vencimento ASC, data DESC, id DESC
-        """,
-        (empresa_id_atual(),)
-    )
-
-    if not df.empty:
-        df["data"] = pd.to_datetime(df["data"])
-        df["vencimento"] = pd.to_datetime(df["vencimento"])
-        df["mes"] = df["data"].dt.strftime("%Y-%m")
-        df["status_real"] = df.apply(lambda x: status_automatico(x["status"], x["vencimento"]), axis=1)
-
-    return df
-
-
-def carregar_clientes():
-    return consultar("SELECT * FROM clientes WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
-
-
-def carregar_estoque():
-    return consultar("SELECT * FROM estoque WHERE empresa_id = ? ORDER BY produto ASC", (empresa_id_atual(),))
-
-
-def carregar_funcionarios():
-    return consultar("SELECT * FROM funcionarios WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
-
-
-def carregar_folha():
-    return consultar(
-        """
-        SELECT f.*, fun.nome as funcionario_nome, fun.cargo
-        FROM folha_pagamento f
-        LEFT JOIN funcionarios fun ON fun.id = f.funcionario_id
-        WHERE f.empresa_id = ?
-        ORDER BY f.mes_referencia DESC, fun.nome ASC
-        """,
-        (empresa_id_atual(),)
-    )
-
-
-def carregar_metas():
-    return consultar(
-        """
-        SELECT m.*, fun.nome as funcionario_nome
-        FROM metas m
-        LEFT JOIN funcionarios fun ON fun.id = m.funcionario_id
-        WHERE m.empresa_id = ?
-        ORDER BY m.mes_referencia DESC
-        """,
-        (empresa_id_atual(),)
-    )
-
-
-# =====================================================
-# CÁLCULOS
-# =====================================================
-
-def calcular_indicadores(df):
-    if df.empty:
-        return {
-            "receita": 0,
-            "saidas": 0,
-            "lucro": 0,
-            "caixa": 0,
-            "pagas_mes": 0,
-            "receber": 0,
-            "pagar": 0,
-            "vencidas": 0
-        }
-
-    receita = df[df["tipo"] == "Receita"]["valor"].sum()
-    saidas = df[df["tipo"] != "Receita"]["valor"].sum()
-    lucro = receita - saidas
-    caixa = lucro
-
-    inicio = pd.to_datetime(inicio_mes())
-    fim = pd.to_datetime(date.today())
-
-    pagas_mes = df[
-        (df["status"].isin(["Pago", "Recebido"])) &
-        (df["data"] >= inicio) &
-        (df["data"] <= fim)
-    ]["valor"].sum()
-
-    pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
-    receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
-    pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
-    vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
-
-    return {
-        "receita": receita,
-        "saidas": saidas,
-        "lucro": lucro,
-        "caixa": caixa,
-        "pagas_mes": pagas_mes,
-        "receber": receber,
-        "pagar": pagar,
-        "vencidas": vencidas
-    }
-
-
-def calcular_folha_total(salario, horas, valor_hora, comissao, bonus, premiacao, desconto):
-    bruto = salario + (horas * valor_hora) + comissao + bonus + premiacao
-    liquido = bruto - desconto
-    return bruto, liquido
-
-
-# =====================================================
-# PDF
-# =====================================================
-
-def gerar_pdf_relatorio(df, ind):
-    try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.units import cm
-    except Exception:
-        return None
-
-    buffer = BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    largura, altura = A4
-    y = altura - 2 * cm
-
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(2 * cm, y, "Relatório Financeiro")
-    y -= 1 * cm
-
-    pdf.setFont("Helvetica", 10)
-    pdf.drawString(2 * cm, y, f"Empresa: {st.session_state.usuario['empresa_nome']}")
-    y -= 0.5 * cm
-    pdf.drawString(2 * cm, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-    y -= 1 * cm
-
-    linhas = [
-        ("Receita", moeda(ind["receita"])),
-        ("Saídas", moeda(ind["saidas"])),
-        ("Lucro", moeda(ind["lucro"])),
-        ("Caixa", moeda(ind["caixa"])),
-        ("Contas pagas no mês", moeda(ind["pagas_mes"])),
-        ("A receber", moeda(ind["receber"])),
-        ("A pagar", moeda(ind["pagar"])),
-        ("Vencidas", moeda(ind["vencidas"])),
-    ]
-
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(2 * cm, y, "Resumo")
-    y -= 0.7 * cm
-    pdf.setFont("Helvetica", 10)
-
-    for nome, valor in linhas:
-        pdf.drawString(2 * cm, y, f"{nome}: {valor}")
-        y -= 0.45 * cm
-
-    y -= 0.5 * cm
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(2 * cm, y, "Últimos lançamentos")
-    y -= 0.7 * cm
-    pdf.setFont("Helvetica", 8)
-
-    if not df.empty:
-        ultimos = df.sort_values("data", ascending=False).head(18)
-
-        for _, row in ultimos.iterrows():
-            linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
-            pdf.drawString(2 * cm, y, linha[:110])
-            y -= 0.35 * cm
-
-            if y < 2 * cm:
-                pdf.showPage()
-                y = altura - 2 * cm
-                pdf.setFont("Helvetica", 8)
-
-    pdf.save()
-    buffer.seek(0)
-    return buffer
-
-
-# =====================================================
-# IA AJUDA
-# =====================================================
-
-def responder_ajuda(pergunta):
-    p = pergunta.lower()
-
-    if "lançamento" in p or "entrada" in p or "saída" in p or "despesa" in p or "receita" in p:
-        return "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status."
-
-    if "cliente" in p and "inadimplente" in p:
-        return "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. O sistema considera inadimplente todo cliente que possui Receita vencida."
-
-    if "cliente" in p or "crm" in p:
-        return "Para cadastrar clientes, vá em **Clientes / CRM**. Preencha nome, telefone, e-mail, documento, limite de crédito, tipo e observação."
-
-    if "estoque" in p or "produto" in p:
-        return "Para controlar estoque, acesse **Estoque**. Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
-
-    if "funcionário" in p or "funcionario" in p:
-        return "Para cadastrar funcionários, acesse **Funcionários**. Informe nome, cargo, telefone, documento, data de admissão, salário base, tipo de contrato e status."
-
-    if "folha" in p or "pagamento" in p or "salário" in p or "salario" in p:
-        return "Para montar a folha de pagamento, acesse **Folha de Pagamento**. Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
-
-    if "meta" in p or "premiação" in p or "premiacao" in p or "bônus" in p or "bonus" in p:
-        return "Para cadastrar metas e premiações, vá em **Metas e Premiações**. Selecione funcionário, informe meta, realizado, prêmio e status."
-
-    if "relatório" in p or "relatorio" in p or "pdf" in p:
-        return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
-
-    if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
-        return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
-
-    if "dashboard" in p or "painel" in p:
-        return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
-
-    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, relatórios, WhatsApp e dashboard."
 
 
 # =====================================================
@@ -2052,7 +2044,7 @@ def app():
         st.divider()
 
         if df.empty:
-            st.info("Nenhum lançamento cadastrado ainda.")
+            st.info("Nenhum lançamento cadastrado ainda. Vá em Configurações e clique em Carregar dados de exemplo.")
         else:
             col_g1, col_g2 = st.columns(2)
 
@@ -2724,6 +2716,9 @@ Controle metas da equipe, realizado, prêmio e status.
 
 **10. Relatórios**  
 Baixe PDF e planilhas CSV.
+
+**11. Dados de exemplo**  
+Vá em **Configurações** e clique em **Carregar dados de exemplo** para apresentar o sistema bonito para clientes.
 """)
 
         st.divider()
@@ -2825,6 +2820,37 @@ Baixe PDF e planilhas CSV.
                 st.success("Configurações atualizadas.")
                 st.rerun()
 
+        st.divider()
+        st.subheader("📥 Dados de exemplo para demonstração")
+
+        if existe_dados_exemplo():
+            st.info("Os dados de exemplo já estão carregados. Agora o Dashboard, gráficos, clientes, estoque, folha e metas já aparecem preenchidos.")
+        else:
+            st.warning("Nenhum dado de exemplo carregado. Clique no botão abaixo para preencher o sistema automaticamente.")
+
+        col_demo1, col_demo2 = st.columns(2)
+
+        with col_demo1:
+            if st.button("📥 Carregar dados de exemplo", use_container_width=True, key="btn_carregar_demo"):
+                ok, msg = carregar_dados_exemplo()
+                if ok:
+                    st.success(msg)
+                else:
+                    st.warning(msg)
+                st.rerun()
+
+        with col_demo2:
+            if st.button("🧹 Limpar dados de exemplo", use_container_width=True, key="btn_limpar_demo"):
+                ok, msg = limpar_dados_exemplo()
+                if ok:
+                    st.success(msg)
+                else:
+                    st.warning(msg)
+                st.rerun()
+
+        st.caption("A limpeza remove somente os dados marcados como demonstração. Dados reais cadastrados sem a marca demo não serão apagados.")
+
+        st.divider()
         st.subheader("Backup local")
 
         backup = {
