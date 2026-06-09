@@ -10,6 +10,10 @@ from io import BytesIO
 from urllib.parse import quote
 
 
+# =====================================================
+# CONFIGURAÇÃO INICIAL
+# =====================================================
+
 st.set_page_config(
     page_title="Sistema Financeiro Premium",
     page_icon="💼",
@@ -19,6 +23,10 @@ st.set_page_config(
 
 DB_PATH = "sistema_financeiro.db"
 
+
+# =====================================================
+# IMAGENS
+# =====================================================
 
 def imagem_base64(caminho):
     arquivo = Path(caminho)
@@ -37,18 +45,14 @@ if not banner_base64:
     banner_base64 = logo_base64
 
 
+# =====================================================
+# CSS PREMIUM PRETO + DOURADO
+# =====================================================
+
 st.markdown(
     """
     <style>
-    #MainMenu {
-        visibility: hidden;
-    }
-
-    footer {
-        visibility: hidden;
-    }
-
-    header {
+    #MainMenu, footer, header {
         visibility: hidden;
     }
 
@@ -57,10 +61,10 @@ st.markdown(
         --gold-light: #f7df8a;
         --gold-soft: #f3e3ad;
         --gold-dark: #9f7418;
-        --bg-dark: #020617;
-        --panel: rgba(8, 20, 35, 0.88);
-        --panel-strong: rgba(3, 10, 20, 0.96);
-        --border-gold: rgba(212, 175, 55, 0.32);
+        --dark: #020617;
+        --panel: rgba(8, 20, 35, 0.90);
+        --panel2: rgba(4, 14, 26, 0.96);
+        --border: rgba(212, 175, 55, 0.32);
     }
 
     .stApp {
@@ -79,11 +83,20 @@ st.markdown(
         max-width: 1360px;
     }
 
+    h1, h2, h3, h4 {
+        color: var(--gold) !important;
+        font-weight: 950 !important;
+        letter-spacing: -0.4px;
+        text-shadow: 0 0 18px rgba(212,175,55,0.12);
+    }
+
+    p, label, span, div {
+        color: var(--gold-soft);
+    }
+
     section[data-testid="stSidebar"] {
-        background:
-            linear-gradient(180deg, rgba(2,6,23,0.99) 0%, rgba(7,21,38,0.99) 100%);
+        background: linear-gradient(180deg, rgba(2,6,23,0.99), rgba(7,21,38,0.99));
         border-right: 1px solid rgba(212,175,55,0.26);
-        box-shadow: 10px 0 28px rgba(0,0,0,0.28);
     }
 
     section[data-testid="stSidebar"] * {
@@ -95,17 +108,6 @@ st.markdown(
         border: 1px solid rgba(212,175,55,0.34);
         box-shadow: 0 12px 28px rgba(0,0,0,0.34);
         margin-bottom: 12px;
-    }
-
-    h1, h2, h3, h4 {
-        color: var(--gold) !important;
-        font-weight: 950 !important;
-        letter-spacing: -0.4px;
-        text-shadow: 0 0 18px rgba(212,175,55,0.10);
-    }
-
-    p, label, span, div {
-        color: var(--gold-soft);
     }
 
     .login-header {
@@ -135,22 +137,14 @@ st.markdown(
     .login-info {
         margin: 18px auto 28px auto;
         max-width: 980px;
-        background:
-            linear-gradient(90deg, rgba(212,175,55,0.20), rgba(212,175,55,0.08));
+        background: linear-gradient(90deg, rgba(212,175,55,0.20), rgba(212,175,55,0.08));
         border: 1px solid rgba(212,175,55,0.38);
         border-radius: 18px;
         padding: 14px 18px;
         text-align: center;
         color: #fff3c4;
         font-size: 15px;
-        box-shadow:
-            0 10px 26px rgba(0,0,0,0.28),
-            inset 0 0 18px rgba(212,175,55,0.04);
-    }
-
-    .login-main-wrap {
-        max-width: 1280px;
-        margin: 0 auto;
+        box-shadow: 0 10px 26px rgba(0,0,0,0.28), inset 0 0 18px rgba(212,175,55,0.04);
     }
 
     .hero-box {
@@ -160,9 +154,7 @@ st.markdown(
         background:
             linear-gradient(180deg, rgba(2,6,23,0.22), rgba(2,6,23,0.80)),
             linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.03));
-        box-shadow:
-            0 26px 70px rgba(0,0,0,0.40),
-            0 0 0 1px rgba(212,175,55,0.05);
+        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
         overflow: hidden;
         position: relative;
         display: flex;
@@ -201,7 +193,6 @@ st.markdown(
         font-size: 31px;
         margin-bottom: 8px;
         color: var(--gold) !important;
-        text-shadow: 0 0 18px rgba(212,175,55,0.18);
     }
 
     .hero-content p {
@@ -218,9 +209,7 @@ st.markdown(
         background:
             radial-gradient(circle at center, rgba(212,175,55,0.08), transparent 56%),
             linear-gradient(180deg, rgba(2,6,23,0.40), rgba(2,6,23,0.82));
-        box-shadow:
-            0 26px 70px rgba(0,0,0,0.40),
-            inset 0 0 30px rgba(212,175,55,0.04);
+        box-shadow: 0 26px 70px rgba(0,0,0,0.40), inset 0 0 30px rgba(212,175,55,0.04);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -233,49 +222,31 @@ st.markdown(
         max-width: 380px;
         display: block;
         margin: 0 auto;
-        filter:
-            drop-shadow(0 20px 34px rgba(0,0,0,0.34))
-            drop-shadow(0 0 18px rgba(212,175,55,0.12));
+        filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34)) drop-shadow(0 0 18px rgba(212,175,55,0.12));
+    }
+
+    .form-box,
+    .app-header,
+    .menu-panel,
+    .page-panel,
+    .commercial-panel {
+        border-radius: 28px;
+        border: 1px solid rgba(212,175,55,0.28);
+        background: linear-gradient(180deg, rgba(8,20,35,0.90), rgba(4,14,26,0.94));
+        box-shadow: 0 26px 70px rgba(0,0,0,0.34), inset 0 0 20px rgba(212,175,55,0.03);
     }
 
     .form-box {
         margin-top: 28px;
         padding: 30px;
-        border-radius: 28px;
-        border: 1px solid rgba(212,175,55,0.28);
-        background:
-            linear-gradient(180deg, rgba(8,20,35,0.90), rgba(4,14,26,0.94));
-        box-shadow:
-            0 26px 70px rgba(0,0,0,0.38),
-            inset 0 0 20px rgba(212,175,55,0.03);
-    }
-
-    .section-title {
-        font-size: 27px;
-        font-weight: 950;
-        color: var(--gold);
-        margin-bottom: 8px;
-        text-shadow: 0 0 14px rgba(212,175,55,0.12);
-    }
-
-    .section-subtitle {
-        color: #eadba6;
-        font-size: 15px;
-        margin-bottom: 18px;
     }
 
     .app-header {
-        width: 100%;
-        border-radius: 28px;
         padding: 28px 30px;
         margin-bottom: 20px;
         background:
             linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.98)),
             radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 36%);
-        border: 1px solid rgba(212,175,55,0.32);
-        box-shadow:
-            0 26px 70px rgba(0,0,0,0.34),
-            inset 0 0 24px rgba(212,175,55,0.03);
     }
 
     .app-header-top {
@@ -292,7 +263,6 @@ st.markdown(
         color: var(--gold);
         line-height: 1.1;
         margin-bottom: 6px;
-        text-shadow: 0 0 18px rgba(212,175,55,0.14);
     }
 
     .app-subtitle {
@@ -317,38 +287,120 @@ st.markdown(
         font-size: 13px;
         font-weight: 850;
         white-space: nowrap;
-        box-shadow: inset 0 0 12px rgba(212,175,55,0.04);
     }
 
     .menu-panel {
-        border-radius: 26px;
-        padding: 19px;
+        padding: 18px;
         margin-bottom: 22px;
-        background:
-            linear-gradient(180deg, rgba(8,20,35,0.84), rgba(4,14,26,0.92));
-        border: 1px solid rgba(212,175,55,0.24);
-        box-shadow:
-            0 16px 40px rgba(0,0,0,0.24),
-            inset 0 0 18px rgba(212,175,55,0.03);
     }
 
     .menu-title {
         font-size: 16px;
         font-weight: 950;
         color: var(--gold);
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .page-panel {
-        border-radius: 26px;
         padding: 24px;
         margin-bottom: 22px;
+    }
+
+    .commercial-panel {
+        padding: 32px;
+        margin-bottom: 22px;
+    }
+
+    .commercial-hero {
+        padding: 36px;
+        border-radius: 30px;
+        border: 1px solid rgba(212,175,55,0.34);
         background:
-            linear-gradient(180deg, rgba(8,20,35,0.76), rgba(4,14,26,0.86));
-        border: 1px solid rgba(212,175,55,0.22);
-        box-shadow:
-            0 16px 40px rgba(0,0,0,0.22),
-            inset 0 0 18px rgba(212,175,55,0.02);
+            radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 38%),
+            linear-gradient(135deg, rgba(8,20,35,0.96), rgba(3,10,20,0.98));
+        box-shadow: 0 28px 75px rgba(0,0,0,0.38), inset 0 0 24px rgba(212,175,55,0.04);
+        margin-bottom: 24px;
+    }
+
+    .commercial-title {
+        font-size: 44px;
+        font-weight: 950;
+        color: var(--gold);
+        line-height: 1.08;
+        margin-bottom: 12px;
+    }
+
+    .commercial-subtitle {
+        font-size: 18px;
+        color: #f4e8bd;
+        max-width: 980px;
+        line-height: 1.6;
+    }
+
+    .commercial-tag {
+        display: inline-block;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(212,175,55,0.16);
+        border: 1px solid rgba(212,175,55,0.34);
+        color: #fff1bd;
+        font-weight: 900;
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
+
+    .commercial-card {
+        min-height: 165px;
+        border-radius: 24px;
+        padding: 24px;
+        background:
+            radial-gradient(circle at top right, rgba(212,175,55,0.10), transparent 42%),
+            linear-gradient(145deg, rgba(10,25,45,0.98), rgba(5,15,28,0.98));
+        border: 1px solid rgba(212,175,55,0.28);
+        box-shadow: 0 16px 38px rgba(0,0,0,0.32), inset 0 0 18px rgba(212,175,55,0.03);
+    }
+
+    .commercial-card-title {
+        color: var(--gold);
+        font-size: 20px;
+        font-weight: 950;
+        margin-bottom: 10px;
+    }
+
+    .commercial-card-text {
+        color: #eadba6;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .price-card {
+        min-height: 230px;
+        border-radius: 26px;
+        padding: 26px;
+        background:
+            linear-gradient(180deg, rgba(8,20,35,0.96), rgba(4,14,26,0.98));
+        border: 1px solid rgba(212,175,55,0.32);
+        box-shadow: 0 18px 44px rgba(0,0,0,0.34);
+    }
+
+    .price-title {
+        font-size: 22px;
+        font-weight: 950;
+        color: var(--gold);
+        margin-bottom: 8px;
+    }
+
+    .price-value {
+        font-size: 32px;
+        font-weight: 950;
+        color: #fff1bd;
+        margin-bottom: 8px;
+    }
+
+    .price-desc {
+        font-size: 14px;
+        color: #eadba6;
+        line-height: 1.5;
     }
 
     .metric-card {
@@ -357,9 +409,7 @@ st.markdown(
             linear-gradient(145deg, rgba(10,25,45,0.98), rgba(5,15,28,0.98));
         border-radius: 24px;
         padding: 24px;
-        box-shadow:
-            0 16px 38px rgba(0,0,0,0.36),
-            inset 0 0 18px rgba(212,175,55,0.03);
+        box-shadow: 0 16px 38px rgba(0,0,0,0.36), inset 0 0 18px rgba(212,175,55,0.03);
         border: 1px solid rgba(212,175,55,0.28);
         border-left: 7px solid var(--gold);
         min-height: 130px;
@@ -378,13 +428,25 @@ st.markdown(
         font-size: 30px;
         font-weight: 950;
         margin-top: 6px;
-        text-shadow: 0 0 16px rgba(212,175,55,0.08);
     }
 
     .metric-sub {
         color: #eadba6;
         font-size: 13px;
         margin-top: 3px;
+    }
+
+    .section-title {
+        font-size: 27px;
+        font-weight: 950;
+        color: var(--gold);
+        margin-bottom: 8px;
+    }
+
+    .section-subtitle {
+        color: #eadba6;
+        font-size: 15px;
+        margin-bottom: 18px;
     }
 
     .success-box {
@@ -439,10 +501,7 @@ st.markdown(
         min-height: 44px;
     }
 
-    .stSelectbox span {
-        color: #fff1bd !important;
-    }
-
+    .stSelectbox span,
     div[data-baseweb="select"] * {
         color: #fff1bd !important;
     }
@@ -502,15 +561,6 @@ st.markdown(
         border: 1px solid rgba(212,175,55,0.32) !important;
     }
 
-    li[role="option"]:hover *,
-    div[role="option"]:hover *,
-    li[role="option"]:focus *,
-    div[role="option"]:focus * {
-        color: #fff1bd !important;
-        background: transparent !important;
-        background-color: transparent !important;
-    }
-
     li[aria-selected="true"],
     div[aria-selected="true"],
     li[role="option"][aria-selected="true"],
@@ -522,22 +572,10 @@ st.markdown(
     }
 
     li[aria-selected="true"] *,
-    div[aria-selected="true"] *,
-    li[role="option"][aria-selected="true"] *,
-    div[role="option"][aria-selected="true"] * {
+    div[aria-selected="true"] * {
         color: #fff1bd !important;
         background: transparent !important;
         background-color: transparent !important;
-    }
-
-    div[data-baseweb="menu"] div:hover {
-        background-color: rgba(212,175,55,0.16) !important;
-        color: #fff1bd !important;
-    }
-
-    div[data-baseweb="menu"] div:hover * {
-        background-color: transparent !important;
-        color: #fff1bd !important;
     }
 
     .stButton > button {
@@ -547,9 +585,7 @@ st.markdown(
         border-radius: 15px;
         padding: 0.74rem 1rem;
         font-weight: 950;
-        box-shadow:
-            0 12px 28px rgba(212,175,55,0.20),
-            inset 0 0 10px rgba(255,255,255,0.10);
+        box-shadow: 0 12px 28px rgba(212,175,55,0.20), inset 0 0 10px rgba(255,255,255,0.10);
         transition: all 0.18s ease-in-out;
     }
 
@@ -575,6 +611,33 @@ st.markdown(
         padding: 8px;
         border: 1px solid rgba(212,175,55,0.22);
         box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+    }
+
+    div[role="radiogroup"] {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    div[role="radiogroup"] label {
+        background: rgba(15,23,42,0.88) !important;
+        border: 1px solid rgba(212,175,55,0.28) !important;
+        border-radius: 999px !important;
+        padding: 10px 14px !important;
+        margin: 0 !important;
+        color: #fff1bd !important;
+        font-weight: 850 !important;
+        box-shadow: inset 0 0 12px rgba(212,175,55,0.03);
+    }
+
+    div[role="radiogroup"] label:hover {
+        background: rgba(212,175,55,0.16) !important;
+        border: 1px solid rgba(212,175,55,0.45) !important;
+    }
+
+    div[role="radiogroup"] label * {
+        color: #fff1bd !important;
+        font-weight: 850 !important;
     }
 
     button[data-baseweb="tab"] {
@@ -612,8 +675,9 @@ st.markdown(
             padding: 20px;
         }
 
-        .hero-content h3 {
-            font-size: 24px;
+        .hero-content h3,
+        .commercial-title {
+            font-size: 28px;
         }
 
         .app-title {
@@ -629,6 +693,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+# =====================================================
+# FUNÇÕES BÁSICAS
+# =====================================================
 
 def conectar():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -714,6 +782,31 @@ def card(titulo, valor, subtitulo=""):
     )
 
 
+def comercial_card(titulo, texto):
+    st.markdown(
+        f"""
+        <div class="commercial-card">
+            <div class="commercial-card-title">{titulo}</div>
+            <div class="commercial-card-text">{texto}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+def preco_card(titulo, valor, texto):
+    st.markdown(
+        f"""
+        <div class="price-card">
+            <div class="price-title">{titulo}</div>
+            <div class="price-value">{valor}</div>
+            <div class="price-desc">{texto}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 def cabecalho_interno(menu_atual):
     usuario = st.session_state.usuario
 
@@ -738,6 +831,10 @@ def cabecalho_interno(menu_atual):
         unsafe_allow_html=True
     )
 
+
+# =====================================================
+# BANCO DE DADOS
+# =====================================================
 
 def criar_tabelas():
     con = conectar()
@@ -831,7 +928,7 @@ def criar_admin_padrao():
             INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
             VALUES (?, ?, ?, ?, ?)
             """,
-            ("Minha Empresa", "", "", "", datetime.now().isoformat())
+            ("Global Software", "", "", "", datetime.now().isoformat())
         )
 
     empresa = consultar("SELECT id FROM empresas ORDER BY id ASC LIMIT 1").iloc[0]["id"]
@@ -859,6 +956,10 @@ def criar_admin_padrao():
             )
         )
 
+
+# =====================================================
+# DADOS FIXOS
+# =====================================================
 
 TIPOS_USUARIO = [
     "Administrador",
@@ -951,18 +1052,20 @@ STATUS_OPCOES = [
 ]
 
 
+# =====================================================
+# LOGIN
+# =====================================================
+
 def tela_login():
     st.markdown(
         """
-        <div class="login-main-wrap">
-            <div class="login-header">
-                <div class="login-title">💼 Sistema Financeiro Premium</div>
-                <div class="login-subtitle">
-                    Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes, estoque e permissões.
-                </div>
-                <div class="login-info">
-                    <b>Login padrão para teste:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
-                </div>
+        <div class="login-header">
+            <div class="login-title">💼 Sistema Financeiro Premium</div>
+            <div class="login-subtitle">
+                Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes, estoque e permissões.
+            </div>
+            <div class="login-info">
+                <b>Login padrão para teste:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
             </div>
         </div>
         """,
@@ -980,7 +1083,7 @@ def tela_login():
         st.markdown(
             f"""
             <div class="hero-box">
-                <div class="hero-inner" style="{hero_bg} background-size: contain; background-position: center center; background-repeat: no-repeat;">
+                <div class="hero-inner" style="{hero_bg}">
                     <div class="hero-overlay"></div>
                     <div class="hero-content">
                         <h3>Gestão inteligente e profissional</h3>
@@ -1110,6 +1213,10 @@ def tela_login():
     st.markdown("</div>", unsafe_allow_html=True)
 
 
+# =====================================================
+# USUÁRIO / PERMISSÕES
+# =====================================================
+
 def empresa_id_atual():
     return int(st.session_state.usuario["empresa_id"])
 
@@ -1127,6 +1234,7 @@ def menus_por_tipo_usuario():
 
     todos_menus = [
         "Dashboard",
+        "Apresentação Comercial",
         "Entradas e Saídas",
         "Parcelas",
         "Contas a Pagar/Receber",
@@ -1146,6 +1254,7 @@ def menus_por_tipo_usuario():
 
         "Gerente": [
             "Dashboard",
+            "Apresentação Comercial",
             "Entradas e Saídas",
             "Parcelas",
             "Contas a Pagar/Receber",
@@ -1173,6 +1282,7 @@ def menus_por_tipo_usuario():
 
         "Vendedor": [
             "Dashboard",
+            "Apresentação Comercial",
             "Contas a Receber",
             "CRM / Clientes",
             "WhatsApp Manual"
@@ -1181,6 +1291,10 @@ def menus_por_tipo_usuario():
 
     return permissoes.get(tipo, ["Dashboard"])
 
+
+# =====================================================
+# CARREGAR DADOS
+# =====================================================
 
 def carregar_lancamentos():
     df = consultar(
@@ -1228,6 +1342,10 @@ def carregar_estoque():
         (empresa_id_atual(),)
     )
 
+
+# =====================================================
+# CÁLCULOS
+# =====================================================
 
 def calcular_indicadores(df):
     if df.empty:
@@ -1297,6 +1415,10 @@ def calcular_indicadores(df):
         "ponto_equilibrio": ponto_equilibrio
     }
 
+
+# =====================================================
+# PDF
+# =====================================================
 
 def gerar_pdf_relatorio(df, ind):
     try:
@@ -1371,6 +1493,153 @@ def gerar_pdf_relatorio(df, ind):
     return buffer
 
 
+# =====================================================
+# TELA COMERCIAL
+# =====================================================
+
+def tela_apresentacao_comercial():
+    st.markdown(
+        """
+        <div class="commercial-hero">
+            <div class="commercial-tag">GLOBAL SOFTWARE • Sistema Financeiro Premium</div>
+            <div class="commercial-title">Controle financeiro profissional para empresas que querem crescer com organização.</div>
+            <div class="commercial-subtitle">
+                Uma plataforma moderna para controlar entradas, saídas, parcelas, contas a pagar, contas a receber,
+                clientes, estoque, relatórios e usuários em um só lugar.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        comercial_card(
+            "O problema",
+            "Muitas empresas vendem bem, mas não sabem exatamente quanto lucram, quanto têm a receber, quanto devem pagar e para onde o dinheiro está indo."
+        )
+
+    with c2:
+        comercial_card(
+            "A solução",
+            "O Sistema Financeiro Premium organiza os dados financeiros em painéis claros, com relatórios, filtros, parcelas, clientes e visão gerencial."
+        )
+
+    with c3:
+        comercial_card(
+            "O resultado",
+            "Mais controle, menos perda de dinheiro, decisões mais rápidas e uma empresa preparada para crescer com gestão profissional."
+        )
+
+    st.write("")
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 💼 Principais módulos do sistema")
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    with m1:
+        comercial_card("Dashboard", "Indicadores financeiros, lucro, caixa, contas vencidas, a pagar, a receber e ponto de equilíbrio.")
+
+    with m2:
+        comercial_card("Lançamentos", "Controle de receitas, custos, despesas, investimentos, dívidas e retiradas do dono.")
+
+    with m3:
+        comercial_card("Parcelas", "Cadastro e acompanhamento de vendas ou despesas parceladas com vencimentos automáticos.")
+
+    with m4:
+        comercial_card("Relatórios", "Exportação de relatórios em PDF e CSV para análise, prestação de contas e acompanhamento.")
+
+    st.write("")
+
+    m5, m6, m7, m8 = st.columns(4)
+
+    with m5:
+        comercial_card("CRM / Clientes", "Cadastro de clientes, fornecedores, contatos, documentos e observações comerciais.")
+
+    with m6:
+        comercial_card("Estoque", "Controle de produtos, quantidade, custo, preço de venda e fornecedor.")
+
+    with m7:
+        comercial_card("Usuários", "Perfis de acesso por administrador, gerente, financeiro e vendedor.")
+
+    with m8:
+        comercial_card("WhatsApp", "Geração de mensagens e links de cobrança para facilitar contato com clientes.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 🎯 Para quem é indicado?")
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        comercial_card("Pequenas empresas", "Empresas que precisam sair do caderno, bloco de notas ou planilhas soltas.")
+
+    with p2:
+        comercial_card("Lojas e comércios", "Negócios que vendem, compram, parcelam e precisam controlar pagamentos e recebimentos.")
+
+    with p3:
+        comercial_card("Prestadores de serviço", "Profissionais e equipes que precisam acompanhar faturamento, despesas e clientes.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 💰 Sugestão de planos comerciais")
+
+    plano1, plano2, plano3 = st.columns(3)
+
+    with plano1:
+        preco_card(
+            "Plano Inicial",
+            "R$ 97/mês",
+            "Ideal para pequenos negócios que precisam controlar entradas, saídas, clientes e relatórios básicos."
+        )
+
+    with plano2:
+        preco_card(
+            "Plano Profissional",
+            "R$ 197/mês",
+            "Ideal para empresas com parcelas, contas a receber, estoque, usuários e relatórios financeiros."
+        )
+
+    with plano3:
+        preco_card(
+            "Plano Premium",
+            "Sob consulta",
+            "Sistema personalizado com identidade visual, implantação, treinamento e futuras integrações."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 📲 Mensagem pronta para enviar ao cliente")
+
+    mensagem_padrao = (
+        "Olá! Tudo bem? Quero te apresentar o Sistema Financeiro Premium da Global Software. "
+        "Ele ajuda sua empresa a controlar entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque e relatórios em um só lugar. "
+        "É ideal para empresas que querem parar de perder controle financeiro e começar a tomar decisões com dados reais. "
+        "Posso te mostrar uma demonstração rápida?"
+    )
+
+    mensagem = st.text_area("Mensagem comercial", value=mensagem_padrao, height=150, key="msg_comercial")
+    telefone = st.text_input("Telefone do cliente com DDD", placeholder="62999999999", key="tel_comercial")
+
+    if st.button("Gerar link de apresentação no WhatsApp", use_container_width=True, key="btn_comercial_whatsapp"):
+        if telefone:
+            link = f"https://wa.me/55{telefone}?text={quote(mensagem)}"
+            st.markdown(f"[Abrir WhatsApp com mensagem comercial]({link})")
+        else:
+            st.warning("Digite o telefone do cliente com DDD.")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# =====================================================
+# APP PRINCIPAL
+# =====================================================
+
 def app():
     usuario = st.session_state.usuario
 
@@ -1390,30 +1659,36 @@ def app():
     if "menu_atual" not in st.session_state:
         st.session_state.menu_atual = menus_liberados[0]
 
+    if st.session_state.menu_atual not in menus_liberados:
+        st.session_state.menu_atual = menus_liberados[0]
+
     cabecalho_interno(st.session_state.menu_atual)
 
     st.markdown('<div class="menu-panel">', unsafe_allow_html=True)
     st.markdown('<div class="menu-title">Menu principal do sistema</div>', unsafe_allow_html=True)
 
-    col_menu, col_sair = st.columns([4, 1])
+    menu = st.radio(
+        "Menu principal",
+        menus_liberados,
+        index=menus_liberados.index(st.session_state.menu_atual),
+        horizontal=True,
+        label_visibility="collapsed",
+        key="menu_radio"
+    )
 
-    with col_menu:
-        menu = st.selectbox(
-            "Escolha a área do sistema",
-            menus_liberados,
-            index=menus_liberados.index(st.session_state.menu_atual) if st.session_state.menu_atual in menus_liberados else 0,
-            key="select_menu_principal"
-        )
+    st.session_state.menu_atual = menu
 
-        st.session_state.menu_atual = menu
+    st.write("")
 
-    with col_sair:
-        st.write("")
-        st.write("")
+    col_sair1, col_sair2, col_sair3 = st.columns([6, 1, 1])
+
+    with col_sair3:
         if st.button("Sair", use_container_width=True, key="btn_sair_tela"):
             del st.session_state.usuario
+
             if "menu_atual" in st.session_state:
                 del st.session_state.menu_atual
+
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1560,6 +1835,10 @@ def app():
                     use_container_width=True,
                     hide_index=True
                 )
+
+    elif menu == "Apresentação Comercial":
+        st.title("🚀 Apresentação Comercial")
+        tela_apresentacao_comercial()
 
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
@@ -2170,6 +2449,10 @@ def app():
             key="download_backup_json"
         )
 
+
+# =====================================================
+# INICIAR SISTEMA
+# =====================================================
 
 criar_tabelas()
 criar_admin_padrao()
