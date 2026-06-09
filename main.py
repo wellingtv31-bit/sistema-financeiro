@@ -295,11 +295,14 @@ def criar_admin_padrao():
             ("Minha Empresa", "", "", "", datetime.now().isoformat())
         )
 
-    usuarios = consultar("SELECT * FROM usuarios")
+    empresa = consultar("SELECT id FROM empresas ORDER BY id ASC LIMIT 1").iloc[0]["id"]
 
-    if usuarios.empty:
-        empresa = consultar("SELECT id FROM empresas LIMIT 1").iloc[0]["id"]
+    admin = consultar(
+        "SELECT * FROM usuarios WHERE email = ?",
+        ("admin@empresa.com",)
+    )
 
+    if admin.empty:
         executar(
             """
             INSERT INTO usuarios
@@ -501,7 +504,7 @@ def tela_login():
 
 
 # =====================================================
-# USUÁRIO ATUAL
+# USUÁRIO ATUAL E PERMISSÕES
 # =====================================================
 
 def empresa_id_atual():
@@ -514,6 +517,66 @@ def usuario_id_atual():
 
 def tipo_usuario_atual():
     return st.session_state.usuario["tipo"]
+
+
+def menus_por_tipo_usuario():
+    tipo = tipo_usuario_atual()
+
+    todos_menus = [
+        "Dashboard",
+        "Entradas e Saídas",
+        "Parcelas",
+        "Contas a Pagar/Receber",
+        "Contas a Receber",
+        "Pix",
+        "Relatórios PDF",
+        "IA Financeira",
+        "CRM / Clientes",
+        "Estoque",
+        "WhatsApp Manual",
+        "Usuários",
+        "Configurações"
+    ]
+
+    permissoes = {
+        "Administrador": todos_menus,
+
+        "Gerente": [
+            "Dashboard",
+            "Entradas e Saídas",
+            "Parcelas",
+            "Contas a Pagar/Receber",
+            "Contas a Receber",
+            "Pix",
+            "Relatórios PDF",
+            "IA Financeira",
+            "CRM / Clientes",
+            "Estoque",
+            "WhatsApp Manual",
+            "Configurações"
+        ],
+
+        "Financeiro": [
+            "Dashboard",
+            "Entradas e Saídas",
+            "Parcelas",
+            "Contas a Pagar/Receber",
+            "Contas a Receber",
+            "Pix",
+            "Relatórios PDF",
+            "IA Financeira",
+            "WhatsApp Manual"
+        ],
+
+        "Vendedor": [
+            "Dashboard",
+            "Contas a Receber",
+            "CRM / Clientes",
+            "WhatsApp Manual"
+        ]
+    }
+
+    return permissoes.get(tipo, ["Dashboard"])
 
 
 # =====================================================
@@ -729,23 +792,11 @@ def app():
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
     st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
 
+    menus_liberados = menus_por_tipo_usuario()
+
     menu = st.sidebar.radio(
         "Menu",
-        [
-            "Dashboard",
-            "Entradas e Saídas",
-            "Parcelas",
-            "Contas a Pagar/Receber",
-            "Contas a Receber",
-            "Pix",
-            "Relatórios PDF",
-            "IA Financeira",
-            "CRM / Clientes",
-            "Estoque",
-            "WhatsApp Manual",
-            "Usuários",
-            "Configurações"
-        ],
+        menus_liberados,
         key="menu_principal"
     )
 
@@ -1256,14 +1307,16 @@ def app():
             st.markdown(f"[Abrir WhatsApp]({link})")
 
     # =================================================
-    # USUÁRIOS
+    # USUÁRIOS E PERMISSÕES
     # =================================================
     elif menu == "Usuários":
-        st.title("👤 Usuários")
+        st.title("👤 Usuários e Permissões")
 
         if tipo_usuario_atual() != "Administrador":
             st.warning("Somente administrador pode acessar esta área.")
         else:
+            st.subheader("Criar novo usuário")
+
             with st.form("form_usuario"):
                 col1, col2 = st.columns(2)
 
@@ -1273,44 +1326,172 @@ def app():
                     senha = st.text_input("Senha", type="password", key="user_senha")
 
                 with col2:
-                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO, key="user_tipo")
-                    ativo = st.checkbox("Ativo", value=True, key="user_ativo")
+                    tipo_user = st.selectbox(
+                        "Tipo de usuário",
+                        TIPOS_USUARIO,
+                        key="user_tipo"
+                    )
 
-                if st.form_submit_button("Criar usuário"):
-                    try:
-                        executar(
-                            """
-                            INSERT INTO usuarios
-                            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                empresa_id_atual(),
-                                nome,
-                                email,
-                                hash_senha(senha),
-                                tipo_user,
-                                int(ativo),
-                                datetime.now().isoformat()
+                    ativo = st.checkbox(
+                        "Usuário ativo",
+                        value=True,
+                        key="user_ativo"
+                    )
+
+                st.info(
+                    """
+                    Permissões:
+
+                    Administrador: acesso total ao sistema.
+
+                    Gerente: financeiro, estoque, CRM, relatórios e configurações.
+
+                    Financeiro: lançamentos, contas, parcelas, Pix, relatórios e IA.
+
+                    Vendedor: clientes, WhatsApp, contas a receber e dashboard.
+                    """
+                )
+
+                criar = st.form_submit_button("Criar usuário", use_container_width=True)
+
+                if criar:
+                    if not nome or not email or not senha:
+                        st.warning("Preencha nome, e-mail e senha.")
+                    else:
+                        try:
+                            executar(
+                                """
+                                INSERT INTO usuarios
+                                (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    empresa_id_atual(),
+                                    nome,
+                                    email,
+                                    hash_senha(senha),
+                                    tipo_user,
+                                    int(ativo),
+                                    datetime.now().isoformat()
+                                )
                             )
-                        )
 
-                        st.success("Usuário criado.")
-                        st.rerun()
+                            st.success("Usuário criado com sucesso.")
+                            st.rerun()
 
-                    except Exception as e:
-                        st.error(f"Erro: {e}")
+                        except Exception as e:
+                            st.error(f"Erro ao criar usuário: {e}")
+
+            st.divider()
+
+            st.subheader("Usuários cadastrados")
 
             usuarios = consultar(
                 """
                 SELECT id, nome, email, tipo, ativo, criado_em
                 FROM usuarios
                 WHERE empresa_id = ?
+                ORDER BY id DESC
                 """,
                 (empresa_id_atual(),)
             )
 
-            st.dataframe(usuarios, use_container_width=True)
+            if usuarios.empty:
+                st.info("Nenhum usuário cadastrado.")
+            else:
+                st.dataframe(usuarios, use_container_width=True)
+
+                st.subheader("Alterar acesso do usuário")
+
+                id_usuario = st.selectbox(
+                    "Selecione o usuário",
+                    usuarios["id"].tolist(),
+                    format_func=lambda x: f"{usuarios[usuarios['id'] == x].iloc[0]['nome']} - {usuarios[usuarios['id'] == x].iloc[0]['tipo']}",
+                    key="editar_usuario_id"
+                )
+
+                usuario_edit = usuarios[usuarios["id"] == id_usuario].iloc[0]
+
+                colu1, colu2, colu3 = st.columns(3)
+
+                with colu1:
+                    novo_tipo = st.selectbox(
+                        "Novo tipo de acesso",
+                        TIPOS_USUARIO,
+                        index=TIPOS_USUARIO.index(usuario_edit["tipo"]) if usuario_edit["tipo"] in TIPOS_USUARIO else 0,
+                        key="editar_usuario_tipo"
+                    )
+
+                with colu2:
+                    novo_ativo = st.selectbox(
+                        "Status",
+                        ["Ativo", "Bloqueado"],
+                        index=0 if usuario_edit["ativo"] == 1 else 1,
+                        key="editar_usuario_status"
+                    )
+
+                with colu3:
+                    nova_senha = st.text_input(
+                        "Nova senha",
+                        type="password",
+                        key="editar_usuario_senha"
+                    )
+
+                col_btn1, col_btn2 = st.columns(2)
+
+                if col_btn1.button("Salvar alterações", key="btn_salvar_usuario"):
+                    ativo_int = 1 if novo_ativo == "Ativo" else 0
+
+                    if nova_senha:
+                        executar(
+                            """
+                            UPDATE usuarios
+                            SET tipo = ?, ativo = ?, senha_hash = ?
+                            WHERE id = ? AND empresa_id = ?
+                            """,
+                            (
+                                novo_tipo,
+                                ativo_int,
+                                hash_senha(nova_senha),
+                                int(id_usuario),
+                                empresa_id_atual()
+                            )
+                        )
+                    else:
+                        executar(
+                            """
+                            UPDATE usuarios
+                            SET tipo = ?, ativo = ?
+                            WHERE id = ? AND empresa_id = ?
+                            """,
+                            (
+                                novo_tipo,
+                                ativo_int,
+                                int(id_usuario),
+                                empresa_id_atual()
+                            )
+                        )
+
+                    st.success("Usuário atualizado com sucesso.")
+                    st.rerun()
+
+                if col_btn2.button("Excluir usuário", key="btn_excluir_usuario"):
+                    if int(id_usuario) == usuario_id_atual():
+                        st.error("Você não pode excluir o próprio usuário logado.")
+                    else:
+                        executar(
+                            """
+                            DELETE FROM usuarios
+                            WHERE id = ? AND empresa_id = ?
+                            """,
+                            (
+                                int(id_usuario),
+                                empresa_id_atual()
+                            )
+                        )
+
+                        st.warning("Usuário excluído.")
+                        st.rerun()
 
     # =================================================
     # CONFIGURAÇÕES
