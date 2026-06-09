@@ -18,7 +18,7 @@ st.set_page_config(
     page_title="Sistema Financeiro Premium",
     page_icon="💼",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 DB_PATH = "sistema_financeiro.db"
@@ -254,7 +254,7 @@ st.markdown(
         width: 100%;
         border-radius: 26px;
         padding: 26px 28px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         background:
             linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.96)),
             radial-gradient(circle at top right, rgba(34,211,238,0.16), transparent 35%);
@@ -300,6 +300,23 @@ st.markdown(
         font-size: 13px;
         font-weight: 800;
         white-space: nowrap;
+    }}
+
+    .menu-panel {{
+        border-radius: 24px;
+        padding: 18px;
+        margin-bottom: 22px;
+        background:
+            linear-gradient(180deg, rgba(8,20,35,0.82), rgba(4,14,26,0.90));
+        border: 1px solid rgba(34,211,238,0.20);
+        box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+    }}
+
+    .menu-title {{
+        font-size: 16px;
+        font-weight: 900;
+        color: #67e8f9;
+        margin-bottom: 10px;
     }}
 
     .page-panel {{
@@ -1272,22 +1289,43 @@ def app():
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
     st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
 
-    menus_liberados = menus_por_tipo_usuario()
-
-    menu = st.sidebar.radio(
-        "Menu",
-        menus_liberados,
-        key="menu_principal"
-    )
-
-    if st.sidebar.button("Sair", key="btn_sair"):
-        del st.session_state.usuario
-        st.rerun()
-
-    cabecalho_interno(menu)
-
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
+
+    menus_liberados = menus_por_tipo_usuario()
+
+    if "menu_atual" not in st.session_state:
+        st.session_state.menu_atual = menus_liberados[0]
+
+    cabecalho_interno(st.session_state.menu_atual)
+
+    st.markdown('<div class="menu-panel">', unsafe_allow_html=True)
+    st.markdown('<div class="menu-title">Menu principal do sistema</div>', unsafe_allow_html=True)
+
+    col_menu, col_sair = st.columns([4, 1])
+
+    with col_menu:
+        menu = st.selectbox(
+            "Escolha a área do sistema",
+            menus_liberados,
+            index=menus_liberados.index(st.session_state.menu_atual) if st.session_state.menu_atual in menus_liberados else 0,
+            key="select_menu_principal"
+        )
+
+        st.session_state.menu_atual = menu
+
+    with col_sair:
+        st.write("")
+        st.write("")
+        if st.button("Sair", use_container_width=True, key="btn_sair_tela"):
+            del st.session_state.usuario
+            if "menu_atual" in st.session_state:
+                del st.session_state.menu_atual
+            st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    menu = st.session_state.menu_atual
 
     if menu == "Dashboard":
         st.title("📊 Dashboard Financeiro Premium")
