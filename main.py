@@ -44,11 +44,10 @@ if not banner_base64:
 
 
 # =====================================================
-# CSS PREMIUM
+# CSS PREMIUM SEGURO
 # =====================================================
 
-st.markdown(
-    """
+st.markdown("""
 <style>
 #MainMenu, footer, header {
     visibility: hidden;
@@ -68,12 +67,14 @@ st.markdown(
 }
 
 .stApp {
-    background: linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
+    background:
+        radial-gradient(circle at top left, rgba(223,255,107,0.10), transparent 32%),
+        linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
     color: #ffffff;
 }
 
 .block-container {
-    padding-top: 0.8rem;
+    padding-top: 1rem;
     padding-bottom: 2rem;
     padding-left: 1.2rem;
     padding-right: 1.2rem;
@@ -108,6 +109,7 @@ section[data-testid="stSidebar"] img {
     border: 1px solid rgba(223,255,107,0.22);
     box-shadow: 0 18px 44px rgba(0,0,0,0.25);
     color: white;
+    margin-bottom: 18px;
 }
 
 .gs-card-white {
@@ -117,10 +119,28 @@ section[data-testid="stSidebar"] img {
     border: 1px solid #e5edf2;
     box-shadow: 0 18px 55px rgba(0,43,61,0.08);
     color: #052c3d;
+    margin-bottom: 18px;
+}
+
+.gs-section-white {
+    background: #f7fbfd;
+    border-radius: 34px;
+    padding: 46px 30px;
+    margin: 24px 0;
+    color: #052c3d;
+}
+
+.gs-section-dark {
+    background: #002b3d;
+    border-radius: 34px;
+    padding: 46px 30px;
+    margin: 24px 0;
+    color: white;
+    border: 1px solid rgba(223,255,107,0.16);
 }
 
 .gs-title-big {
-    font-size: 58px;
+    font-size: 56px;
     line-height: 1.04;
     font-weight: 950;
     color: white;
@@ -132,7 +152,7 @@ section[data-testid="stSidebar"] img {
 }
 
 .gs-subtitle {
-    font-size: 21px;
+    font-size: 20px;
     line-height: 1.62;
     color: rgba(255,255,255,0.72);
 }
@@ -146,24 +166,8 @@ section[data-testid="stSidebar"] img {
     margin-bottom: 18px;
 }
 
-.gs-section-white {
-    background: #f7fbfd;
-    border-radius: 34px;
-    padding: 54px 34px;
-    margin: 24px 0;
-    color: #052c3d;
-}
-
-.gs-section-dark {
-    background: #002b3d;
-    border-radius: 34px;
-    padding: 54px 34px;
-    margin: 24px 0;
-    color: white;
-}
-
 .gs-section-title {
-    font-size: 46px;
+    font-size: 42px;
     line-height: 1.12;
     font-weight: 950;
     color: #052c3d;
@@ -172,7 +176,7 @@ section[data-testid="stSidebar"] img {
 }
 
 .gs-section-title-dark {
-    font-size: 46px;
+    font-size: 42px;
     line-height: 1.12;
     font-weight: 950;
     color: white;
@@ -226,10 +230,10 @@ section[data-testid="stSidebar"] img {
     color: #dfff6b !important;
     border: 1px solid rgba(223,255,107,0.38);
     box-shadow: 0 18px 55px rgba(0,43,61,0.36);
-    padding: 17px 34px;
+    padding: 15px 30px;
     border-radius: 999px;
     font-weight: 950;
-    font-size: 17px;
+    font-size: 16px;
     text-decoration: none !important;
 }
 
@@ -238,8 +242,8 @@ section[data-testid="stSidebar"] img {
     left: 22px;
     bottom: 22px;
     z-index: 9998;
-    width: 58px;
-    height: 58px;
+    width: 56px;
+    height: 56px;
     border-radius: 999px;
     background: #002b3d;
     color: white !important;
@@ -247,7 +251,7 @@ section[data-testid="stSidebar"] img {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 26px;
     text-decoration: none !important;
     box-shadow: 0 18px 45px rgba(0,0,0,0.18);
 }
@@ -634,24 +638,24 @@ div[data-testid="stAlert"] * {
 
 @media (max-width: 980px) {
     .gs-title-big {
-        font-size: 40px;
+        font-size: 38px;
     }
 
     .gs-section-title,
     .gs-section-title-dark {
-        font-size: 32px;
+        font-size: 30px;
     }
 
     .gs-floating {
         width: calc(100% - 120px);
         text-align: center;
-        padding: 15px 18px;
-        font-size: 15px;
+        padding: 14px 16px;
+        font-size: 14px;
     }
 
     .gs-up {
-        width: 54px;
-        height: 54px;
+        width: 52px;
+        height: 52px;
         left: 14px;
         bottom: 22px;
     }
@@ -667,14 +671,16 @@ div[data-testid="stAlert"] * {
     }
 }
 </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 
 # =====================================================
 # FUNÇÕES BÁSICAS
 # =====================================================
+
+def html(codigo):
+    st.markdown(codigo.strip(), unsafe_allow_html=True)
+
 
 def conectar():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -748,48 +754,38 @@ def status_automatico(status, vencimento):
 
 
 def card(titulo, valor, subtitulo=""):
-    st.markdown(
-        f"""
+    html(f"""
 <div class="metric-card">
     <div class="metric-title">{titulo}</div>
     <div class="metric-value">{valor}</div>
     <div class="metric-sub">{subtitulo}</div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
 
 def comercial_card(titulo, texto):
-    st.markdown(
-        f"""
+    html(f"""
 <div class="commercial-card">
     <div class="commercial-card-title">{titulo}</div>
     <div class="commercial-card-text">{texto}</div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
 
 def preco_card(titulo, valor, texto):
-    st.markdown(
-        f"""
+    html(f"""
 <div class="price-card">
     <div class="price-title">{titulo}</div>
     <div class="price-value">{valor}</div>
     <div class="price-desc">{texto}</div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
 
 def cabecalho_interno(menu_atual):
     usuario = st.session_state.usuario
 
-    st.markdown(
-        f"""
+    html(f"""
 <div class="app-header">
     <div class="app-header-top">
         <div>
@@ -805,9 +801,7 @@ def cabecalho_interno(menu_atual):
         </div>
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
 
 # =====================================================
@@ -1029,20 +1023,19 @@ STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
 
 
 # =====================================================
-# TELA PÚBLICA CORRIGIDA
+# TELA PÚBLICA SEGURA
 # =====================================================
 
 def tela_publica_comercial():
-    st.markdown('<a class="gs-up" href="#topo">↑</a>', unsafe_allow_html=True)
-    st.markdown('<a class="gs-floating" href="#demo">Agendar Demonstração →</a>', unsafe_allow_html=True)
+    html('<a class="gs-up" href="#topo">↑</a>')
+    html('<a class="gs-floating" href="#demo">Agendar Demonstração →</a>')
 
     logo_html = "GS"
     if logo_base64:
         logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="width:100%;height:100%;object-fit:contain;padding:5px;">'
 
-    st.markdown(
-        f"""
-<div id="topo" class="gs-card-dark" style="margin-bottom:24px;">
+    html(f"""
+<div id="topo" class="gs-card-dark">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:14px;">
             <div style="width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,0.06);border:1px solid rgba(223,255,107,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#dfff6b;font-weight:950;font-size:18px;">
@@ -1058,15 +1051,12 @@ def tela_publica_comercial():
         </div>
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     col_hero, col_mock = st.columns([1.05, 0.95], gap="large")
 
     with col_hero:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-dark" style="min-height:520px;display:flex;align-items:center;">
     <div>
         <div class="gs-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
@@ -1084,47 +1074,29 @@ def tela_publica_comercial():
         <span class="gs-btn-dark">Acessar sistema</span>
     </div>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with col_mock:
-        st.markdown(
-            """
-<div class="gs-card-white" style="min-height:520px;display:flex;align-items:center;">
-    <div style="width:100%;">
-        <div style="height:12px;width:44%;background:#dfe9ef;border-radius:20px;margin-bottom:22px;"></div>
+        st.markdown("### 📊 Demonstração do painel")
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
-                <div style="color:#78909c;font-size:13px;font-weight:800;">Receita do mês</div>
-                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 84.750</div>
-            </div>
-            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
-                <div style="color:#78909c;font-size:13px;font-weight:800;">Lucro previsto</div>
-                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 26.400</div>
-            </div>
-        </div>
+        m1, m2 = st.columns(2)
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
-                <div style="color:#78909c;font-size:13px;font-weight:800;">Inadimplentes</div>
-                <div style="color:#002b3d;font-size:24px;font-weight:950;">12</div>
-            </div>
-            <div style="background:#f2f7fa;border:1px solid #e5edf2;border-radius:18px;padding:18px;">
-                <div style="color:#78909c;font-size:13px;font-weight:800;">Folha do mês</div>
-                <div style="color:#002b3d;font-size:24px;font-weight:950;">R$ 18.900</div>
-            </div>
-        </div>
+        with m1:
+            st.metric("Receita do mês", "R$ 84.750")
+            st.metric("Inadimplentes", "12")
 
-        <div style="height:170px;border-radius:20px;background:linear-gradient(90deg, rgba(223,255,107,0.35), rgba(0,43,61,0.18));border:1px solid #e3edf2;"></div>
-    </div>
-</div>
-            """,
-            unsafe_allow_html=True
-        )
+        with m2:
+            st.metric("Lucro previsto", "R$ 26.400")
+            st.metric("Folha do mês", "R$ 18.900")
 
-    st.write("")
+        dados_demo = pd.DataFrame({
+            "Mês": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
+            "Receita": [18000, 25000, 31000, 46000, 62000, 84750],
+            "Despesas": [9000, 12000, 18000, 22000, 31000, 38900],
+        })
+
+        st.line_chart(dados_demo.set_index("Mês"))
+        st.info("Painel demonstrativo com indicadores financeiros, inadimplentes, estoque e folha.")
 
     col_acesso, col_vazio = st.columns([1, 1])
     with col_acesso:
@@ -1132,19 +1104,15 @@ def tela_publica_comercial():
             st.session_state.tela_login_ativa = True
             st.rerun()
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-dark">
     <div style="text-align:center;font-size:42px;line-height:1.18;font-weight:950;color:white;">
         A plataforma para empresas que querem sair do <span style="color:#dfff6b;">improviso</span>.
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-white">
     <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
         FUNCIONALIDADES
@@ -1152,92 +1120,68 @@ def tela_publica_comercial():
     <div class="gs-section-title">
         Tudo o que seu financeiro precisa, em uma única plataforma.
     </div>
-    <br>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     f1, f2, f3 = st.columns(3)
 
     with f1:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">▣</div>
     <h3 style="color:#052c3d;">Contas a pagar e receber</h3>
     <p class="gs-muted">Visualize vencimentos, status, formas de pagamento, valores pendentes e contas pagas no mês.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with f2:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">↻</div>
     <h3 style="color:#052c3d;">Clientes inadimplentes</h3>
     <p class="gs-muted">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with f3:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">▥</div>
     <h3 style="color:#052c3d;">Estoque completo</h3>
     <p class="gs-muted">Controle produtos, quantidade, custo, preço de venda, estoque mínimo e lucro previsto.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    st.write("")
+""")
 
     f4, f5, f6 = st.columns(3)
 
     with f4:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">👥</div>
     <h3 style="color:#052c3d;">Clientes e CRM</h3>
     <p class="gs-muted">Cadastre clientes, fornecedores, contatos, limite de crédito, documentos e observações.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with f5:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">🧾</div>
     <h3 style="color:#052c3d;">Folha de pagamento</h3>
     <p class="gs-muted">Salário, horas extras, comissão, bônus, premiação, metas, descontos e total líquido.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with f6:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">🤖</div>
     <h3 style="color:#052c3d;">IA de ajuda</h3>
     <p class="gs-muted">O usuário pergunta como usar o sistema e recebe orientação dentro da própria plataforma.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-white">
     <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
         PARA CADA PERFIL
@@ -1246,53 +1190,41 @@ def tela_publica_comercial():
         Valor real para cada nível da organização.
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     p1, p2, p3 = st.columns(3)
 
     with p1:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">▥</div>
     <h2 style="color:#052c3d;">Estratégico</h2>
     <p class="gs-muted"><b>Do achismo à previsibilidade.</b></p>
     <p class="gs-muted">DRE, fluxo de caixa, receita, saídas, lucro, contas pagas e valores a receber em uma visão clara.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with p2:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">👥</div>
     <h2 style="color:#052c3d;">Gerencial</h2>
     <p class="gs-muted"><b>O fim do caos operacional.</b></p>
     <p class="gs-muted">Clientes, inadimplência, estoque, usuários, permissões e controle de processos internos.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with p3:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <div style="width:72px;height:72px;border-radius:18px;background:#002b3d;color:#dfff6b;display:flex;align-items:center;justify-content:center;font-size:34px;margin-bottom:28px;">⚙</div>
     <h2 style="color:#052c3d;">Operacional</h2>
     <p class="gs-muted"><b>Adeus ao trabalho manual.</b></p>
     <p class="gs-muted">Lançamentos, cobranças por WhatsApp, folha completa, metas, premiações e relatórios.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-dark">
     <div style="text-align:center;color:rgba(255,255,255,0.42);letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
         DEMONSTRAÇÃO
@@ -1300,23 +1232,30 @@ def tela_publica_comercial():
     <div class="gs-section-title-dark">
         Veja como a Global Software funciona na prática.
     </div>
-    <br>
-    <div class="gs-card-dark" style="text-align:center;">
-        <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
-        <div style="font-size:32px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
-        <div style="font-size:20px;line-height:1.55;color:rgba(255,255,255,0.62);max-width:760px;margin:0 auto 30px auto;">
-            Navegue pela demonstração e veja como controlar financeiro, estoque, clientes,
-            funcionários, folha de pagamento e relatórios em um único lugar.
-        </div>
-        <span class="gs-btn-fake">Demonstração Interativa →</span>
-    </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
-    st.markdown(
-        """
+    demo1, demo2 = st.columns([1, 1])
+
+    with demo1:
+        html("""
+<div class="gs-card-dark" style="text-align:center;">
+    <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
+    <div style="font-size:30px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
+    <p class="gs-muted-light">Navegue pela demonstração e veja como controlar financeiro, estoque, clientes, funcionários e folha.</p>
+    <span class="gs-btn-fake">Demonstração Interativa →</span>
+</div>
+""")
+
+    with demo2:
+        st.markdown("### O que o cliente vê na prática")
+        st.success("✅ Dashboard executivo")
+        st.success("✅ Clientes inadimplentes")
+        st.success("✅ Estoque e lucro previsto")
+        st.success("✅ Folha de pagamento completa")
+        st.success("✅ Relatórios e IA de ajuda")
+
+    html("""
 <div class="gs-section-white">
     <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
         IMPLANTAÇÃO
@@ -1325,44 +1264,36 @@ def tela_publica_comercial():
         Um processo ágil, consultivo e feito junto com você.
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     e1, e2, e3, e4 = st.columns(4)
 
     etapas = [
-        ("🚀", "ETAPA 1", "Configuração inicial", "Parametrizamos empresa, usuários, categorias, permissões e estrutura do sistema."),
-        ("🎓", "ETAPA 2", "Treinamento mão na massa", "Ensinamos como cadastrar lançamentos, clientes, estoque, funcionários e folha."),
-        ("▶", "ETAPA 3", "Go-live", "A empresa começa a usar o sistema com acompanhamento nos primeiros passos."),
-        ("🎧", "ETAPA 4", "Suporte rápido", "Atendimento humano por WhatsApp, treinamento e melhoria contínua."),
+        ("🚀", "ETAPA 1", "Configuração inicial", "Parametrizamos empresa, usuários, categorias e permissões."),
+        ("🎓", "ETAPA 2", "Treinamento", "Ensinamos como cadastrar lançamentos, clientes, estoque e folha."),
+        ("▶", "ETAPA 3", "Go-live", "A empresa começa a usar o sistema com acompanhamento."),
+        ("🎧", "ETAPA 4", "Suporte rápido", "Atendimento humano por WhatsApp e melhoria contínua."),
     ]
 
     for coluna, etapa in zip([e1, e2, e3, e4], etapas):
         with coluna:
             icone, etapa_nome, titulo, texto = etapa
-            st.markdown(
-                f"""
+            html(f"""
 <div class="gs-card-white" style="text-align:center;min-height:290px;">
     <div style="width:72px;height:72px;border-radius:20px;background:#002b3d;color:#dfff6b;font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;">{icone}</div>
     <div style="color:#92a1aa;letter-spacing:2px;font-weight:850;font-size:13px;text-transform:uppercase;margin-bottom:10px;">{etapa_nome}</div>
     <h3 style="color:#052c3d;">{titulo}</h3>
     <p class="gs-muted">{texto}</p>
 </div>
-                """,
-                unsafe_allow_html=True
-            )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-dark">
     <div class="gs-section-title-dark" style="text-align:left;">
         Veja o que nossos clientes dizem sobre a <span style="color:#dfff6b;">transformação</span> financeira.
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     d1, d2, d3 = st.columns(3)
 
@@ -1375,8 +1306,7 @@ def tela_publica_comercial():
     for coluna, dep in zip([d1, d2, d3], depoimentos):
         with coluna:
             nome, cargo, texto = dep
-            st.markdown(
-                f"""
+            html(f"""
 <div class="gs-card-white">
     <div style="color:#dfff6b;font-size:52px;line-height:0.7;margin-bottom:22px;font-weight:950;">“</div>
     <p class="gs-muted" style="font-size:17px;">{texto}</p>
@@ -1384,59 +1314,45 @@ def tela_publica_comercial():
     <h3 style="color:#052c3d;margin-bottom:0;">{nome}</h3>
     <p class="gs-muted">{cargo}</p>
 </div>
-                """,
-                unsafe_allow_html=True
-            )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-white">
     <div class="gs-section-title">
         Por que a Global Software?
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     c1, c2 = st.columns(2)
 
     with c1:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <h3 style="color:#052c3d;">✅ Global Software</h3>
     <p class="gs-muted"><b>Financeiro completo</b><br>Entradas, saídas, parcelas, contas pagas, contas a receber e inadimplentes.</p>
     <p class="gs-muted"><b>Gestão operacional</b><br>Clientes, estoque, funcionários, folha de pagamento, metas e relatórios.</p>
     <p class="gs-muted"><b>Suporte e treinamento</b><br>Implantação guiada, WhatsApp e IA de ajuda dentro do sistema.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with c2:
-        st.markdown(
-            """
+        html("""
 <div class="gs-card-white">
     <h3 style="color:#052c3d;">❌ Planilhas soltas</h3>
     <p class="gs-muted"><b>Dados espalhados</b><br>Caderno, WhatsApp, planilhas diferentes e pouca visão do negócio.</p>
     <p class="gs-muted"><b>Controle manual</b><br>Mais chance de esquecer vencimentos, perder cobrança e não acompanhar lucro real.</p>
     <p class="gs-muted"><b>Difícil de crescer</b><br>Quanto mais a empresa cresce, mais confuso o controle fica.</p>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div class="gs-section-white">
     <div class="gs-section-title">
         Perguntas Frequentes
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     perguntas = [
         "Quanto tempo leva para começar a usar?",
@@ -1448,20 +1364,16 @@ def tela_publica_comercial():
     ]
 
     for pergunta in perguntas:
-        st.markdown(
-            f"""
+        html(f"""
 <div class="gs-card-white" style="padding:22px 26px;margin-bottom:12px;">
     <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;color:#052c3d;font-size:20px;font-weight:950;">
         {pergunta}
         <span>⌄</span>
     </div>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
-    st.markdown(
-        """
+    html("""
 <div id="demo" class="gs-section-dark">
     <div class="gs-section-title-dark">
         Pronto para profissionalizar o financeiro da sua empresa?
@@ -1470,11 +1382,9 @@ def tela_publica_comercial():
         Agende uma demonstração gratuita e veja a Global Software na prática.
     </p>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
-    st.markdown('<div class="gs-card-white">', unsafe_allow_html=True)
+    html('<div class="gs-card-white">')
     st.markdown("### Agendar demonstração")
 
     col1, col2 = st.columns(2)
@@ -1513,7 +1423,7 @@ def tela_publica_comercial():
         else:
             st.warning("Digite o telefone com DDD para gerar o link.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    html("</div>")
 
 
 # =====================================================
@@ -1521,8 +1431,7 @@ def tela_publica_comercial():
 # =====================================================
 
 def tela_login():
-    st.markdown(
-        """
+    html("""
 <div class="login-header">
     <div class="login-title">💼 Sistema Financeiro Premium</div>
     <div class="login-subtitle">
@@ -1532,9 +1441,7 @@ def tela_login():
         <b>Login padrão:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
     </div>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     col_voltar1, col_voltar2, col_voltar3 = st.columns([1, 1, 1])
 
@@ -1550,8 +1457,7 @@ def tela_login():
         if banner_base64:
             hero_bg = f"background-image: url('data:image/png;base64,{banner_base64}');"
 
-        st.markdown(
-            f"""
+        html(f"""
 <div class="hero-box">
     <div class="hero-inner" style="{hero_bg}">
         <div class="hero-overlay"></div>
@@ -1564,34 +1470,26 @@ def tela_login():
         </div>
     </div>
 </div>
-            """,
-            unsafe_allow_html=True
-        )
+""")
 
     with col2:
         if logo_base64:
-            st.markdown(
-                f"""
+            html(f"""
 <div class="logo-box">
     <img src="data:image/png;base64,{logo_base64}">
 </div>
-                """,
-                unsafe_allow_html=True
-            )
+""")
         else:
-            st.markdown(
-                """
+            html("""
 <div class="logo-box">
     <div style="text-align:center;">
         <h3>GLOBAL SOFTWARE</h3>
         <p>Sua logo aparecerá aqui quando o arquivo <b>logo.png</b> estiver na pasta do projeto.</p>
     </div>
 </div>
-                """,
-                unsafe_allow_html=True
-            )
+""")
 
-    st.markdown('<div class="form-box">', unsafe_allow_html=True)
+    html('<div class="form-box">')
 
     aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
 
@@ -1679,7 +1577,7 @@ def tela_login():
                 except Exception as e:
                     st.error(f"Erro ao criar empresa: {e}")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    html("</div>")
 
 
 # =====================================================
@@ -1978,8 +1876,7 @@ def tela_apresentacao_comercial():
         st.warning("Esta área é exclusiva para administrador.")
         return
 
-    st.markdown(
-        """
+    html("""
 <div class="commercial-panel">
     <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
     <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
@@ -1987,9 +1884,7 @@ def tela_apresentacao_comercial():
     um financeiro, mas uma central de controle para a empresa.
     </p>
 </div>
-        """,
-        unsafe_allow_html=True
-    )
+""")
 
     c1, c2, c3 = st.columns(3)
 
@@ -2002,7 +1897,7 @@ def tela_apresentacao_comercial():
     with c3:
         comercial_card("Resultado", "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer.")
 
-    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    html('<div class="commercial-panel">')
     st.markdown("## Roteiro de venda")
 
     roteiro = """
@@ -2019,9 +1914,9 @@ o que entrou, o que saiu, quem deve, o que está vencido, o que está parado no 
 Não é apenas um sistema. É uma central de controle para a empresa crescer com organização.
 """
     st.text_area("Roteiro de apresentação", value=roteiro, height=260, key="roteiro_venda_completo")
-    st.markdown("</div>", unsafe_allow_html=True)
+    html("</div>")
 
-    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    html('<div class="commercial-panel">')
     st.markdown("## Sugestão de planos comerciais")
 
     p1, p2, p3 = st.columns(3)
@@ -2035,7 +1930,7 @@ Não é apenas um sistema. É uma central de controle para a empresa crescer com
     with p3:
         preco_card("Plano Premium Personalizado", "Sob consulta", "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras.")
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    html("</div>")
 
 
 # =====================================================
@@ -2071,8 +1966,8 @@ def app():
 
     cabecalho_interno(st.session_state.menu_atual)
 
-    st.markdown('<div class="menu-panel">', unsafe_allow_html=True)
-    st.markdown('<div class="menu-title">Menu principal do sistema</div>', unsafe_allow_html=True)
+    html('<div class="menu-panel">')
+    html('<div class="menu-title">Menu principal do sistema</div>')
 
     menu = st.radio(
         "Menu principal",
@@ -2095,7 +1990,7 @@ def app():
                 del st.session_state.menu_atual
             st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    html("</div>")
 
     menu = st.session_state.menu_atual
 
@@ -2774,11 +2669,11 @@ def app():
             st.info("Cadastre lançamentos para receber uma análise.")
         else:
             if ind["lucro"] < 0:
-                st.markdown('<div class="danger-box">A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>', unsafe_allow_html=True)
+                html('<div class="danger-box">A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>')
             elif ind["vencidas"] > 0:
-                st.markdown('<div class="warning-box">Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.</div>', unsafe_allow_html=True)
+                html('<div class="warning-box">Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.</div>')
             else:
-                st.markdown('<div class="success-box">O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.</div>', unsafe_allow_html=True)
+                html('<div class="success-box">O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.</div>')
 
             st.write(f"**Receita:** {moeda(ind['receita'])}")
             st.write(f"**Saídas:** {moeda(ind['saidas'])}")
@@ -2796,8 +2691,7 @@ def app():
     elif menu == "Ajuda / Tutorial":
         st.title("🆘 Ajuda / Tutorial do Sistema")
 
-        st.markdown(
-            """
+        st.markdown("""
 ### Como usar o sistema
 
 **1. Dashboard**  
@@ -2829,8 +2723,7 @@ Controle metas da equipe, realizado, prêmio e status.
 
 **10. Relatórios**  
 Baixe PDF e planilhas CSV.
-            """
-        )
+""")
 
         st.divider()
         st.subheader("🤖 IA de Ajuda do Sistema")
