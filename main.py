@@ -66,9 +66,9 @@ st.markdown(
 
     .stApp {{
         background:
-            radial-gradient(circle at top left, rgba(34,211,238,0.12), transparent 35%),
+            radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 35%),
             linear-gradient(135deg, #020617 0%, #071526 45%, #020617 100%);
-        color: #f8fafc;
+        color: #f5e7b2;
     }}
 
     .block-container {{
@@ -82,29 +82,29 @@ st.markdown(
     section[data-testid="stSidebar"] {{
         background:
             linear-gradient(180deg, rgba(2,6,23,0.98) 0%, rgba(7,21,38,0.98) 100%);
-        border-right: 1px solid rgba(34,211,238,0.22);
+        border-right: 1px solid rgba(212,175,55,0.28);
         box-shadow: 10px 0 28px rgba(0,0,0,0.25);
     }}
 
     section[data-testid="stSidebar"] * {{
-        color: #ffffff !important;
+        color: #f5e7b2 !important;
     }}
 
     section[data-testid="stSidebar"] img {{
         border-radius: 18px;
-        border: 1px solid rgba(34,211,238,0.22);
+        border: 1px solid rgba(212,175,55,0.28);
         box-shadow: 0 12px 28px rgba(0,0,0,0.28);
         margin-bottom: 12px;
     }}
 
     h1, h2, h3, h4 {{
-        color: #ffffff !important;
+        color: #d4af37 !important;
         font-weight: 900 !important;
         letter-spacing: -0.4px;
     }}
 
     p, label, span, div {{
-        color: #e5e7eb;
+        color: #f5e7b2;
     }}
 
     .login-header {{
@@ -117,31 +117,31 @@ st.markdown(
     .login-title {{
         font-size: 44px;
         font-weight: 950;
-        color: #ffffff;
+        color: #d4af37;
         margin-bottom: 10px;
         line-height: 1.05;
-        text-shadow: 0 0 18px rgba(34,211,238,0.12);
+        text-shadow: 0 0 18px rgba(212,175,55,0.18);
     }}
 
     .login-subtitle {{
         font-size: 16px;
         max-width: 900px;
         margin: 0 auto;
-        color: #cbd5e1;
+        color: #e7d79b;
         line-height: 1.6;
     }}
 
     .login-info {{
         margin: 18px auto 28px auto;
         max-width: 980px;
-        background: linear-gradient(90deg, rgba(8,145,178,0.24), rgba(34,211,238,0.16));
-        border: 1px solid rgba(34,211,238,0.35);
+        background: linear-gradient(90deg, rgba(212,175,55,0.18), rgba(212,175,55,0.08));
+        border: 1px solid rgba(212,175,55,0.35);
         border-radius: 16px;
         padding: 14px 18px;
         text-align: center;
-        color: #ecfeff;
+        color: #f8edc8;
         font-size: 15px;
-        box-shadow: 0 10px 24px rgba(34,211,238,0.10);
+        box-shadow: 0 10px 24px rgba(212,175,55,0.10);
     }}
 
     .login-main-wrap {{
@@ -152,10 +152,10 @@ st.markdown(
     .hero-box {{
         min-height: 440px;
         border-radius: 26px;
-        border: 1px solid rgba(34,211,238,0.28);
+        border: 1px solid rgba(212,175,55,0.28);
         background:
             linear-gradient(180deg, rgba(2,6,23,0.28), rgba(2,6,23,0.76)),
-            linear-gradient(135deg, rgba(14,165,233,0.10), rgba(6,182,212,0.04));
+            linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.04));
         box-shadow: 0 24px 60px rgba(0,0,0,0.35);
         overflow: hidden;
         position: relative;
@@ -194,12 +194,12 @@ st.markdown(
     .hero-content h3 {{
         font-size: 30px;
         margin-bottom: 8px;
-        color: #ffffff !important;
+        color: #d4af37 !important;
     }}
 
     .hero-content p {{
         margin: 0;
-        color: #dbeafe !important;
+        color: #f2e6ba !important;
         font-size: 15px;
         line-height: 1.6;
     }}
@@ -207,10 +207,10 @@ st.markdown(
     .logo-box {{
         min-height: 440px;
         border-radius: 26px;
-        border: 1px solid rgba(34,211,238,0.28);
+        border: 1px solid rgba(212,175,55,0.28);
         background:
             linear-gradient(180deg, rgba(2,6,23,0.38), rgba(2,6,23,0.78)),
-            linear-gradient(135deg, rgba(14,165,233,0.05), rgba(6,182,212,0.02));
+            linear-gradient(135deg, rgba(212,175,55,0.05), rgba(212,175,55,0.02));
         box-shadow: 0 24px 60px rgba(0,0,0,0.35);
         display: flex;
         align-items: center;
@@ -231,7 +231,7 @@ st.markdown(
         margin-top: 28px;
         padding: 28px;
         border-radius: 26px;
-        border: 1px solid rgba(34,211,238,0.24);
+        border: 1px solid rgba(212,175,55,0.24);
         background:
             linear-gradient(180deg, rgba(8,20,35,0.88), rgba(4,14,26,0.92));
         box-shadow: 0 24px 60px rgba(0,0,0,0.35);
@@ -240,12 +240,12 @@ st.markdown(
     .section-title {{
         font-size: 26px;
         font-weight: 900;
-        color: #ffffff;
+        color: #d4af37;
         margin-bottom: 8px;
     }}
 
     .section-subtitle {{
-        color: #cbd5e1;
+        color: #e7d79b;
         font-size: 15px;
         margin-bottom: 18px;
     }}
@@ -257,8 +257,8 @@ st.markdown(
         margin-bottom: 20px;
         background:
             linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.96)),
-            radial-gradient(circle at top right, rgba(34,211,238,0.16), transparent 35%);
-        border: 1px solid rgba(34,211,238,0.28);
+            radial-gradient(circle at top right, rgba(212,175,55,0.16), transparent 35%);
+        border: 1px solid rgba(212,175,55,0.28);
         box-shadow: 0 24px 60px rgba(0,0,0,0.32);
     }}
 
@@ -273,14 +273,14 @@ st.markdown(
     .app-title {{
         font-size: 34px;
         font-weight: 950;
-        color: #ffffff;
+        color: #d4af37;
         line-height: 1.1;
         margin-bottom: 6px;
     }}
 
     .app-subtitle {{
         font-size: 15px;
-        color: #cbd5e1;
+        color: #f0dfac;
         line-height: 1.5;
     }}
 
@@ -295,8 +295,8 @@ st.markdown(
         padding: 10px 14px;
         border-radius: 999px;
         background: rgba(15,23,42,0.78);
-        border: 1px solid rgba(34,211,238,0.26);
-        color: #e0faff;
+        border: 1px solid rgba(212,175,55,0.26);
+        color: #f5e7b2;
         font-size: 13px;
         font-weight: 800;
         white-space: nowrap;
@@ -308,14 +308,14 @@ st.markdown(
         margin-bottom: 22px;
         background:
             linear-gradient(180deg, rgba(8,20,35,0.82), rgba(4,14,26,0.90));
-        border: 1px solid rgba(34,211,238,0.20);
+        border: 1px solid rgba(212,175,55,0.20);
         box-shadow: 0 14px 34px rgba(0,0,0,0.22);
     }}
 
     .menu-title {{
         font-size: 16px;
         font-weight: 900;
-        color: #67e8f9;
+        color: #d4af37;
         margin-bottom: 10px;
     }}
 
@@ -325,7 +325,7 @@ st.markdown(
         margin-bottom: 22px;
         background:
             linear-gradient(180deg, rgba(8,20,35,0.72), rgba(4,14,26,0.82));
-        border: 1px solid rgba(34,211,238,0.18);
+        border: 1px solid rgba(212,175,55,0.18);
         box-shadow: 0 14px 34px rgba(0,0,0,0.22);
     }}
 
@@ -334,13 +334,13 @@ st.markdown(
         border-radius: 22px;
         padding: 24px;
         box-shadow: 0 14px 34px rgba(0,0,0,0.34);
-        border: 1px solid rgba(34, 211, 238, 0.24);
-        border-left: 7px solid #22d3ee;
+        border: 1px solid rgba(212,175,55,0.24);
+        border-left: 7px solid #d4af37;
         min-height: 128px;
     }}
 
     .metric-title {{
-        color: #67e8f9;
+        color: #d4af37;
         font-size: 14px;
         font-weight: 850;
         text-transform: uppercase;
@@ -348,14 +348,14 @@ st.markdown(
     }}
 
     .metric-value {{
-        color: #ffffff;
+        color: #f8edc8;
         font-size: 30px;
         font-weight: 950;
         margin-top: 6px;
     }}
 
     .metric-sub {{
-        color: #cbd5e1;
+        color: #e7d79b;
         font-size: 13px;
         margin-top: 3px;
     }}
@@ -389,9 +389,9 @@ st.markdown(
     .stDateInput input,
     .stTextArea textarea {{
         border-radius: 14px !important;
-        border: 1px solid rgba(34, 211, 238, 0.32) !important;
+        border: 1px solid rgba(212,175,55,0.32) !important;
         background: rgba(15, 23, 42, 0.94) !important;
-        color: #ffffff !important;
+        color: #f8edc8 !important;
     }}
 
     .stTextArea textarea {{
@@ -400,41 +400,41 @@ st.markdown(
 
     .stTextInput input::placeholder,
     .stTextArea textarea::placeholder {{
-        color: #94a3b8 !important;
+        color: #bfa96a !important;
     }}
 
     .stSelectbox div[data-baseweb="select"] > div {{
         border-radius: 14px !important;
         background: rgba(15, 23, 42, 0.94) !important;
-        border: 1px solid rgba(34, 211, 238, 0.32) !important;
-        color: #ffffff !important;
+        border: 1px solid rgba(212,175,55,0.32) !important;
+        color: #f8edc8 !important;
         min-height: 44px;
     }}
 
     .stSelectbox span {{
-        color: #ffffff !important;
+        color: #f8edc8 !important;
     }}
 
     .stButton > button {{
-        background: linear-gradient(90deg, #0891b2, #22d3ee);
-        color: #02111f !important;
+        background: linear-gradient(90deg, #b8860b, #d4af37);
+        color: #111827 !important;
         border: none;
         border-radius: 14px;
         padding: 0.72rem 1rem;
         font-weight: 900;
-        box-shadow: 0 10px 24px rgba(34,211,238,0.18);
+        box-shadow: 0 10px 24px rgba(212,175,55,0.18);
         transition: all 0.18s ease-in-out;
     }}
 
     .stButton > button:hover {{
         transform: translateY(-1px);
-        background: linear-gradient(90deg, #22d3ee, #67e8f9);
-        color: #02111f !important;
+        background: linear-gradient(90deg, #d4af37, #f0d878);
+        color: #111827 !important;
     }}
 
     .stDownloadButton > button {{
-        background: linear-gradient(90deg, #059669, #34d399);
-        color: #02111f !important;
+        background: linear-gradient(90deg, #b8860b, #d4af37);
+        color: #111827 !important;
         border: none;
         border-radius: 14px;
         padding: 0.72rem 1rem;
@@ -445,29 +445,29 @@ st.markdown(
         background: rgba(8, 20, 35, 0.90);
         border-radius: 18px;
         padding: 8px;
-        border: 1px solid rgba(34, 211, 238, 0.18);
+        border: 1px solid rgba(212,175,55,0.18);
     }}
 
     button[data-baseweb="tab"] {{
         font-size: 15px !important;
         font-weight: 850 !important;
-        color: #cbd5e1 !important;
+        color: #e7d79b !important;
     }}
 
     button[data-baseweb="tab"][aria-selected="true"] {{
-        color: #67e8f9 !important;
-        border-bottom: 2px solid #22d3ee !important;
+        color: #d4af37 !important;
+        border-bottom: 2px solid #d4af37 !important;
     }}
 
     div[data-testid="stAlert"] {{
         background: rgba(15, 23, 42, 0.88);
-        color: #ffffff;
+        color: #f8edc8;
         border-radius: 16px;
-        border: 1px solid rgba(34, 211, 238, 0.20);
+        border: 1px solid rgba(212,175,55,0.20);
     }}
 
     div[data-testid="stAlert"] * {{
-        color: #ffffff !important;
+        color: #f8edc8 !important;
     }}
 
     @media (max-width: 900px) {{
