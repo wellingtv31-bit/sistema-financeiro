@@ -176,12 +176,12 @@ st.markdown(
 
     .public-hero {
         border-radius: 34px;
-        padding: 44px;
+        padding: 46px;
         margin-bottom: 26px;
         background:
-            radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 38%),
+            radial-gradient(circle at top right, rgba(212,175,55,0.20), transparent 38%),
             radial-gradient(circle at bottom left, rgba(212,175,55,0.08), transparent 36%),
-            linear-gradient(135deg, rgba(8,20,35,0.96), rgba(3,10,20,0.98));
+            linear-gradient(135deg, rgba(8,20,35,0.97), rgba(3,10,20,0.98));
         border: 1px solid rgba(212,175,55,0.34);
         box-shadow: 0 30px 80px rgba(0,0,0,0.40), inset 0 0 28px rgba(212,175,55,0.04);
     }
@@ -199,18 +199,18 @@ st.markdown(
     }
 
     .public-title {
-        font-size: 52px;
+        font-size: 54px;
         font-weight: 950;
         color: var(--gold);
         line-height: 1.04;
         margin-bottom: 18px;
-        max-width: 1060px;
+        max-width: 1120px;
     }
 
     .public-subtitle {
-        font-size: 19px;
+        font-size: 20px;
         color: #f4e8bd;
-        max-width: 1000px;
+        max-width: 1050px;
         line-height: 1.65;
         margin-bottom: 28px;
     }
@@ -230,6 +230,17 @@ st.markdown(
         color: #fff1bd;
         font-size: 14px;
         font-weight: 850;
+    }
+
+    .public-proof {
+        padding: 20px 24px;
+        border-radius: 24px;
+        background: linear-gradient(90deg, rgba(212,175,55,0.15), rgba(15,23,42,0.70));
+        border: 1px solid rgba(212,175,55,0.30);
+        margin-bottom: 24px;
+        font-size: 18px;
+        font-weight: 850;
+        color: #fff1bd;
     }
 
     .login-header {
@@ -434,7 +445,7 @@ st.markdown(
     }
 
     .commercial-hero {
-        padding: 36px;
+        padding: 40px;
         border-radius: 30px;
         border: 1px solid rgba(212,175,55,0.34);
         background:
@@ -445,7 +456,7 @@ st.markdown(
     }
 
     .commercial-title {
-        font-size: 44px;
+        font-size: 46px;
         font-weight: 950;
         color: var(--gold);
         line-height: 1.08;
@@ -453,9 +464,9 @@ st.markdown(
     }
 
     .commercial-subtitle {
-        font-size: 18px;
+        font-size: 19px;
         color: #f4e8bd;
-        max-width: 980px;
+        max-width: 1050px;
         line-height: 1.6;
     }
 
@@ -472,7 +483,7 @@ st.markdown(
     }
 
     .commercial-card {
-        min-height: 165px;
+        min-height: 175px;
         border-radius: 24px;
         padding: 24px;
         background:
@@ -496,7 +507,7 @@ st.markdown(
     }
 
     .price-card {
-        min-height: 230px;
+        min-height: 240px;
         border-radius: 26px;
         padding: 26px;
         background:
@@ -1204,7 +1215,7 @@ def tela_publica_comercial():
                     <div class="public-brand-subtitle">Sistema Financeiro Premium para empresas</div>
                 </div>
             </div>
-            <div class="public-badge">Apresentação pública</div>
+            <div class="public-badge">Demonstração comercial</div>
         </div>
         """,
         unsafe_allow_html=True
@@ -1213,20 +1224,30 @@ def tela_publica_comercial():
     st.markdown(
         """
         <div class="public-hero">
-            <div class="public-tag">GESTÃO FINANCEIRA • CRM • ESTOQUE • RELATÓRIOS</div>
-            <div class="public-title">Sistema financeiro profissional para empresas que querem crescer com controle.</div>
+            <div class="public-tag">FINANCEIRO • CRM • ESTOQUE • RELATÓRIOS • USUÁRIOS</div>
+            <div class="public-title">Você vende, mas sabe exatamente quanto sua empresa lucra?</div>
             <div class="public-subtitle">
-                Organize entradas, saídas, parcelas, contas a pagar, contas a receber,
-                clientes, estoque, relatórios e usuários em uma plataforma moderna e visual.
+                Muitas empresas não perdem dinheiro por falta de venda. Elas perdem dinheiro por falta de controle.
+                O Sistema Financeiro Premium organiza suas entradas, saídas, parcelas, contas a pagar, contas a receber,
+                clientes, estoque e relatórios em uma plataforma moderna, visual e profissional.
             </div>
             <div class="public-highlight-row">
-                <div class="public-highlight">✅ Dashboard financeiro</div>
-                <div class="public-highlight">✅ Controle de parcelas</div>
-                <div class="public-highlight">✅ CRM de clientes</div>
-                <div class="public-highlight">✅ Estoque</div>
-                <div class="public-highlight">✅ Relatórios PDF</div>
-                <div class="public-highlight">✅ Usuários com permissões</div>
+                <div class="public-highlight">✅ Veja o lucro real da empresa</div>
+                <div class="public-highlight">✅ Controle contas vencidas</div>
+                <div class="public-highlight">✅ Organize parcelas</div>
+                <div class="public-highlight">✅ Acompanhe clientes</div>
+                <div class="public-highlight">✅ Gere relatórios</div>
+                <div class="public-highlight">✅ Tome decisões com dados</div>
             </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class="public-proof">
+            Sua empresa não precisa apenas vender mais. Ela precisa parar de perder dinheiro por falta de organização.
         </div>
         """,
         unsafe_allow_html=True
@@ -1241,7 +1262,8 @@ def tela_publica_comercial():
 
     with col_whats:
         texto_demo = (
-            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software."
+            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software. "
+            "Quero entender como ele pode ajudar minha empresa a controlar melhor entradas, saídas, parcelas, clientes e relatórios."
         )
 
         telefone_global = st.text_input(
@@ -1250,7 +1272,7 @@ def tela_publica_comercial():
             key="telefone_publico"
         )
 
-        if st.button("Solicitar demonstração pelo WhatsApp", use_container_width=True, key="btn_demo_publico"):
+        if st.button("Quero uma demonstração agora", use_container_width=True, key="btn_demo_publico"):
             if telefone_global:
                 link = f"https://wa.me/55{telefone_global}?text={quote(texto_demo)}"
                 st.markdown(f"[Abrir WhatsApp para solicitar demonstração]({link})")
@@ -1264,39 +1286,76 @@ def tela_publica_comercial():
     with c1:
         comercial_card(
             "O problema",
-            "Muitas empresas vendem, mas não sabem exatamente quanto lucram, quais contas estão vencidas e quanto têm a receber."
+            "O dinheiro entra, o dinheiro sai, mas no fim do mês muitos empresários não sabem exatamente o que sobrou, o que venceu e o que ainda vão receber."
         )
 
     with c2:
         comercial_card(
             "A solução",
-            "O sistema reúne controle financeiro, clientes, estoque, parcelas e relatórios em uma única plataforma profissional."
+            "Uma plataforma simples, visual e profissional que reúne controle financeiro, clientes, estoque, parcelas, cobranças e relatórios em um só lugar."
         )
 
     with c3:
         comercial_card(
             "O resultado",
-            "Mais clareza, menos perda de dinheiro, melhor tomada de decisão e uma empresa preparada para crescer."
+            "Mais clareza, menos perda, decisões mais rápidas e uma gestão financeira preparada para crescimento."
         )
 
     st.write("")
 
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 💼 Módulos principais")
+    st.markdown("## 💼 O que sua empresa passa a controlar")
 
     m1, m2, m3, m4 = st.columns(4)
 
     with m1:
-        comercial_card("Dashboard", "Indicadores de receita, despesas, lucro, caixa, contas vencidas, a pagar e a receber.")
+        comercial_card(
+            "Dashboard financeiro",
+            "Veja receitas, despesas, lucro, caixa, contas vencidas, contas a pagar, contas a receber e ponto de equilíbrio."
+        )
 
     with m2:
-        comercial_card("Financeiro", "Controle de receitas, custos, despesas fixas, variáveis, dívidas, investimentos e retiradas.")
+        comercial_card(
+            "Entradas e saídas",
+            "Registre vendas, custos, despesas, dívidas, investimentos, retiradas e acompanhe o resultado real do negócio."
+        )
 
     with m3:
-        comercial_card("Clientes", "Cadastro de clientes, fornecedores, telefone, documentos e observações.")
+        comercial_card(
+            "Clientes e cobranças",
+            "Organize contatos, histórico, WhatsApp, contas a receber e mensagens comerciais em uma operação mais profissional."
+        )
 
     with m4:
-        comercial_card("Relatórios", "Relatórios em PDF e CSV para análise, acompanhamento e prestação de contas.")
+        comercial_card(
+            "Relatórios",
+            "Exporte relatórios em PDF e CSV para acompanhar o desempenho e prestar contas com clareza."
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
+    st.markdown("## 🎯 Ideal para empresas que querem sair do improviso")
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        comercial_card(
+            "Pequenas empresas",
+            "Para quem ainda controla no caderno, no WhatsApp ou em planilhas soltas e precisa de visão profissional."
+        )
+
+    with p2:
+        comercial_card(
+            "Lojas e comércios",
+            "Para quem vende, parcela, compra, paga fornecedor e precisa saber o que realmente sobra no caixa."
+        )
+
+    with p3:
+        comercial_card(
+            "Prestadores de serviço",
+            "Para profissionais que precisam controlar faturamento, despesas, clientes, relatórios e recebimentos."
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1761,10 +1820,11 @@ def tela_apresentacao_comercial():
         """
         <div class="commercial-hero">
             <div class="commercial-tag">GLOBAL SOFTWARE • Sistema Financeiro Premium</div>
-            <div class="commercial-title">Controle financeiro profissional para empresas que querem crescer com organização.</div>
+            <div class="commercial-title">Venda mais o sistema mostrando o que o empresário mais sente: falta de controle.</div>
             <div class="commercial-subtitle">
-                Uma plataforma moderna para controlar entradas, saídas, parcelas, contas a pagar, contas a receber,
-                clientes, estoque, relatórios e usuários em um só lugar.
+                Esta apresentação foi criada para demonstrar valor na frente do cliente. O foco é simples:
+                mostrar que muitas empresas não precisam apenas vender mais, elas precisam parar de perder dinheiro
+                por falta de organização financeira.
             </div>
         </div>
         """,
@@ -1775,72 +1835,72 @@ def tela_apresentacao_comercial():
 
     with c1:
         comercial_card(
-            "O problema",
-            "Muitas empresas vendem bem, mas não sabem exatamente quanto lucram, quanto têm a receber, quanto devem pagar e para onde o dinheiro está indo."
+            "1. Crie identificação",
+            "Pergunte: você sabe exatamente quanto entrou, quanto saiu, quanto tem vencido e quanto tem a receber hoje?"
         )
 
     with c2:
         comercial_card(
-            "A solução",
-            "O Sistema Financeiro Premium organiza os dados financeiros em painéis claros, com relatórios, filtros, parcelas, clientes e visão gerencial."
+            "2. Mostre a dor",
+            "Explique que vender sem controle pode esconder prejuízo, atrasos, dinheiro parado e decisões feitas no escuro."
         )
 
     with c3:
         comercial_card(
-            "O resultado",
-            "Mais controle, menos perda de dinheiro, decisões mais rápidas e uma empresa preparada para crescer com gestão profissional."
+            "3. Apresente a solução",
+            "Mostre o sistema como um painel profissional que organiza números, clientes, parcelas, estoque e relatórios."
         )
 
     st.write("")
 
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 💼 Principais módulos do sistema")
+    st.markdown("## 💼 Argumentos comerciais fortes")
 
-    m1, m2, m3, m4 = st.columns(4)
+    a1, a2, a3, a4 = st.columns(4)
 
-    with m1:
-        comercial_card("Dashboard", "Indicadores financeiros, lucro, caixa, contas vencidas, a pagar, a receber e ponto de equilíbrio.")
+    with a1:
+        comercial_card(
+            "Controle real",
+            "O empresário deixa de depender de memória, caderno, mensagens soltas ou planilhas bagunçadas."
+        )
 
-    with m2:
-        comercial_card("Lançamentos", "Controle de receitas, custos, despesas, investimentos, dívidas e retiradas do dono.")
+    with a2:
+        comercial_card(
+            "Decisão rápida",
+            "O painel mostra lucro, despesas, caixa, contas vencidas e valores a receber com clareza."
+        )
 
-    with m3:
-        comercial_card("Parcelas", "Cadastro e acompanhamento de vendas ou despesas parceladas com vencimentos automáticos.")
+    with a3:
+        comercial_card(
+            "Menos prejuízo",
+            "Contas atrasadas, clientes pendentes e gastos desorganizados ficam mais visíveis."
+        )
 
-    with m4:
-        comercial_card("Relatórios", "Exportação de relatórios em PDF e CSV para análise, prestação de contas e acompanhamento.")
-
-    st.write("")
-
-    m5, m6, m7, m8 = st.columns(4)
-
-    with m5:
-        comercial_card("CRM / Clientes", "Cadastro de clientes, fornecedores, contatos, documentos e observações comerciais.")
-
-    with m6:
-        comercial_card("Estoque", "Controle de produtos, quantidade, custo, preço de venda e fornecedor.")
-
-    with m7:
-        comercial_card("Usuários", "Perfis de acesso por administrador, gerente, financeiro e vendedor.")
-
-    with m8:
-        comercial_card("WhatsApp", "Geração de mensagens e links de cobrança para facilitar contato com clientes.")
+    with a4:
+        comercial_card(
+            "Imagem profissional",
+            "A empresa passa mais confiança com relatórios, cadastro de clientes, controle e organização."
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## 🎯 Para quem é indicado?")
+    st.markdown("## 🚀 Como apresentar em 1 minuto")
 
-    p1, p2, p3 = st.columns(3)
+    roteiro = """
+Olá, tudo bem? Deixa eu te fazer uma pergunta rápida: sua empresa sabe exatamente quanto lucrou este mês?
 
-    with p1:
-        comercial_card("Pequenas empresas", "Empresas que precisam sair do caderno, bloco de notas ou planilhas soltas.")
+Muita empresa vende, movimenta dinheiro, paga fornecedor, recebe de cliente, parcela venda, mas no fim do mês não sabe o resultado real.
 
-    with p2:
-        comercial_card("Lojas e comércios", "Negócios que vendem, compram, parcelam e precisam controlar pagamentos e recebimentos.")
+O Sistema Financeiro Premium resolve isso em um só lugar.  
+Ele controla entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque, relatórios e usuários.
 
-    with p3:
-        comercial_card("Prestadores de serviço", "Profissionais e equipes que precisam acompanhar faturamento, despesas e clientes.")
+Na prática, você passa a enxergar o que entrou, o que saiu, o que venceu, o que ainda vai receber e se sua empresa realmente está dando lucro.
+
+Não é só um sistema. É uma ferramenta para parar de perder dinheiro por falta de controle.
+"""
+
+    st.text_area("Roteiro de venda rápida", value=roteiro, height=230, key="roteiro_venda_admin")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1853,21 +1913,21 @@ def tela_apresentacao_comercial():
         preco_card(
             "Plano Inicial",
             "R$ 97/mês",
-            "Ideal para pequenos negócios que precisam controlar entradas, saídas, clientes e relatórios básicos."
+            "Para pequenos negócios que precisam sair do improviso e controlar entradas, saídas, clientes e relatórios básicos."
         )
 
     with plano2:
         preco_card(
             "Plano Profissional",
             "R$ 197/mês",
-            "Ideal para empresas com parcelas, contas a receber, estoque, usuários e relatórios financeiros."
+            "Para empresas que trabalham com parcelas, contas a receber, estoque, usuários e precisam de visão financeira."
         )
 
     with plano3:
         preco_card(
             "Plano Premium",
             "Sob consulta",
-            "Sistema personalizado com identidade visual, implantação, treinamento e futuras integrações."
+            "Sistema personalizado com identidade visual, implantação, treinamento, suporte e futuras integrações."
         )
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1877,12 +1937,13 @@ def tela_apresentacao_comercial():
 
     mensagem_padrao = (
         "Olá! Tudo bem? Quero te apresentar o Sistema Financeiro Premium da Global Software. "
-        "Ele ajuda sua empresa a controlar entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque e relatórios em um só lugar. "
-        "É ideal para empresas que querem parar de perder controle financeiro e começar a tomar decisões com dados reais. "
+        "Ele foi criado para empresas que querem parar de perder dinheiro por falta de controle. "
+        "Com ele você consegue controlar entradas, saídas, parcelas, contas a pagar, contas a receber, clientes, estoque e relatórios em um só lugar. "
+        "A ideia é simples: mostrar com clareza quanto entrou, quanto saiu, o que venceu, o que falta receber e se a empresa realmente está dando lucro. "
         "Posso te mostrar uma demonstração rápida?"
     )
 
-    mensagem = st.text_area("Mensagem comercial", value=mensagem_padrao, height=150, key="msg_comercial")
+    mensagem = st.text_area("Mensagem comercial", value=mensagem_padrao, height=170, key="msg_comercial")
     telefone = st.text_input("Telefone do cliente com DDD", placeholder="62999999999", key="tel_comercial")
 
     if st.button("Gerar link de apresentação no WhatsApp", use_container_width=True, key="btn_comercial_whatsapp"):
