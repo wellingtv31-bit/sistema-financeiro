@@ -15,7 +15,7 @@ from urllib.parse import quote
 # =====================================================
 
 st.set_page_config(
-    page_title="Sistema Financeiro Premium",
+    page_title="Global Software | Sistema Financeiro Premium",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -44,7 +44,7 @@ if not banner_base64:
 
 
 # =====================================================
-# CSS PREMIUM
+# CSS PREMIUM GLOBAL SOFTWARE
 # =====================================================
 
 st.markdown(
@@ -55,72 +55,65 @@ st.markdown(
     }
 
     :root {
+        --navy: #002b3d;
+        --navy2: #001d2b;
+        --navy3: #00384d;
+        --lime: #dfff6b;
+        --lime2: #c9ff4f;
         --gold: #d4af37;
-        --gold-light: #f7df8a;
         --gold-soft: #f3e3ad;
-        --dark: #020617;
-        --panel: rgba(8, 20, 35, 0.94);
-        --panel2: rgba(4, 14, 26, 0.97);
-        --border: rgba(212,175,55,0.32);
+        --white: #ffffff;
+        --soft: #f4f8fb;
+        --text-dark: #052c3d;
+        --text-gray: #6c7b86;
+        --border: #e5edf2;
     }
 
     .stApp {
-        background:
-            radial-gradient(circle at top left, rgba(212,175,55,0.14), transparent 34%),
-            radial-gradient(circle at bottom right, rgba(212,175,55,0.09), transparent 32%),
-            linear-gradient(135deg, #020617 0%, #071526 45%, #020617 100%);
+        background: linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
         color: var(--gold-soft);
     }
 
     .block-container {
-        padding-top: 1.3rem;
+        padding-top: 0.8rem;
         padding-bottom: 2rem;
-        padding-left: 1.4rem;
-        padding-right: 1.4rem;
+        padding-left: 1.2rem;
+        padding-right: 1.2rem;
         max-width: 1380px;
     }
 
     h1, h2, h3, h4 {
-        color: var(--gold) !important;
         font-weight: 950 !important;
-        text-shadow: 0 0 18px rgba(212,175,55,0.12);
-    }
-
-    p, label, span, div {
-        color: var(--gold-soft);
     }
 
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, rgba(2,6,23,0.99), rgba(7,21,38,0.99));
-        border-right: 1px solid rgba(212,175,55,0.26);
+        background: linear-gradient(180deg, rgba(0,29,43,0.99), rgba(0,43,61,0.99));
+        border-right: 1px solid rgba(223,255,107,0.18);
     }
 
     section[data-testid="stSidebar"] * {
-        color: var(--gold-soft) !important;
+        color: #f7ffe4 !important;
     }
 
     section[data-testid="stSidebar"] img {
         border-radius: 18px;
-        border: 1px solid rgba(212,175,55,0.34);
-        box-shadow: 0 12px 28px rgba(0,0,0,0.34);
+        border: 1px solid rgba(223,255,107,0.28);
         margin-bottom: 12px;
     }
 
-    .public-topbar,
-    .app-header,
-    .menu-panel,
-    .page-panel,
-    .form-box,
-    .commercial-panel {
-        border-radius: 26px;
-        border: 1px solid rgba(212,175,55,0.28);
-        background: linear-gradient(180deg, rgba(8,20,35,0.92), rgba(4,14,26,0.96));
-        box-shadow: 0 22px 60px rgba(0,0,0,0.30), inset 0 0 20px rgba(212,175,55,0.03);
+    /* =========================
+       LANDING PAGE PÚBLICA
+    ========================= */
+
+    .lp-wrap {
+        margin: -12px -6px 0 -6px;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .public-topbar {
-        padding: 18px 22px;
-        margin-bottom: 22px;
+    .lp-topbar {
+        background: var(--navy2);
+        border-radius: 0 0 28px 28px;
+        padding: 26px 28px 10px 28px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -128,245 +121,697 @@ st.markdown(
         flex-wrap: wrap;
     }
 
-    .public-brand {
+    .lp-brand {
         display: flex;
         align-items: center;
         gap: 14px;
     }
 
-    .public-brand-logo {
+    .lp-logo {
         width: 58px;
         height: 58px;
-        border-radius: 16px;
-        border: 1px solid rgba(212,175,55,0.35);
-        background: rgba(2,6,23,0.72);
+        border-radius: 18px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(223,255,107,0.25);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
+        color: var(--lime);
+        font-weight: 950;
+        font-size: 18px;
     }
 
-    .public-brand-logo img {
+    .lp-logo img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        padding: 4px;
+        padding: 5px;
     }
 
-    .public-brand-title {
-        font-size: 23px;
-        font-weight: 950;
-        color: var(--gold);
+    .lp-brand-title {
+        color: white;
+        font-size: 24px;
+        letter-spacing: 4px;
+        font-weight: 850;
     }
 
-    .public-brand-subtitle {
+    .lp-brand-sub {
+        color: rgba(255,255,255,0.60);
         font-size: 13px;
-        color: #eadba6;
+        margin-top: 2px;
     }
 
-    .public-badge {
-        padding: 10px 14px;
+    .lp-top-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .lp-pill {
+        color: var(--lime);
+        border: 1px solid rgba(223,255,107,0.32);
+        background: rgba(223,255,107,0.08);
+        padding: 10px 16px;
         border-radius: 999px;
-        background: rgba(212,175,55,0.14);
-        border: 1px solid rgba(212,175,55,0.34);
-        color: #fff1bd;
-        font-size: 13px;
         font-weight: 900;
+        font-size: 13px;
     }
 
-    .public-hero,
-    .commercial-hero {
-        border-radius: 34px;
-        padding: 44px;
-        margin-bottom: 26px;
+    .lp-hero {
         background:
-            radial-gradient(circle at top right, rgba(212,175,55,0.20), transparent 38%),
-            radial-gradient(circle at bottom left, rgba(212,175,55,0.08), transparent 36%),
-            linear-gradient(135deg, rgba(8,20,35,0.97), rgba(3,10,20,0.98));
-        border: 1px solid rgba(212,175,55,0.34);
-        box-shadow: 0 30px 80px rgba(0,0,0,0.40), inset 0 0 28px rgba(212,175,55,0.04);
+            radial-gradient(circle at 80% 25%, rgba(223,255,107,0.15), transparent 32%),
+            radial-gradient(circle at 20% 70%, rgba(212,175,55,0.12), transparent 34%),
+            linear-gradient(180deg, var(--navy2), var(--navy));
+        padding: 52px 28px 78px 28px;
+        border-radius: 0 0 42px 42px;
+        position: relative;
+        overflow: hidden;
     }
 
-    .public-tag,
-    .commercial-tag {
-        display: inline-block;
-        padding: 9px 14px;
-        border-radius: 999px;
-        background: rgba(212,175,55,0.16);
-        border: 1px solid rgba(212,175,55,0.34);
-        color: #fff1bd;
-        font-weight: 900;
+    .lp-hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 34px;
+        align-items: center;
+        max-width: 1220px;
+        margin: 0 auto;
+    }
+
+    .lp-kicker {
+        color: var(--lime);
+        letter-spacing: 5px;
         font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    .public-title {
-        font-size: 52px;
         font-weight: 950;
-        color: var(--gold);
-        line-height: 1.05;
-        margin-bottom: 18px;
-        max-width: 1120px;
+        margin-bottom: 22px;
+        text-transform: uppercase;
     }
 
-    .public-subtitle {
-        font-size: 20px;
-        color: #f4e8bd;
-        max-width: 1050px;
+    .lp-title {
+        color: white;
+        font-size: 62px;
+        line-height: 1.02;
+        font-weight: 950;
+        margin-bottom: 26px;
+        letter-spacing: -1.8px;
+    }
+
+    .lp-title span {
+        color: var(--lime);
+    }
+
+    .lp-subtitle {
+        color: rgba(255,255,255,0.72);
+        font-size: 22px;
         line-height: 1.65;
+        max-width: 720px;
+        margin-bottom: 34px;
+    }
+
+    .lp-cta-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .lp-fake-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 19px 34px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(223,255,107,0.95), rgba(201,255,79,0.95));
+        color: #002b3d;
+        font-weight: 950;
+        font-size: 17px;
+        box-shadow: 0 18px 45px rgba(223,255,107,0.22);
+        border: 1px solid rgba(223,255,107,0.55);
+    }
+
+    .lp-fake-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px 28px;
+        border-radius: 999px;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.22);
+        background: rgba(255,255,255,0.05);
+        font-weight: 900;
+        font-size: 16px;
+    }
+
+    .lp-dashboard-mock {
+        min-height: 440px;
+        border-radius: 34px;
+        background:
+            linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)),
+            radial-gradient(circle at top right, rgba(223,255,107,0.18), transparent 42%);
+        border: 1px solid rgba(255,255,255,0.18);
+        box-shadow: 0 30px 100px rgba(0,0,0,0.35);
+        padding: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .lp-mock-screen {
+        height: 100%;
+        border-radius: 26px;
+        background: rgba(255,255,255,0.92);
+        padding: 22px;
+        color: var(--text-dark);
+        transform: rotate(-3deg);
+        box-shadow: 0 28px 70px rgba(0,0,0,0.30);
+    }
+
+    .lp-mock-bar {
+        height: 12px;
+        width: 44%;
+        background: #dfe9ef;
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+
+    .lp-mock-card-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .lp-mock-card {
+        background: #f2f7fa;
+        border: 1px solid #e5edf2;
+        border-radius: 18px;
+        padding: 18px;
+        min-height: 94px;
+    }
+
+    .lp-mock-label {
+        color: #78909c;
+        font-size: 13px;
+        font-weight: 800;
+        margin-bottom: 8px;
+    }
+
+    .lp-mock-value {
+        color: #002b3d;
+        font-size: 24px;
+        font-weight: 950;
+    }
+
+    .lp-mock-chart {
+        height: 130px;
+        border-radius: 20px;
+        background:
+            linear-gradient(90deg, rgba(223,255,107,0.35), rgba(0,43,61,0.18)),
+            repeating-linear-gradient(90deg, transparent 0 38px, rgba(0,43,61,0.05) 38px 40px);
+        border: 1px solid #e3edf2;
+    }
+
+    .lp-trust {
+        background: var(--navy2);
+        padding: 58px 28px;
+        text-align: center;
+    }
+
+    .lp-trust-title {
+        color: white;
+        font-size: 44px;
+        line-height: 1.12;
+        font-weight: 950;
+    }
+
+    .lp-trust-title span {
+        color: var(--lime);
+    }
+
+    .lp-section-white {
+        background: #f7fbfd;
+        color: var(--text-dark);
+        padding: 74px 28px;
+        border-radius: 0;
+    }
+
+    .lp-section-dark {
+        background: var(--navy);
+        color: white;
+        padding: 74px 28px;
+        border-radius: 0;
+    }
+
+    .lp-container {
+        max-width: 1220px;
+        margin: 0 auto;
+    }
+
+    .lp-section-kicker {
+        text-align: center;
+        color: #7a8d98;
+        letter-spacing: 7px;
+        font-size: 14px;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 18px;
+    }
+
+    .lp-section-kicker.dark {
+        color: rgba(255,255,255,0.42);
+    }
+
+    .lp-section-title {
+        text-align: center;
+        color: var(--text-dark);
+        font-size: 50px;
+        line-height: 1.14;
+        letter-spacing: -1.3px;
+        font-weight: 950;
+        max-width: 930px;
+        margin: 0 auto 44px auto;
+    }
+
+    .lp-section-title.dark {
+        color: white;
+    }
+
+    .lp-section-title span {
+        color: var(--lime2);
+    }
+
+    .lp-feature-tabs {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 34px;
+    }
+
+    .lp-tab-active,
+    .lp-tab {
+        padding: 18px 24px;
+        border-radius: 18px;
+        font-weight: 900;
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.06);
+    }
+
+    .lp-tab-active {
+        background: var(--navy);
+        color: white;
+        border: 1px solid var(--navy);
+    }
+
+    .lp-tab {
+        background: white;
+        color: #607682;
+        border: 1px solid var(--border);
+    }
+
+    .lp-feature-card-dark {
+        background:
+            radial-gradient(circle at top right, rgba(223,255,107,0.08), transparent 36%),
+            linear-gradient(180deg, #002b3d, #001d2b);
+        border: 1px solid rgba(223,255,107,0.16);
+        border-radius: 32px;
+        padding: 46px;
+        color: white;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.24);
+    }
+
+    .lp-chip {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 999px;
+        padding: 13px 20px;
+        color: rgba(255,255,255,0.70);
+        letter-spacing: 4px;
+        font-weight: 850;
+        font-size: 13px;
+        text-transform: uppercase;
         margin-bottom: 28px;
     }
 
-    .public-highlight-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 18px;
-    }
-
-    .public-highlight {
-        padding: 12px 16px;
-        border-radius: 18px;
-        background: rgba(15,23,42,0.82);
-        border: 1px solid rgba(212,175,55,0.28);
-        color: #fff1bd;
-        font-size: 14px;
-        font-weight: 850;
-    }
-
-    .public-proof {
-        padding: 20px 24px;
-        border-radius: 24px;
-        background: linear-gradient(90deg, rgba(212,175,55,0.15), rgba(15,23,42,0.70));
-        border: 1px solid rgba(212,175,55,0.30);
-        margin-bottom: 24px;
-        font-size: 18px;
-        font-weight: 850;
-        color: #fff1bd;
-    }
-
-    .login-header {
-        text-align: center;
-        margin-bottom: 24px;
-        padding: 8px 0 4px 0;
-    }
-
-    .login-title {
-        font-size: 46px;
+    .lp-feature-title {
+        color: white;
+        font-size: 43px;
+        line-height: 1.15;
         font-weight: 950;
-        color: var(--gold);
-        margin-bottom: 10px;
-        line-height: 1.05;
-        text-shadow: 0 0 22px rgba(212,175,55,0.20);
+        max-width: 690px;
+        margin-bottom: 34px;
     }
 
-    .login-subtitle {
-        font-size: 16px;
-        max-width: 900px;
-        margin: 0 auto;
-        color: #eadba6;
-        line-height: 1.6;
+    .lp-check-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 28px;
+        max-width: 820px;
     }
 
-    .login-info {
-        margin: 18px auto 28px auto;
-        max-width: 980px;
-        background: linear-gradient(90deg, rgba(212,175,55,0.20), rgba(212,175,55,0.08));
-        border: 1px solid rgba(212,175,55,0.38);
-        border-radius: 18px;
-        padding: 14px 18px;
-        text-align: center;
-        color: #fff3c4;
-        font-size: 15px;
+    .lp-check-item {
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        gap: 18px;
+        align-items: flex-start;
     }
 
-    .hero-box {
-        min-height: 430px;
-        border-radius: 28px;
-        border: 1px solid rgba(212,175,55,0.32);
-        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
-        overflow: hidden;
-        position: relative;
-        display: flex;
-        align-items: stretch;
-        justify-content: center;
-        background: rgba(2,6,23,0.72);
-    }
-
-    .hero-inner {
-        width: 100%;
-        display: flex;
-        align-items: end;
-        justify-content: start;
-        background-size: contain !important;
-        background-repeat: no-repeat !important;
-        background-position: center center !important;
-        background-color: rgba(2, 6, 23, 0.76);
-        position: relative;
-    }
-
-    .hero-overlay {
-        position: absolute;
-        inset: 0;
-        background:
-            linear-gradient(180deg, rgba(2,6,23,0.02), rgba(2,6,23,0.58)),
-            linear-gradient(90deg, rgba(2,6,23,0.36), rgba(2,6,23,0.04));
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        padding: 30px;
-        max-width: 88%;
-    }
-
-    .hero-content h3 {
-        font-size: 31px;
-        margin-bottom: 8px;
-        color: var(--gold) !important;
-    }
-
-    .hero-content p {
-        margin: 0;
-        color: #f4e8bd !important;
-        font-size: 15px;
-        line-height: 1.65;
-    }
-
-    .logo-box {
-        min-height: 430px;
-        border-radius: 28px;
-        border: 1px solid rgba(212,175,55,0.34);
-        background:
-            radial-gradient(circle at center, rgba(212,175,55,0.08), transparent 56%),
-            linear-gradient(180deg, rgba(2,6,23,0.40), rgba(2,6,23,0.82));
-        box-shadow: 0 26px 70px rgba(0,0,0,0.40), inset 0 0 30px rgba(212,175,55,0.04);
+    .lp-check-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 999px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px;
-        overflow: hidden;
+        background: rgba(223,255,107,0.13);
+        border: 1px solid rgba(223,255,107,0.30);
+        color: var(--lime);
+        font-weight: 950;
     }
 
-    .logo-box img {
-        width: 82%;
-        max-width: 380px;
+    .lp-check-title {
+        color: white;
+        font-size: 23px;
+        font-weight: 950;
+        margin-bottom: 8px;
+    }
+
+    .lp-check-text {
+        color: rgba(255,255,255,0.60);
+        font-size: 19px;
+        line-height: 1.55;
+    }
+
+    .lp-profile-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+    }
+
+    .lp-profile-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 38px 32px;
+        box-shadow: 0 18px 55px rgba(0,43,61,0.06);
+        color: var(--text-dark);
+        min-height: 460px;
+    }
+
+    .lp-icon-box {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: var(--navy);
+        color: var(--lime);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 34px;
+        margin-bottom: 32px;
+    }
+
+    .lp-profile-title {
+        font-size: 31px;
+        color: var(--text-dark);
+        font-weight: 950;
+        margin-bottom: 8px;
+    }
+
+    .lp-profile-sub {
+        color: #7b8c96;
+        font-size: 18px;
+        margin-bottom: 26px;
+    }
+
+    .lp-profile-feature {
+        margin-bottom: 18px;
+    }
+
+    .lp-profile-feature b {
         display: block;
-        margin: 0 auto;
-        filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34)) drop-shadow(0 0 18px rgba(212,175,55,0.12));
+        color: var(--text-dark);
+        font-size: 18px;
+        margin-bottom: 4px;
     }
 
+    .lp-profile-feature span {
+        color: #6e7f8a;
+        font-size: 16px;
+        line-height: 1.45;
+    }
+
+    .lp-steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 22px;
+        margin-top: 38px;
+    }
+
+    .lp-step {
+        background: white;
+        border-radius: 26px;
+        border: 1px solid var(--border);
+        padding: 30px 24px;
+        text-align: center;
+        color: var(--text-dark);
+        min-height: 270px;
+        box-shadow: 0 18px 45px rgba(0,43,61,0.05);
+    }
+
+    .lp-step-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: var(--navy);
+        color: var(--lime);
+        font-size: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+    }
+
+    .lp-step-small {
+        color: #92a1aa;
+        letter-spacing: 2px;
+        font-weight: 850;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .lp-step-title {
+        color: var(--text-dark);
+        font-weight: 950;
+        font-size: 21px;
+        margin-bottom: 12px;
+    }
+
+    .lp-step-text {
+        color: #6d7f89;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .lp-compare {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 18px 55px rgba(0,43,61,0.06);
+    }
+
+    .lp-compare-row {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr 1fr;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-dark);
+    }
+
+    .lp-compare-row:last-child {
+        border-bottom: none;
+    }
+
+    .lp-compare-cell {
+        padding: 24px;
+        font-size: 16px;
+        color: #667985;
+    }
+
+    .lp-compare-cell strong {
+        color: var(--text-dark);
+        font-size: 21px;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .lp-good {
+        color: var(--navy);
+        font-weight: 850;
+    }
+
+    .lp-bad {
+        color: #9aa9b1;
+    }
+
+    .lp-testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+    }
+
+    .lp-testimonial {
+        background: white;
+        color: var(--text-dark);
+        border-radius: 28px;
+        padding: 34px;
+        min-height: 300px;
+        border: 1px solid rgba(255,255,255,0.16);
+        box-shadow: 0 22px 60px rgba(0,0,0,0.16);
+    }
+
+    .lp-quote {
+        color: var(--lime);
+        font-size: 52px;
+        line-height: 0.7;
+        margin-bottom: 22px;
+        font-weight: 950;
+    }
+
+    .lp-testimonial-text {
+        color: #314b58;
+        font-size: 17px;
+        line-height: 1.65;
+        margin-bottom: 26px;
+    }
+
+    .lp-person {
+        border-top: 1px solid var(--border);
+        padding-top: 18px;
+        color: var(--text-dark);
+    }
+
+    .lp-person b {
+        font-size: 18px;
+    }
+
+    .lp-person span {
+        display: block;
+        color: #74858e;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    .lp-faq {
+        display: grid;
+        gap: 14px;
+        max-width: 920px;
+        margin: 0 auto;
+    }
+
+    .lp-faq-item {
+        background: white;
+        border: 1px solid var(--border);
+        color: var(--text-dark);
+        border-radius: 20px;
+        padding: 24px 26px;
+        font-size: 19px;
+        font-weight: 900;
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .lp-demo-box {
+        background: white;
+        border-radius: 34px;
+        padding: 38px;
+        max-width: 780px;
+        margin: 36px auto 0 auto;
+        color: var(--text-dark);
+        box-shadow: 0 24px 70px rgba(0,0,0,0.18);
+    }
+
+    .lp-final-title {
+        text-align: center;
+        color: white;
+        font-size: 48px;
+        line-height: 1.15;
+        font-weight: 950;
+        max-width: 900px;
+        margin: 0 auto 20px auto;
+    }
+
+    .lp-final-sub {
+        text-align: center;
+        color: rgba(255,255,255,0.60);
+        font-size: 20px;
+        line-height: 1.55;
+    }
+
+    .lp-floating {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 22px;
+        z-index: 9999;
+        background: var(--navy);
+        color: var(--lime) !important;
+        border: 1px solid rgba(223,255,107,0.38);
+        box-shadow: 0 18px 55px rgba(0,43,61,0.36);
+        padding: 17px 34px;
+        border-radius: 999px;
+        font-weight: 950;
+        font-size: 17px;
+        text-decoration: none !important;
+    }
+
+    .lp-up {
+        position: fixed;
+        left: 22px;
+        bottom: 22px;
+        z-index: 9998;
+        width: 58px;
+        height: 58px;
+        border-radius: 999px;
+        background: var(--navy);
+        color: white !important;
+        border: 1px solid rgba(255,255,255,0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        text-decoration: none !important;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+    }
+
+    /* =========================
+       SISTEMA INTERNO
+    ========================= */
+
+    .app-header,
+    .menu-panel,
+    .page-panel,
+    .commercial-panel,
     .form-box {
-        margin-top: 28px;
-        padding: 30px;
+        border-radius: 26px;
+        border: 1px solid rgba(223,255,107,0.18);
+        background: linear-gradient(180deg, rgba(0,43,61,0.92), rgba(0,29,43,0.96));
+        box-shadow: 0 22px 60px rgba(0,0,0,0.30);
+        color: #f7ffe4;
     }
 
     .app-header {
         padding: 28px 30px;
         margin-bottom: 20px;
-        background:
-            linear-gradient(135deg, rgba(8,20,35,0.94), rgba(3,10,20,0.98)),
-            radial-gradient(circle at top right, rgba(212,175,55,0.18), transparent 36%);
     }
 
     .app-header-top {
@@ -380,14 +825,14 @@ st.markdown(
     .app-title {
         font-size: 34px;
         font-weight: 950;
-        color: var(--gold);
+        color: white;
         line-height: 1.1;
         margin-bottom: 6px;
     }
 
     .app-subtitle {
         font-size: 15px;
-        color: #eadba6;
+        color: rgba(255,255,255,0.68);
         line-height: 1.5;
     }
 
@@ -401,9 +846,9 @@ st.markdown(
     .app-badge {
         padding: 10px 14px;
         border-radius: 999px;
-        background: rgba(15,23,42,0.82);
-        border: 1px solid rgba(212,175,55,0.30);
-        color: #f7e7b2;
+        background: rgba(223,255,107,0.08);
+        border: 1px solid rgba(223,255,107,0.22);
+        color: var(--lime);
         font-size: 13px;
         font-weight: 850;
         white-space: nowrap;
@@ -417,29 +862,15 @@ st.markdown(
     .menu-title {
         font-size: 16px;
         font-weight: 950;
-        color: var(--gold);
+        color: var(--lime);
         margin-bottom: 12px;
     }
 
     .page-panel,
-    .commercial-panel {
+    .commercial-panel,
+    .form-box {
         padding: 28px;
         margin-bottom: 22px;
-    }
-
-    .commercial-title {
-        font-size: 44px;
-        font-weight: 950;
-        color: var(--gold);
-        line-height: 1.08;
-        margin-bottom: 12px;
-    }
-
-    .commercial-subtitle {
-        font-size: 18px;
-        color: #f4e8bd;
-        max-width: 1050px;
-        line-height: 1.6;
     }
 
     .commercial-card,
@@ -448,17 +879,18 @@ st.markdown(
         border-radius: 24px;
         padding: 24px;
         background:
-            radial-gradient(circle at top right, rgba(212,175,55,0.10), transparent 42%),
-            linear-gradient(145deg, rgba(10,25,45,0.98), rgba(5,15,28,0.98));
-        border: 1px solid rgba(212,175,55,0.28);
-        box-shadow: 0 16px 38px rgba(0,0,0,0.32), inset 0 0 18px rgba(212,175,55,0.03);
+            radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
+            linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
+        border: 1px solid rgba(223,255,107,0.20);
+        box-shadow: 0 16px 38px rgba(0,0,0,0.22);
         min-height: 155px;
+        color: white;
     }
 
     .commercial-card-title,
     .price-title,
     .metric-title {
-        color: var(--gold);
+        color: var(--lime);
         font-size: 18px;
         font-weight: 950;
         margin-bottom: 9px;
@@ -467,14 +899,14 @@ st.markdown(
     .commercial-card-text,
     .price-desc,
     .metric-sub {
-        color: #eadba6;
+        color: rgba(255,255,255,0.68);
         font-size: 14px;
         line-height: 1.55;
     }
 
     .metric-value,
     .price-value {
-        color: #fff1bd;
+        color: white;
         font-size: 29px;
         font-weight: 950;
         margin-top: 6px;
@@ -504,15 +936,125 @@ st.markdown(
         color: #fee2e2;
     }
 
+    .login-header {
+        text-align: center;
+        margin-bottom: 24px;
+        padding: 8px 0 4px 0;
+    }
+
+    .login-title {
+        font-size: 46px;
+        font-weight: 950;
+        color: white;
+        margin-bottom: 10px;
+        line-height: 1.05;
+    }
+
+    .login-subtitle {
+        font-size: 16px;
+        max-width: 900px;
+        margin: 0 auto;
+        color: rgba(255,255,255,0.70);
+        line-height: 1.6;
+    }
+
+    .login-info {
+        margin: 18px auto 28px auto;
+        max-width: 980px;
+        background: rgba(223,255,107,0.08);
+        border: 1px solid rgba(223,255,107,0.22);
+        border-radius: 18px;
+        padding: 14px 18px;
+        text-align: center;
+        color: var(--lime);
+        font-size: 15px;
+    }
+
+    .hero-box {
+        min-height: 430px;
+        border-radius: 28px;
+        border: 1px solid rgba(223,255,107,0.22);
+        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        background: rgba(0,29,43,0.72);
+    }
+
+    .hero-inner {
+        width: 100%;
+        display: flex;
+        align-items: end;
+        justify-content: start;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: center center !important;
+        background-color: rgba(0,29,43,0.76);
+        position: relative;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(0,29,43,0.02), rgba(0,29,43,0.70)),
+            linear-gradient(90deg, rgba(0,29,43,0.46), rgba(0,29,43,0.04));
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        padding: 30px;
+        max-width: 88%;
+    }
+
+    .hero-content h3 {
+        font-size: 31px;
+        margin-bottom: 8px;
+        color: white !important;
+    }
+
+    .hero-content p {
+        margin: 0;
+        color: rgba(255,255,255,0.72) !important;
+        font-size: 15px;
+        line-height: 1.65;
+    }
+
+    .logo-box {
+        min-height: 430px;
+        border-radius: 28px;
+        border: 1px solid rgba(223,255,107,0.22);
+        background:
+            radial-gradient(circle at center, rgba(223,255,107,0.09), transparent 56%),
+            linear-gradient(180deg, rgba(0,43,61,0.55), rgba(0,29,43,0.90));
+        box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        overflow: hidden;
+    }
+
+    .logo-box img {
+        width: 82%;
+        max-width: 380px;
+        display: block;
+        margin: 0 auto;
+        filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34));
+    }
+
     .stTextInput input,
     .stNumberInput input,
     .stDateInput input,
     .stTextArea textarea {
-        border-radius: 15px !important;
-        border: 1px solid rgba(212,175,55,0.34) !important;
-        background: rgba(15,23,42,0.96) !important;
-        color: #fff1bd !important;
-        box-shadow: inset 0 0 12px rgba(0,0,0,0.20);
+        border-radius: 16px !important;
+        border: 1px solid rgba(0,43,61,0.20) !important;
+        background: rgba(255,255,255,0.98) !important;
+        color: #052c3d !important;
+        box-shadow: inset 0 0 12px rgba(0,0,0,0.04);
     }
 
     .stTextArea textarea {
@@ -521,72 +1063,70 @@ st.markdown(
 
     .stTextInput input::placeholder,
     .stTextArea textarea::placeholder {
-        color: #bfa96a !important;
+        color: #9aa9b1 !important;
     }
 
     .stSelectbox div[data-baseweb="select"] > div {
-        border-radius: 15px !important;
-        background: rgba(15,23,42,0.96) !important;
-        border: 1px solid rgba(212,175,55,0.34) !important;
-        color: #fff1bd !important;
+        border-radius: 16px !important;
+        background: rgba(255,255,255,0.98) !important;
+        border: 1px solid rgba(0,43,61,0.20) !important;
+        color: #052c3d !important;
         min-height: 44px;
     }
 
     .stSelectbox span,
     div[data-baseweb="select"] * {
-        color: #fff1bd !important;
+        color: #052c3d !important;
     }
 
-    div[data-baseweb="popover"],
     div[data-baseweb="menu"],
     ul[role="listbox"],
     div[role="listbox"] {
-        background: #030a14 !important;
-        border: 1px solid rgba(212,175,55,0.42) !important;
+        background: white !important;
+        border: 1px solid #e5edf2 !important;
         border-radius: 16px !important;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.65) !important;
-        color: #f7df8a !important;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.15) !important;
+        color: #052c3d !important;
     }
 
     div[data-baseweb="menu"] *,
     ul[role="listbox"] *,
     div[role="listbox"] * {
-        background-color: #030a14 !important;
-        color: #f7df8a !important;
-        font-weight: 850 !important;
+        background-color: white !important;
+        color: #052c3d !important;
+        font-weight: 800 !important;
     }
 
     .stButton > button {
-        background: linear-gradient(90deg, #9f7418, #d4af37, #f0d878);
-        color: #111827 !important;
+        background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+        color: #002b3d !important;
         border: none;
-        border-radius: 15px;
-        padding: 0.74rem 1rem;
+        border-radius: 999px;
+        padding: 0.82rem 1.2rem;
         font-weight: 950;
-        box-shadow: 0 12px 28px rgba(212,175,55,0.20), inset 0 0 10px rgba(255,255,255,0.10);
+        box-shadow: 0 12px 28px rgba(223,255,107,0.20);
         transition: all 0.18s ease-in-out;
     }
 
     .stButton > button:hover {
         transform: translateY(-1px);
-        background: linear-gradient(90deg, #d4af37, #f0d878, #fff0a8);
-        color: #111827 !important;
+        background: linear-gradient(90deg, #efffa6, #dfff6b);
+        color: #002b3d !important;
     }
 
     .stDownloadButton > button {
-        background: linear-gradient(90deg, #9f7418, #d4af37, #f0d878);
-        color: #111827 !important;
+        background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+        color: #002b3d !important;
         border: none;
-        border-radius: 15px;
+        border-radius: 999px;
         font-weight: 950;
     }
 
     div[data-testid="stDataFrame"] {
-        background: rgba(8,20,35,0.92);
+        background: rgba(255,255,255,0.94);
         border-radius: 20px;
         padding: 8px;
-        border: 1px solid rgba(212,175,55,0.22);
-        box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+        border: 1px solid rgba(223,255,107,0.18);
     }
 
     div[role="radiogroup"] {
@@ -596,60 +1136,93 @@ st.markdown(
     }
 
     div[role="radiogroup"] label {
-        background: rgba(15,23,42,0.88) !important;
-        border: 1px solid rgba(212,175,55,0.28) !important;
+        background: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(223,255,107,0.18) !important;
         border-radius: 999px !important;
         padding: 10px 14px !important;
         margin: 0 !important;
-        color: #fff1bd !important;
+        color: white !important;
         font-weight: 850 !important;
     }
 
     div[role="radiogroup"] label:hover {
-        background: rgba(212,175,55,0.16) !important;
-        border: 1px solid rgba(212,175,55,0.45) !important;
+        background: rgba(223,255,107,0.14) !important;
+        border: 1px solid rgba(223,255,107,0.38) !important;
     }
 
     div[role="radiogroup"] label * {
-        color: #fff1bd !important;
+        color: white !important;
         font-weight: 850 !important;
     }
 
     button[data-baseweb="tab"] {
         font-size: 15px !important;
         font-weight: 900 !important;
-        color: #eadba6 !important;
+        color: rgba(255,255,255,0.70) !important;
     }
 
     button[data-baseweb="tab"][aria-selected="true"] {
-        color: var(--gold) !important;
-        border-bottom: 2px solid var(--gold) !important;
+        color: var(--lime) !important;
+        border-bottom: 2px solid var(--lime) !important;
     }
 
     div[data-testid="stAlert"] {
-        background: rgba(15,23,42,0.90);
-        color: #fff1bd;
+        background: rgba(255,255,255,0.95);
+        color: #052c3d;
         border-radius: 16px;
-        border: 1px solid rgba(212,175,55,0.22);
+        border: 1px solid #e5edf2;
     }
 
     div[data-testid="stAlert"] * {
-        color: #fff1bd !important;
+        color: #052c3d !important;
     }
 
-    @media (max-width: 900px) {
-        .public-title {
+    @media (max-width: 980px) {
+        .lp-hero-grid,
+        .lp-profile-grid,
+        .lp-steps,
+        .lp-testimonial-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .lp-title {
+            font-size: 42px;
+        }
+
+        .lp-subtitle {
+            font-size: 18px;
+        }
+
+        .lp-section-title,
+        .lp-final-title,
+        .lp-trust-title {
             font-size: 34px;
         }
 
-        .public-hero,
-        .commercial-hero {
-            padding: 28px;
+        .lp-dashboard-mock {
+            min-height: 360px;
+        }
+
+        .lp-compare-row {
+            grid-template-columns: 1fr;
+        }
+
+        .lp-floating {
+            width: calc(100% - 120px);
+            text-align: center;
+            padding: 15px 18px;
+            font-size: 15px;
+        }
+
+        .lp-up {
+            width: 54px;
+            height: 54px;
+            left: 14px;
+            bottom: 22px;
         }
 
         .login-title,
-        .app-title,
-        .commercial-title {
+        .app-title {
             font-size: 28px;
         }
 
@@ -785,7 +1358,7 @@ def cabecalho_interno(menu_atual):
         <div class="app-header">
             <div class="app-header-top">
                 <div>
-                    <div class="app-title">Bem-vindo ao painel financeiro</div>
+                    <div class="app-title">Painel Global Software</div>
                     <div class="app-subtitle">
                         Área atual: <b>{menu_atual}</b>. Gestão completa, clara, segura e profissional.
                     </div>
@@ -1079,112 +1652,450 @@ STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
 
 
 # =====================================================
-# TELA PÚBLICA
+# TELA PÚBLICA LANDING PAGE PREMIUM
 # =====================================================
 
-def tela_publica_comercial():
-    logo_html = ""
-
+def logo_html_publica():
     if logo_base64:
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}">'
-    else:
-        logo_html = '<div style="font-weight:950;color:#d4af37;">GS</div>'
+        return f'<img src="data:image/png;base64,{logo_base64}">'
+    return "GS"
 
+
+def tela_publica_comercial():
     st.markdown(
         f"""
-        <div class="public-topbar">
-            <div class="public-brand">
-                <div class="public-brand-logo">{logo_html}</div>
-                <div>
-                    <div class="public-brand-title">Global Software</div>
-                    <div class="public-brand-subtitle">Sistema Financeiro Premium para empresas</div>
+        <div class="lp-wrap" id="topo">
+            <a class="lp-up" href="#topo">↑</a>
+            <a class="lp-floating" href="#demo">Agendar Demonstração →</a>
+
+            <div class="lp-topbar">
+                <div class="lp-brand">
+                    <div class="lp-logo">{logo_html_publica()}</div>
+                    <div>
+                        <div class="lp-brand-title">GLOBAL SOFTWARE</div>
+                        <div class="lp-brand-sub">Sistema financeiro completo para empresas</div>
+                    </div>
+                </div>
+                <div class="lp-top-actions">
+                    <div class="lp-pill">Gestão • Financeiro • Estoque • Folha</div>
                 </div>
             </div>
-            <div class="public-badge">Demonstração comercial</div>
+
+            <section class="lp-hero">
+                <div class="lp-hero-grid">
+                    <div>
+                        <div class="lp-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
+                        <div class="lp-title">
+                            Software financeiro completo que sua empresa <span>precisa</span>.
+                        </div>
+                        <div class="lp-subtitle">
+                            Controle contas a pagar, receber, clientes inadimplentes, estoque, funcionários,
+                            folha de pagamento, metas, comissões, bônus e relatórios em uma única plataforma.
+                        </div>
+                        <div class="lp-cta-row">
+                            <div class="lp-fake-btn-primary">Agendar Demonstração →</div>
+                            <div class="lp-fake-btn-secondary">Acessar sistema</div>
+                        </div>
+                    </div>
+
+                    <div class="lp-dashboard-mock">
+                        <div class="lp-mock-screen">
+                            <div class="lp-mock-bar"></div>
+                            <div class="lp-mock-card-row">
+                                <div class="lp-mock-card">
+                                    <div class="lp-mock-label">Receita do mês</div>
+                                    <div class="lp-mock-value">R$ 84.750</div>
+                                </div>
+                                <div class="lp-mock-card">
+                                    <div class="lp-mock-label">Lucro previsto</div>
+                                    <div class="lp-mock-value">R$ 26.400</div>
+                                </div>
+                            </div>
+                            <div class="lp-mock-card-row">
+                                <div class="lp-mock-card">
+                                    <div class="lp-mock-label">Inadimplentes</div>
+                                    <div class="lp-mock-value">12</div>
+                                </div>
+                                <div class="lp-mock-card">
+                                    <div class="lp-mock-label">Folha do mês</div>
+                                    <div class="lp-mock-value">R$ 18.900</div>
+                                </div>
+                            </div>
+                            <div class="lp-mock-chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-trust">
+                <div class="lp-container">
+                    <div class="lp-trust-title">
+                        A plataforma para empresas que querem sair do <span>improviso</span>.
+                    </div>
+                </div>
+            </section>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        """
-        <div class="public-hero">
-            <div class="public-tag">FINANCEIRO • CLIENTES • ESTOQUE • FUNCIONÁRIOS • FOLHA • RELATÓRIOS</div>
-            <div class="public-title">Você vende, mas sabe exatamente quanto sua empresa lucra?</div>
-            <div class="public-subtitle">
-                Muitas empresas não perdem dinheiro por falta de venda. Elas perdem dinheiro por falta de controle.
-                O Sistema Financeiro Premium organiza entradas, saídas, parcelas, contas pagas, inadimplentes,
-                estoque, clientes, funcionários, folha de pagamento, metas e relatórios em uma plataforma moderna.
-            </div>
-            <div class="public-highlight-row">
-                <div class="public-highlight">✅ Lucro real</div>
-                <div class="public-highlight">✅ Contas pagas no mês</div>
-                <div class="public-highlight">✅ Clientes inadimplentes</div>
-                <div class="public-highlight">✅ Controle de estoque</div>
-                <div class="public-highlight">✅ Folha de pagamento</div>
-                <div class="public-highlight">✅ IA de ajuda</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    col_acesso, col_demo = st.columns([1, 1])
 
-    st.markdown(
-        """
-        <div class="public-proof">
-            Sua empresa não precisa apenas vender mais. Ela precisa parar de perder dinheiro por falta de organização.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    col_login, col_whats = st.columns([1, 1])
-
-    with col_login:
-        if st.button("Acessar área do sistema", use_container_width=True, key="btn_ir_login_publico"):
+    with col_acesso:
+        if st.button("Acessar área do sistema", use_container_width=True, key="btn_login_landing"):
             st.session_state.tela_login_ativa = True
             st.rerun()
 
-    with col_whats:
-        texto_demo = (
-            "Olá! Quero uma demonstração do Sistema Financeiro Premium da Global Software. "
-            "Quero entender como ele pode ajudar minha empresa a controlar financeiro, estoque, clientes, funcionários e folha de pagamento."
+    with col_demo:
+        st.write("")
+
+    st.markdown(
+        """
+        <div class="lp-wrap">
+            <section class="lp-section-white">
+                <div class="lp-container">
+                    <div class="lp-section-kicker">FUNCIONALIDADES</div>
+                    <div class="lp-section-title">
+                        Tudo o que seu financeiro precisa, em uma única plataforma.
+                    </div>
+
+                    <div class="lp-feature-tabs">
+                        <div class="lp-tab-active">▣ Contas a Pagar</div>
+                        <div class="lp-tab">▤ Contas a Receber</div>
+                        <div class="lp-tab">↻ Inadimplentes</div>
+                        <div class="lp-tab">▥ Estoque</div>
+                        <div class="lp-tab">◉ Folha</div>
+                        <div class="lp-tab">▧ Relatórios</div>
+                    </div>
+
+                    <div class="lp-feature-card-dark">
+                        <div class="lp-chip">▣ Gestão Financeira</div>
+                        <div class="lp-feature-title">
+                            Controle ponta a ponta da operação financeira.
+                        </div>
+
+                        <div class="lp-check-list">
+                            <div class="lp-check-item">
+                                <div class="lp-check-icon">✓</div>
+                                <div>
+                                    <div class="lp-check-title">Contas a pagar e receber</div>
+                                    <div class="lp-check-text">Visualize vencimentos, status, formas de pagamento e valores pendentes com clareza.</div>
+                                </div>
+                            </div>
+
+                            <div class="lp-check-item">
+                                <div class="lp-check-icon">✓</div>
+                                <div>
+                                    <div class="lp-check-title">Clientes inadimplentes</div>
+                                    <div class="lp-check-text">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</div>
+                                </div>
+                            </div>
+
+                            <div class="lp-check-item">
+                                <div class="lp-check-icon">✓</div>
+                                <div>
+                                    <div class="lp-check-title">Contas pagas no mês</div>
+                                    <div class="lp-check-text">Acompanhe tudo que foi pago ou recebido no mês e veja o impacto no caixa.</div>
+                                </div>
+                            </div>
+
+                            <div class="lp-check-item">
+                                <div class="lp-check-icon">✓</div>
+                                <div>
+                                    <div class="lp-check-title">Relatórios e DRE gerencial</div>
+                                    <div class="lp-check-text">Exporte PDF, CSV e acompanhe receita, despesas, lucro e resultado da empresa.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-white">
+                <div class="lp-container">
+                    <div class="lp-section-kicker">PARA CADA PERFIL</div>
+                    <div class="lp-section-title">
+                        Valor real para cada nível da organização.
+                    </div>
+
+                    <div class="lp-profile-grid">
+                        <div class="lp-profile-card">
+                            <div class="lp-icon-box">▥</div>
+                            <div class="lp-profile-title">Estratégico</div>
+                            <div class="lp-profile-sub">Do achismo à previsibilidade.</div>
+
+                            <div class="lp-profile-feature">
+                                <b>DRE e fluxo de caixa</b>
+                                <span>Visão clara de receita, saídas, lucro, contas pagas e valores a receber.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>Decisão com dados</b>
+                                <span>O empresário sabe onde está ganhando, onde está perdendo e onde precisa agir.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>Crescimento organizado</b>
+                                <span>Menos improviso, mais gestão e mais previsibilidade para crescer.</span>
+                            </div>
+                        </div>
+
+                        <div class="lp-profile-card">
+                            <div class="lp-icon-box">👥</div>
+                            <div class="lp-profile-title">Gerencial</div>
+                            <div class="lp-profile-sub">O fim do caos operacional.</div>
+
+                            <div class="lp-profile-feature">
+                                <b>Clientes e inadimplência</b>
+                                <span>Cadastro completo, limite de crédito, status e acompanhamento de pendências.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>Controle de permissões</b>
+                                <span>Administrador, gerente, financeiro e vendedor com acessos separados.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>Estoque e operação</b>
+                                <span>Produtos, custo, preço de venda, estoque mínimo e lucro previsto.</span>
+                            </div>
+                        </div>
+
+                        <div class="lp-profile-card">
+                            <div class="lp-icon-box">⚙</div>
+                            <div class="lp-profile-title">Operacional</div>
+                            <div class="lp-profile-sub">Adeus ao trabalho manual.</div>
+
+                            <div class="lp-profile-feature">
+                                <b>Folha completa</b>
+                                <span>Salário, horas extras, comissão, bônus, premiação, descontos e metas.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>WhatsApp de cobrança</b>
+                                <span>Gere mensagens e links prontos para cobrar ou atender clientes.</span>
+                            </div>
+
+                            <div class="lp-profile-feature">
+                                <b>IA de ajuda</b>
+                                <span>O usuário pergunta como usar o sistema e recebe orientação dentro da plataforma.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-dark">
+                <div class="lp-container">
+                    <div class="lp-section-kicker dark">DEMONSTRAÇÃO</div>
+                    <div class="lp-section-title dark">
+                        Veja como a Global Software funciona na prática.
+                    </div>
+
+                    <div class="lp-feature-card-dark">
+                        <div style="text-align:center;">
+                            <div style="width:96px;height:96px;border-radius:28px;background:rgba(223,255,107,0.18);display:flex;align-items:center;justify-content:center;margin:0 auto 24px auto;color:#dfff6b;font-size:44px;">▶</div>
+                            <div style="font-size:32px;font-weight:950;color:white;margin-bottom:14px;">Explore a plataforma</div>
+                            <div style="font-size:20px;line-height:1.55;color:rgba(255,255,255,0.62);max-width:760px;margin:0 auto 30px auto;">
+                                Navegue pela demonstração e veja como controlar financeiro, estoque, clientes,
+                                funcionários, folha de pagamento e relatórios em um único lugar.
+                            </div>
+                            <div class="lp-fake-btn-primary">Demonstração Interativa →</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-white">
+                <div class="lp-container">
+                    <div class="lp-section-kicker">IMPLANTAÇÃO</div>
+                    <div class="lp-section-title">
+                        Um processo ágil, consultivo e feito junto com você.
+                    </div>
+
+                    <div class="lp-steps">
+                        <div class="lp-step">
+                            <div class="lp-step-icon">🚀</div>
+                            <div class="lp-step-small">ETAPA 1</div>
+                            <div class="lp-step-title">Configuração inicial</div>
+                            <div class="lp-step-text">Parametrizamos empresa, usuários, categorias, permissões e estrutura do sistema.</div>
+                        </div>
+
+                        <div class="lp-step">
+                            <div class="lp-step-icon">🎓</div>
+                            <div class="lp-step-small">ETAPA 2</div>
+                            <div class="lp-step-title">Treinamento mão na massa</div>
+                            <div class="lp-step-text">Ensinamos como cadastrar lançamentos, clientes, estoque, funcionários e folha.</div>
+                        </div>
+
+                        <div class="lp-step">
+                            <div class="lp-step-icon">▶</div>
+                            <div class="lp-step-small">ETAPA 3</div>
+                            <div class="lp-step-title">Go-live</div>
+                            <div class="lp-step-text">A empresa começa a usar o sistema com acompanhamento nos primeiros passos.</div>
+                        </div>
+
+                        <div class="lp-step">
+                            <div class="lp-step-icon">🎧</div>
+                            <div class="lp-step-small">ETAPA 4</div>
+                            <div class="lp-step-title">Suporte rápido</div>
+                            <div class="lp-step-text">Atendimento humano por WhatsApp, treinamento e melhoria contínua.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-dark">
+                <div class="lp-container">
+                    <div class="lp-section-title dark" style="text-align:left;margin-left:0;">
+                        Veja o que nossos clientes dizem sobre a <span>transformação</span> financeira.
+                    </div>
+
+                    <div class="lp-testimonial-grid">
+                        <div class="lp-testimonial">
+                            <div class="lp-quote">“</div>
+                            <div class="lp-testimonial-text">
+                                Antes era tudo no caderno e no WhatsApp. Agora consigo ver contas, clientes,
+                                pagamentos e estoque em poucos minutos.
+                            </div>
+                            <div class="lp-person">
+                                <b>Cliente varejo</b>
+                                <span>Pequena empresa</span>
+                            </div>
+                        </div>
+
+                        <div class="lp-testimonial">
+                            <div class="lp-quote">“</div>
+                            <div class="lp-testimonial-text">
+                                A folha de pagamento ficou muito mais organizada. Comissão, bônus e metas ficaram claros para todos.
+                            </div>
+                            <div class="lp-person">
+                                <b>Gestor comercial</b>
+                                <span>Equipe de vendas</span>
+                            </div>
+                        </div>
+
+                        <div class="lp-testimonial">
+                            <div class="lp-quote">“</div>
+                            <div class="lp-testimonial-text">
+                                O dashboard mostrou onde a empresa estava perdendo dinheiro. Foi uma virada na nossa gestão.
+                            </div>
+                            <div class="lp-person">
+                                <b>Empresário</b>
+                                <span>Prestação de serviços</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-white">
+                <div class="lp-container">
+                    <div class="lp-section-title">
+                        Por que a Global Software?
+                    </div>
+
+                    <div class="lp-compare">
+                        <div class="lp-compare-row">
+                            <div class="lp-compare-cell"><strong>Controle financeiro</strong></div>
+                            <div class="lp-compare-cell lp-good">✓ Global Software<br>Financeiro, clientes, estoque e folha no mesmo lugar.</div>
+                            <div class="lp-compare-cell lp-bad">× Planilhas<br>Dados espalhados e difíceis de acompanhar.</div>
+                        </div>
+
+                        <div class="lp-compare-row">
+                            <div class="lp-compare-cell"><strong>Implantação</strong></div>
+                            <div class="lp-compare-cell lp-good">✓ Rápida e guiada<br>Configuração e treinamento com orientação.</div>
+                            <div class="lp-compare-cell lp-bad">× Sistemas comuns<br>Cliente recebe acesso e precisa se virar sozinho.</div>
+                        </div>
+
+                        <div class="lp-compare-row">
+                            <div class="lp-compare-cell"><strong>Usuários e permissões</strong></div>
+                            <div class="lp-compare-cell lp-good">✓ Controle por função<br>Administrador, gerente, financeiro e vendedor.</div>
+                            <div class="lp-compare-cell lp-bad">× Sem controle<br>Todo mundo vê tudo ou ninguém sabe usar.</div>
+                        </div>
+
+                        <div class="lp-compare-row">
+                            <div class="lp-compare-cell"><strong>Suporte</strong></div>
+                            <div class="lp-compare-cell lp-good">✓ Humano e direto<br>Ajuda por WhatsApp e IA de tutorial interno.</div>
+                            <div class="lp-compare-cell lp-bad">× Demorado<br>Sem orientação prática para o dia a dia.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-white">
+                <div class="lp-container">
+                    <div class="lp-section-title">
+                        Perguntas Frequentes
+                    </div>
+
+                    <div class="lp-faq">
+                        <div class="lp-faq-item">Quanto tempo leva para começar a usar? <span>⌄</span></div>
+                        <div class="lp-faq-item">Consigo cadastrar vários usuários? <span>⌄</span></div>
+                        <div class="lp-faq-item">O sistema controla clientes inadimplentes? <span>⌄</span></div>
+                        <div class="lp-faq-item">Tem controle de estoque e folha de pagamento? <span>⌄</span></div>
+                        <div class="lp-faq-item">Consigo gerar relatórios? <span>⌄</span></div>
+                        <div class="lp-faq-item">Tem treinamento para minha equipe? <span>⌄</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lp-section-dark" id="demo">
+                <div class="lp-container">
+                    <div class="lp-final-title">
+                        Pronto para profissionalizar o financeiro da sua empresa?
+                    </div>
+                    <div class="lp-final-sub">
+                        Agende uma demonstração gratuita e veja a Global Software na prática.
+                    </div>
+                </div>
+            </section>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('<div class="lp-wrap"><div class="lp-section-dark" style="padding-top:0;"><div class="lp-demo-box">', unsafe_allow_html=True)
+
+    st.markdown("### Agendar demonstração")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        nome = st.text_input("Seu nome", placeholder="Ex: Fabrício Santos", key="demo_nome")
+        empresa = st.text_input("Nome da empresa", placeholder="Ex: Global Software", key="demo_empresa")
+        segmento = st.selectbox(
+            "Segmento da empresa",
+            ["Selecionar", "Comércio", "Serviços", "Veículos", "Oficina", "Igreja / Instituição", "Indústria", "Outro"],
+            key="demo_segmento"
         )
 
-        telefone_global = st.text_input(
-            "WhatsApp para demonstração",
-            placeholder="62999999999",
-            key="telefone_publico"
+    with col2:
+        telefone = st.text_input("Telefone / WhatsApp", placeholder="62999999999", key="demo_telefone")
+        email = st.text_input("E-mail profissional", placeholder="contato@empresa.com", key="demo_email")
+        necessidade = st.selectbox(
+            "Principal necessidade",
+            ["Controle financeiro", "Estoque", "Clientes inadimplentes", "Folha de pagamento", "Relatórios", "Sistema completo"],
+            key="demo_necessidade"
         )
 
-        if st.button("Quero uma demonstração agora", use_container_width=True, key="btn_demo_publico"):
-            if telefone_global:
-                link = f"https://wa.me/55{telefone_global}?text={quote(texto_demo)}"
-                st.markdown(f"[Abrir WhatsApp para solicitar demonstração]({link})")
-            else:
-                st.warning("Digite o telefone com DDD para gerar o link.")
+    if st.button("Agendar Demonstração pelo WhatsApp", use_container_width=True, key="btn_agendar_demo_final"):
+        if telefone:
+            texto = (
+                f"Olá! Quero agendar uma demonstração da Global Software.%0A%0A"
+                f"Nome: {nome}%0A"
+                f"Empresa: {empresa}%0A"
+                f"Segmento: {segmento}%0A"
+                f"E-mail: {email}%0A"
+                f"Necessidade principal: {necessidade}%0A%0A"
+                f"Quero ver como o sistema pode ajudar minha empresa."
+            )
+            link = f"https://wa.me/55{telefone}?text={texto}"
+            st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
+        else:
+            st.warning("Digite o telefone com DDD para gerar o link.")
 
-    st.write("")
-
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-        comercial_card(
-            "O problema",
-            "O dinheiro entra, o dinheiro sai, mas no fim do mês muitos empresários não sabem exatamente o que sobrou."
-        )
-
-    with c2:
-        comercial_card(
-            "A solução",
-            "Um sistema completo para financeiro, estoque, clientes, funcionários, folha, metas, relatórios e IA de ajuda."
-        )
-
-    with c3:
-        comercial_card(
-            "O resultado",
-            "Mais controle, menos prejuízo, mais clareza e uma empresa preparada para crescer com gestão profissional."
-        )
+    st.markdown("</div></div></div>", unsafe_allow_html=True)
 
 
 # =====================================================
@@ -1665,14 +2576,14 @@ def responder_ajuda(pergunta):
     if "lançamento" in p or "entrada" in p or "saída" in p or "despesa" in p or "receita" in p:
         return (
             "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. "
-            "Escolha a data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status. "
-            "Se for parcelado, informe o total de parcelas que o sistema cria as parcelas automaticamente."
+            "Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status. "
+            "Se for parcelado, informe o total de parcelas."
         )
 
     if "cliente" in p and "inadimplente" in p:
         return (
-            "Para ver clientes inadimplentes, acesse a aba **Clientes Inadimplentes**. "
-            "O sistema considera inadimplente todo cliente que possui lançamento do tipo Receita com status vencido."
+            "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. "
+            "O sistema considera inadimplente todo cliente que possui Receita vencida."
         )
 
     if "cliente" in p or "crm" in p:
@@ -1684,8 +2595,7 @@ def responder_ajuda(pergunta):
     if "estoque" in p or "produto" in p:
         return (
             "Para controlar estoque, acesse **Estoque**. "
-            "Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor. "
-            "Produtos abaixo do estoque mínimo aparecem como alerta."
+            "Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
         )
 
     if "funcionário" in p or "funcionario" in p:
@@ -1697,38 +2607,36 @@ def responder_ajuda(pergunta):
     if "folha" in p or "pagamento" in p or "salário" in p or "salario" in p:
         return (
             "Para montar a folha de pagamento, acesse **Folha de Pagamento**. "
-            "Selecione o funcionário, mês de referência, salário base, horas extras, comissão, bônus, premiação, desconto e status. "
-            "O sistema calcula o total bruto e líquido automaticamente."
+            "Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
         )
 
     if "meta" in p or "premiação" in p or "premiacao" in p or "bônus" in p or "bonus" in p:
         return (
             "Para cadastrar metas e premiações, vá em **Metas e Premiações**. "
-            "Selecione o funcionário, informe a meta, realizado, prêmio e status. "
-            "Essa área ajuda a acompanhar desempenho e campanhas internas."
+            "Selecione funcionário, informe meta, realizado, prêmio e status."
         )
 
     if "relatório" in p or "relatorio" in p or "pdf" in p:
         return (
             "Para gerar relatório, acesse **Relatórios**. "
-            "Você pode baixar PDF financeiro, CSV de lançamentos, CSV de estoque, clientes, funcionários e folha."
+            "Você pode baixar PDF financeiro e arquivos CSV."
         )
 
     if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
         return (
             "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. "
-            "Digite telefone, nome, valor, vencimento e gere o link pronto para abrir o WhatsApp."
+            "Digite telefone, nome, valor, vencimento e gere o link pronto."
         )
 
     if "dashboard" in p or "painel" in p:
         return (
-            "O **Dashboard** mostra os principais números da empresa: receita, saídas, lucro, caixa, contas pagas no mês, "
-            "clientes inadimplentes, estoque, folha de pagamento, contas a receber, contas a pagar e contas vencidas."
+            "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, "
+            "clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
         )
 
     return (
-        "Posso te ajudar com: lançamentos, clientes, inadimplentes, estoque, funcionários, folha de pagamento, metas, "
-        "relatórios, WhatsApp e dashboard. Escreva, por exemplo: **como cadastrar funcionário?**"
+        "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, "
+        "relatórios, WhatsApp e dashboard. Exemplo: **como cadastrar funcionário?**"
     )
 
 
@@ -1743,13 +2651,12 @@ def tela_apresentacao_comercial():
 
     st.markdown(
         """
-        <div class="commercial-hero">
-            <div class="commercial-tag">GLOBAL SOFTWARE • SISTEMA COMPLETO</div>
-            <div class="commercial-title">Agora o sistema virou uma plataforma completa de gestão empresarial.</div>
-            <div class="commercial-subtitle">
-                Além do financeiro, o sistema controla clientes, inadimplência, estoque, funcionários,
-                folha de pagamento, metas, premiações, relatórios e IA de ajuda.
-            </div>
+        <div class="commercial-panel">
+            <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
+            <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
+            Use esta página como roteiro para vender o sistema. Mostre que a Global Software não é apenas
+            um financeiro, mas uma central de controle para a empresa.
+            </p>
         </div>
         """,
         unsafe_allow_html=True
@@ -1759,36 +2666,35 @@ def tela_apresentacao_comercial():
 
     with c1:
         comercial_card(
-            "Mais completo",
-            "Não é só fluxo de caixa. É gestão completa para pequenas empresas que querem profissionalizar o controle."
+            "Dor principal",
+            "A empresa vende, mas não sabe exatamente quanto lucra, quem deve, o que venceu e para onde o dinheiro vai."
         )
 
     with c2:
         comercial_card(
-            "Mais vendável",
-            "Você pode apresentar como sistema financeiro, CRM, estoque, folha de pagamento e gestão de equipe."
+            "Solução",
+            "Financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios em uma plataforma."
         )
 
     with c3:
         comercial_card(
-            "Mais valor",
-            "Quanto mais áreas o sistema resolve, maior é o valor percebido pelo cliente e maior a chance de venda."
+            "Resultado",
+            "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer."
         )
 
-    st.write("")
-
     st.markdown('<div class="commercial-panel">', unsafe_allow_html=True)
-    st.markdown("## Roteiro de venda atualizado")
+    st.markdown("## Roteiro de venda")
 
     roteiro = """
 Olá, tudo bem? Deixa eu te fazer uma pergunta: sua empresa sabe exatamente quanto lucra, quanto tem para receber, quanto pagou no mês, quais clientes estão inadimplentes e quanto custa sua equipe?
 
 A maioria das empresas não quebra por falta de venda. Quebra por falta de controle.
 
-O Sistema Financeiro Premium resolve isso em um só lugar:
+A Global Software resolve isso em um só lugar:
 controle financeiro, clientes, inadimplentes, estoque, funcionários, folha de pagamento, bônus, comissão, horas extras, metas, premiações, relatórios e IA de ajuda.
 
-Na prática, o empresário passa a enxergar a empresa de verdade: o que entrou, o que saiu, quem deve, o que está vencido, o que está parado no estoque e quanto custa a operação.
+Na prática, o empresário passa a enxergar a empresa de verdade:
+o que entrou, o que saiu, quem deve, o que está vencido, o que está parado no estoque e quanto custa a operação.
 
 Não é apenas um sistema. É uma central de controle para a empresa crescer com organização.
 """
@@ -1811,14 +2717,14 @@ Não é apenas um sistema. É uma central de controle para a empresa crescer com
         preco_card(
             "Plano Gestão Completa",
             "R$ 297/mês",
-            "Inclui financeiro, CRM, estoque, funcionários, folha de pagamento, metas, premiações e relatórios."
+            "Inclui financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios."
         )
 
     with p3:
         preco_card(
             "Plano Premium Personalizado",
             "Sob consulta",
-            "Sistema com identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras."
+            "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras."
         )
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -1834,7 +2740,7 @@ def app():
     if Path("logo.png").exists():
         st.sidebar.image("logo.png", use_container_width=True)
 
-    st.sidebar.title("💼 Sistema Financeiro")
+    st.sidebar.title("💼 Global Software")
     st.sidebar.write(f"**Empresa:** {usuario['empresa_nome']}")
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
     st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
@@ -1934,7 +2840,11 @@ def app():
         c5, c6, c7, c8 = st.columns(4)
 
         with c5:
-            card("Clientes inadimplentes", str(inadimplentes_df["cliente_fornecedor"].nunique()) if not inadimplentes_df.empty else "0", moeda(inadimplentes_df["valor"].sum()) if not inadimplentes_df.empty else moeda(0))
+            card(
+                "Clientes inadimplentes",
+                str(inadimplentes_df["cliente_fornecedor"].nunique()) if not inadimplentes_df.empty else "0",
+                moeda(inadimplentes_df["valor"].sum()) if not inadimplentes_df.empty else moeda(0)
+            )
 
         with c6:
             card("Estoque em custo", moeda(total_estoque_custo), f"{itens_baixo} item(ns) abaixo do mínimo")
@@ -2244,7 +3154,7 @@ def app():
 
                 st.subheader("Resumo por cliente")
                 st.dataframe(
-                    resumo[["cliente_fornecedor", "valor_formatado"]].sort_values("valor_formatado", ascending=False),
+                    resumo[["cliente_fornecedor", "valor_formatado"]],
                     use_container_width=True,
                     hide_index=True
                 )
@@ -2407,7 +3317,13 @@ def app():
                     funcionario_id = func_dict[funcionario_label]
                     mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="folha_mes")
                     funcionario_row = funcionarios[funcionarios["id"] == funcionario_id].iloc[0]
-                    salario = st.number_input("Salário base", min_value=0.0, value=float(funcionario_row["salario_base"] or 0), step=100.0, key="folha_salario")
+                    salario = st.number_input(
+                        "Salário base",
+                        min_value=0.0,
+                        value=float(funcionario_row["salario_base"] or 0),
+                        step=100.0,
+                        key="folha_salario"
+                    )
 
                 with col2:
                     horas_extras = st.number_input("Horas extras", min_value=0.0, step=1.0, key="folha_horas")
@@ -2522,7 +3438,7 @@ def app():
             st.dataframe(folha, use_container_width=True, hide_index=True)
 
     # =================================================
-    # METAS E PREMIAÇÕES
+    # METAS
     # =================================================
 
     elif menu == "Metas e Premiações":
