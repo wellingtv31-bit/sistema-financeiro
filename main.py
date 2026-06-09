@@ -969,64 +969,169 @@ def app():
 
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
-
     if menu == "Dashboard":
         st.title("📊 Dashboard Financeiro Premium")
 
         if df.empty:
-            st.info("Nenhum lançamento cadastrado ainda.")
+            st.info("Nenhum lançamento cadastrado ainda. Cadastre entradas e saídas para visualizar o painel.")
+        else:
+            st.markdown("### 🔎 Filtros do painel")
 
-        c1, c2, c3, c4 = st.columns(4)
+            col_f1, col_f2, col_f3 = st.columns(3)
 
-        with c1:
-            card("Receita total", moeda(ind["receita"]), "Total de entradas")
+            data_min = df["data"].min().date()
+            data_max = df["data"].max().date()
 
-        with c2:
-            card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
+            with col_f1:
+                data_inicio = st.date_input(
+                    "Data inicial",
+                    value=data_min,
+                    key="dash_data_inicio"
+                )
 
-        with c3:
-            card("Saldo em caixa", moeda(ind["caixa"]), "Entradas - saídas")
+            with col_f2:
+                data_fim = st.date_input(
+                    "Data final",
+                    value=data_max,
+                    key="dash_data_fim"
+                )
 
-        with c4:
-            card("Vencidas", moeda(ind["vencidas"]), "Atenção")
+            with col_f3:
+                tipo_filtro = st.selectbox(
+                    "Tipo",
+                    ["Todos"] + list(TIPOS_LANCAMENTO.keys()),
+                    key="dash_tipo_filtro"
+                )
 
-        st.write("")
+            df_periodo = df[
+                (df["data"].dt.date >= data_inicio) &
+                (df["data"].dt.date <= data_fim)
+            ].copy()
 
-        c5, c6, c7, c8 = st.columns(4)
+            if tipo_filtro != "Todos":
+                df_periodo = df_periodo[df_periodo["tipo"] == tipo_filtro]
 
-        with c5:
-            card("Custos", moeda(ind["custo"]))
+            ind = calcular_indicadores(df_periodo)
 
-        with c6:
-            card("Despesas", moeda(ind["despesa_fixa"] + ind["despesa_variavel"]))
+            st.divider()
 
-        with c7:
-            card("A receber", moeda(ind["contas_receber"]))
+            c1, c2, c3, c4 = st.columns(4)
 
-        with c8:
-            card("A pagar", moeda(ind["contas_pagar"]))
+            with c1:
+                card("Receita do período", moeda(ind["receita"]), "Entradas filtradas")
 
-        st.divider()
+            with c2:
+                card("Despesas + custos", moeda(ind["custo"] + ind["despesa_fixa"] + ind["despesa_variavel"]), "Saídas operacionais")
 
-        if not df.empty:
-            col1, col2 = st.columns(2)
+            with c3:
+                card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
 
-            with col1:
-                st.subheader("Evolução mensal")
-                mensal = df.groupby(["mes", "tipo"])["valor"].sum().reset_index()
-                graf = mensal.pivot(index="mes", columns="tipo", values="valor").fillna(0)
-                st.line_chart(graf)
+            with c4:
+                card("Saldo em caixa", moeda(ind["caixa"]), "Resultado final")
 
-            with col2:
-                st.subheader("Categorias")
-                cat = df.groupby("categoria")["valor"].sum().sort_values(ascending=False).head(10)
-                st.bar_chart(cat)
+            st.write("")
 
-            st.subheader("Últimos lançamentos")
-            tabela = df.sort_values("data", ascending=False).head(10).copy()
-            tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
-            tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
-            st.dataframe(tabela, use_container_width=True)
+            c5, c6, c7, c8 = st.columns(4)
+
+            with c5:
+                card("Contas vencidas", moeda(ind["vencidas"]), "Atenção imediata")
+
+            with c6:
+                card("A receber", moeda(ind["contas_receber"]), "Recebimentos pendentes")
+
+            with c7:
+                card("A pagar", moeda(ind["contas_pagar"]), "Pagamentos pendentes")
+
+            with c8:
+                card("Ponto de equilíbrio", moeda(ind["ponto_equilibrio"]), "Meta mínima de venda")
+
+            st.divider()
+
+            if df_periodo.empty:
+                st.warning("Nenhum lançamento encontrado nesse filtro.")
+            else:
+                col_g1, col_g2 = st.columns(2)
+
+                with col_g1:
+                    st.subheader("📈 Receita x Saídas por mês")
+
+                    graf_mensal = df_periodo.copy()
+                    graf_mensal["mes"] = graf_mensal["data"].dt.strftime("%Y-%m")
+
+                    resumo_mensal = graf_mensal.groupby(["mes", "tipo"])["valor"].sum().reset_index()
+                    tabela_graf = resumo_mensal.pivot(index="mes", columns="tipo", values="valor").fillna(0)
+
+                    st.line_chart(tabela_graf)
+
+                with col_g2:
+                    st.subheader("🏷️ Gastos por categoria")
+
+                    gastos = df_periodo[df_periodo["tipo"] != "Receita"]
+
+                    if gastos.empty:
+                        st.info("Nenhum gasto no período.")
+                    else:
+                        categorias = gastos.groupby("categoria")["valor"].sum().sort_values(ascending=False).head(10)
+                        st.bar_chart(categorias)
+
+                st.divider()
+
+                col_r1, col_r2 = st.columns(2)
+
+                with col_r1:
+                    st.subheader("🧾 Resumo por tipo")
+
+                    resumo_tipo = df_periodo.groupby("tipo")["valor"].sum().reset_index()
+                    resumo_tipo["valor_formatado"] = resumo_tipo["valor"].apply(moeda)
+
+                    st.dataframe(
+                        resumo_tipo[["tipo", "valor_formatado"]],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                with col_r2:
+                    st.subheader("⚠️ Contas críticas")
+
+                    criticas = df_periodo[df_periodo["status_real"].isin(["Vencido", "Vence hoje"])].copy()
+
+                    if criticas.empty:
+                        st.success("Nenhuma conta vencida ou vencendo hoje.")
+                    else:
+                        criticas["vencimento"] = criticas["vencimento"].dt.strftime("%d/%m/%Y")
+                        criticas["valor"] = criticas["valor"].apply(moeda)
+
+                        st.dataframe(
+                            criticas[["vencimento", "tipo", "descricao", "cliente_fornecedor", "valor", "status_real"]],
+                            use_container_width=True,
+                            hide_index=True
+                        )
+
+                st.divider()
+
+                st.subheader("📋 Últimos lançamentos do período")
+
+                tabela = df_periodo.sort_values("data", ascending=False).head(20).copy()
+                tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
+                tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+                tabela["valor"] = tabela["valor"].apply(moeda)
+
+                st.dataframe(
+                    tabela[
+                        [
+                            "data",
+                            "vencimento",
+                            "tipo",
+                            "categoria",
+                            "descricao",
+                            "cliente_fornecedor",
+                            "valor",
+                            "status_real"
+                        ]
+                    ],
+                    use_container_width=True,
+                    hide_index=True
+                )
 
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
