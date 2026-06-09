@@ -1,984 +1,1337 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import hashlib
+import json
+from pathlib import Path
 from datetime import date, datetime, timedelta
-import os
-import urllib.parse
-import io
+from io import BytesIO
+from urllib.parse import quote
 
-# =========================================================
-# CONFIGURAÇÃO DO APP
-# =========================================================
+
+# =====================================================
+# CONFIGURAÇÃO INICIAL
+# =====================================================
+
 st.set_page_config(
-    page_title="Sistema Financeiro Profissional",
-    page_icon="💰",
+    page_title="Sistema Financeiro Premium",
+    page_icon="💼",
     layout="wide"
 )
 
-DB_NAME = "financeiro.db"
+DB_PATH = "sistema_financeiro.db"
 
-# =========================================================
-# BANCO DE DADOS
-# =========================================================
+
+# =====================================================
+# ESTILO VISUAL
+# =====================================================
+
+st.markdown(
+    """
+    <style>
+    .main {
+        background-color: #f6f7fb;
+    }
+
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #36115c 0%, #171321 100%);
+        color: white;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: white;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        border-left: 6px solid #7c3aed;
+    }
+
+    .metric-title {
+        color: #6b7280;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .metric-value {
+        color: #111827;
+        font-size: 28px;
+        font-weight: 800;
+        margin-top: 4px;
+    }
+
+    .metric-sub {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 2px;
+    }
+
+    .success-box {
+        background: #ecfdf5;
+        border-left: 5px solid #10b981;
+        padding: 12px;
+        border-radius: 10px;
+        color: #064e3b;
+    }
+
+    .warning-box {
+        background: #fffbeb;
+        border-left: 5px solid #f59e0b;
+        padding: 12px;
+        border-radius: 10px;
+        color: #78350f;
+    }
+
+    .danger-box {
+        background: #fef2f2;
+        border-left: 5px solid #ef4444;
+        padding: 12px;
+        border-radius: 10px;
+        color: #7f1d1d;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# =====================================================
+# FUNÇÕES BÁSICAS
+# =====================================================
+
 def conectar():
-    return sqlite3.connect(DB_NAME, check_same_thread=False)
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
 
 
-def executar_sql(query, params=()):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    conn.commit()
-    conn.close()
+def executar(sql, params=()):
+    con = conectar()
+    cur = con.cursor()
+    cur.execute(sql, params)
+    con.commit()
+    con.close()
 
 
-def carregar_df(query, params=()):
-    conn = conectar()
-    df = pd.read_sql_query(query, conn, params=params)
-    conn.close()
+def consultar(sql, params=()):
+    con = conectar()
+    df = pd.read_sql_query(sql, con, params=params)
+    con.close()
     return df
 
 
-def garantir_coluna(tabela, coluna, tipo):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({tabela})")
-    colunas = [c[1] for c in cursor.fetchall()]
+def hash_senha(senha):
+    return hashlib.sha256(senha.encode("utf-8")).hexdigest()
 
-    if coluna not in colunas:
-        try:
-            cursor.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}")
-            conn.commit()
-        except Exception:
-            pass
-    conn.close()
 
+def moeda(valor):
+    try:
+        valor = float(valor)
+    except Exception:
+        valor = 0
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def percentual(valor):
+    try:
+        valor = float(valor)
+    except Exception:
+        valor = 0
+    return f"{valor:.1f}%".replace(".", ",")
+
+
+def hoje_str():
+    return date.today().strftime("%Y-%m-%d")
+
+
+def data_br(valor):
+    try:
+        return pd.to_datetime(valor).strftime("%d/%m/%Y")
+    except Exception:
+        return ""
+
+
+def dias_para_vencimento(vencimento):
+    try:
+        venc = pd.to_datetime(vencimento).date()
+        return (venc - date.today()).days
+    except Exception:
+        return 0
+
+
+def status_automatico(status, vencimento):
+    if status == "Pago" or status == "Recebido":
+        return status
+
+    dias = dias_para_vencimento(vencimento)
+
+    if dias < 0:
+        return "Vencido"
+    if dias == 0:
+        return "Vence hoje"
+    return "Pendente"
+
+
+# =====================================================
+# BANCO DE DADOS
+# =====================================================
 
 def criar_tabelas():
-    conn = conectar()
-    cursor = conn.cursor()
+    con = conectar()
+    cur = con.cursor()
 
-    cursor.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS empresas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT,
-            cnpj TEXT,
+            nome TEXT NOT NULL,
+            documento TEXT,
             telefone TEXT,
-            endereco TEXT,
-            pix_chave TEXT,
-            pix_nome TEXT,
-            pix_cidade TEXT
+            cidade TEXT,
+            criado_em TEXT
         )
-    """)
+        """
+    )
 
-    cursor.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            usuario TEXT UNIQUE,
-            senha TEXT,
-            nome TEXT
+            empresa_id INTEGER,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            senha_hash TEXT NOT NULL,
+            tipo TEXT NOT NULL,
+            ativo INTEGER DEFAULT 1,
+            criado_em TEXT
         )
-    """)
+        """
+    )
 
-    cursor.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS lancamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
             data TEXT,
+            vencimento TEXT,
             tipo TEXT,
             categoria TEXT,
             descricao TEXT,
+            cliente_fornecedor TEXT,
             valor REAL,
             forma_pagamento TEXT,
+            conta TEXT,
             status TEXT,
-            observacao TEXT
+            parcela_atual INTEGER,
+            parcela_total INTEGER,
+            observacao TEXT,
+            criado_em TEXT
         )
-    """)
+        """
+    )
 
-    cursor.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
             nome TEXT,
             telefone TEXT,
-            cpf TEXT,
-            endereco TEXT,
-            observacao TEXT
-        )
-    """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS parcelas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            cliente TEXT,
-            descricao TEXT,
-            valor REAL,
-            vencimento TEXT,
-            status TEXT
-        )
-    """)
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS contas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            descricao TEXT,
+            email TEXT,
+            documento TEXT,
             tipo TEXT,
-            valor REAL,
-            vencimento TEXT,
-            status TEXT,
-            observacao TEXT
+            observacao TEXT,
+            criado_em TEXT
         )
-    """)
+        """
+    )
 
-    cursor.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS estoque (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
             produto TEXT,
             categoria TEXT,
-            quantidade INTEGER,
-            valor_custo REAL,
-            valor_venda REAL,
-            observacao TEXT
+            quantidade REAL,
+            custo_unitario REAL,
+            preco_venda REAL,
+            fornecedor TEXT,
+            observacao TEXT,
+            criado_em TEXT
         )
-    """)
+        """
+    )
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS configuracoes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            empresa_id INTEGER,
-            chave TEXT,
-            valor TEXT
+    con.commit()
+    con.close()
+
+
+def criar_admin_padrao():
+    empresas = consultar("SELECT * FROM empresas")
+    if empresas.empty:
+        executar(
+            """
+            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("Minha Empresa", "", "", "", datetime.now().isoformat())
         )
-    """)
 
-    conn.commit()
-    conn.close()
-
-    # Atualização automática do banco antigo
-    garantir_coluna("usuarios", "tipo", "TEXT")
-    garantir_coluna("usuarios", "empresa_id", "INTEGER")
-    garantir_coluna("lancamentos", "empresa_id", "INTEGER")
-    garantir_coluna("clientes", "empresa_id", "INTEGER")
-    garantir_coluna("parcelas", "empresa_id", "INTEGER")
-    garantir_coluna("contas", "empresa_id", "INTEGER")
-    garantir_coluna("estoque", "empresa_id", "INTEGER")
-    garantir_coluna("empresas", "pix_chave", "TEXT")
-    garantir_coluna("empresas", "pix_nome", "TEXT")
-    garantir_coluna("empresas", "pix_cidade", "TEXT")
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT OR IGNORE INTO empresas 
-        (id, nome, cnpj, telefone, endereco, pix_chave, pix_nome, pix_cidade)
-        VALUES 
-        (1, 'Minha Empresa', '', '', '', '', 'MINHA EMPRESA', 'GOIANIA')
-    """)
-
-    cursor.execute("""
-        INSERT OR IGNORE INTO usuarios 
-        (usuario, senha, nome, tipo, empresa_id)
-        VALUES 
-        ('admin', '123', 'Administrador', 'Administrador', 1)
-    """)
-
-    cursor.execute("UPDATE usuarios SET tipo = 'Administrador' WHERE usuario = 'admin' AND (tipo IS NULL OR tipo = '')")
-    cursor.execute("UPDATE usuarios SET empresa_id = 1 WHERE empresa_id IS NULL")
-
-    conn.commit()
-    conn.close()
+    usuarios = consultar("SELECT * FROM usuarios")
+    if usuarios.empty:
+        empresa = consultar("SELECT id FROM empresas LIMIT 1").iloc[0]["id"]
+        executar(
+            """
+            INSERT INTO usuarios
+            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(empresa),
+                "Administrador",
+                "admin@empresa.com",
+                hash_senha("123456"),
+                "Administrador",
+                1,
+                datetime.now().isoformat()
+            )
+        )
 
 
-criar_tabelas()
+# =====================================================
+# DADOS FIXOS
+# =====================================================
 
-# =========================================================
-# FUNÇÕES GERAIS
-# =========================================================
-def empresa_atual():
-    return st.session_state.get("empresa_id", 1)
+TIPOS_USUARIO = [
+    "Administrador",
+    "Gerente",
+    "Financeiro",
+    "Vendedor"
+]
+
+TIPOS_LANCAMENTO = {
+    "Receita": [
+        "Venda",
+        "Serviço",
+        "Comissão",
+        "Entrada",
+        "Recebimento de parcela",
+        "Outras receitas"
+    ],
+    "Custo": [
+        "Produto vendido",
+        "Fornecedor",
+        "Matéria-prima",
+        "Frete de compra",
+        "Taxa de cartão",
+        "Comissão paga"
+    ],
+    "Despesa fixa": [
+        "Aluguel",
+        "Internet",
+        "Sistema",
+        "Funcionário",
+        "Contador",
+        "Telefone",
+        "MEI / Imposto fixo"
+    ],
+    "Despesa variável": [
+        "Energia",
+        "Água",
+        "Marketing",
+        "Manutenção",
+        "Transporte",
+        "Alimentação",
+        "Outras despesas"
+    ],
+    "Investimento": [
+        "Equipamento",
+        "Curso",
+        "Ferramenta",
+        "Reforma",
+        "Estoque",
+        "Publicidade estratégica"
+    ],
+    "Dívida": [
+        "Empréstimo",
+        "Financiamento",
+        "Cartão de crédito",
+        "Juros",
+        "Parcela de dívida"
+    ],
+    "Retirada do dono": [
+        "Pró-labore",
+        "Saque pessoal",
+        "Distribuição de lucro"
+    ]
+}
+
+FORMAS_PAGAMENTO = [
+    "Dinheiro",
+    "Pix",
+    "Cartão de débito",
+    "Cartão de crédito",
+    "Boleto",
+    "Transferência",
+    "Promissória",
+    "Outro"
+]
+
+CONTAS = [
+    "Caixa",
+    "Banco",
+    "Conta digital",
+    "Carteira",
+    "Cartão",
+    "Outro"
+]
+
+STATUS_OPCOES = [
+    "Pendente",
+    "Pago",
+    "Recebido"
+]
 
 
-def formatar_moeda(valor):
-    try:
-        return f"R$ {float(valor):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    except Exception:
-        return "R$ 0,00"
+# =====================================================
+# LOGIN
+# =====================================================
+
+def tela_login():
+    st.title("💼 Sistema Financeiro Premium")
+    st.caption("Controle completo de finanças, empresas, usuários, parcelas, relatórios e clientes.")
+
+    aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
+
+    with aba1:
+        st.subheader("Acessar sistema")
+
+        email = st.text_input("E-mail")
+        senha = st.text_input("Senha", type="password")
+
+        if st.button("Entrar", use_container_width=True):
+            usuario = consultar(
+                """
+                SELECT u.*, e.nome as empresa_nome
+                FROM usuarios u
+                LEFT JOIN empresas e ON e.id = u.empresa_id
+                WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
+                """,
+                (email, hash_senha(senha))
+            )
+
+            if usuario.empty:
+                st.error("E-mail ou senha inválidos.")
+            else:
+                st.session_state.usuario = usuario.iloc[0].to_dict()
+                st.rerun()
+
+        st.info("Login padrão para teste: admin@empresa.com | Senha: 123456")
+
+    with aba2:
+        st.subheader("Cadastrar nova empresa")
+
+        nome_empresa = st.text_input("Nome da empresa")
+        documento = st.text_input("CNPJ / CPF")
+        telefone = st.text_input("Telefone")
+        cidade = st.text_input("Cidade")
+
+        nome_usuario = st.text_input("Nome do administrador")
+        email_usuario = st.text_input("E-mail do administrador")
+        senha_usuario = st.text_input("Senha", type="password")
+
+        if st.button("Criar empresa", use_container_width=True):
+            if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
+                st.warning("Preencha todos os campos obrigatórios.")
+            else:
+                try:
+                    executar(
+                        """
+                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
+                    )
+
+                    empresa_id = consultar(
+                        "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
+                        (nome_empresa,)
+                    ).iloc[0]["id"]
+
+                    executar(
+                        """
+                        INSERT INTO usuarios
+                        (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            int(empresa_id),
+                            nome_usuario,
+                            email_usuario,
+                            hash_senha(senha_usuario),
+                            "Administrador",
+                            1,
+                            datetime.now().isoformat()
+                        )
+                    )
+
+                    st.success("Empresa criada com sucesso. Agora faça login.")
+                except Exception as e:
+                    st.error(f"Erro ao criar empresa: {e}")
 
 
-def mostrar_tabela(df):
-    # Não usa st.dataframe para evitar erro de pyarrow
-    if df is None or df.empty:
-        st.info("Nenhum registro encontrado.")
-        return
+# =====================================================
+# CARREGAMENTO DE DADOS
+# =====================================================
 
-    html = df.astype(str).to_html(index=False, escape=False)
-    st.markdown("""
-        <style>
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th { background-color: #111827; color: white; padding: 8px; border: 1px solid #374151; text-align: left; }
-        td { padding: 8px; border: 1px solid #374151; }
-        tr:nth-child(even) { background-color: rgba(255,255,255,0.04); }
-        </style>
-    """, unsafe_allow_html=True)
-    st.markdown(html, unsafe_allow_html=True)
+def empresa_id_atual():
+    return int(st.session_state.usuario["empresa_id"])
+
+
+def usuario_id_atual():
+    return int(st.session_state.usuario["id"])
+
+
+def tipo_usuario_atual():
+    return st.session_state.usuario["tipo"]
 
 
 def carregar_lancamentos():
-    return carregar_df(
-        "SELECT * FROM lancamentos WHERE IFNULL(empresa_id, 1) = ? ORDER BY data DESC, id DESC",
-        (empresa_atual(),)
+    df = consultar(
+        """
+        SELECT *
+        FROM lancamentos
+        WHERE empresa_id = ?
+        ORDER BY vencimento ASC, data DESC, id DESC
+        """,
+        (empresa_id_atual(),)
     )
+
+    if not df.empty:
+        df["data"] = pd.to_datetime(df["data"])
+        df["vencimento"] = pd.to_datetime(df["vencimento"])
+        df["mes"] = df["data"].dt.strftime("%Y-%m")
+        df["status_real"] = df.apply(
+            lambda x: status_automatico(x["status"], x["vencimento"]),
+            axis=1
+        )
+
+    return df
 
 
 def carregar_clientes():
-    return carregar_df(
-        "SELECT * FROM clientes WHERE IFNULL(empresa_id, 1) = ? ORDER BY nome ASC",
-        (empresa_atual(),)
-    )
-
-
-def carregar_parcelas():
-    return carregar_df(
-        "SELECT * FROM parcelas WHERE IFNULL(empresa_id, 1) = ? ORDER BY vencimento ASC",
-        (empresa_atual(),)
-    )
-
-
-def carregar_contas():
-    return carregar_df(
-        "SELECT * FROM contas WHERE IFNULL(empresa_id, 1) = ? ORDER BY vencimento ASC",
-        (empresa_atual(),)
+    return consultar(
+        """
+        SELECT *
+        FROM clientes
+        WHERE empresa_id = ?
+        ORDER BY nome ASC
+        """,
+        (empresa_id_atual(),)
     )
 
 
 def carregar_estoque():
-    return carregar_df(
-        "SELECT * FROM estoque WHERE IFNULL(empresa_id, 1) = ? ORDER BY produto ASC",
-        (empresa_atual(),)
+    return consultar(
+        """
+        SELECT *
+        FROM estoque
+        WHERE empresa_id = ?
+        ORDER BY produto ASC
+        """,
+        (empresa_id_atual(),)
     )
 
 
-def carregar_empresas():
-    return carregar_df("SELECT * FROM empresas ORDER BY nome ASC")
+# =====================================================
+# CÁLCULOS FINANCEIROS
+# =====================================================
 
-
-def dados_empresa():
-    df = carregar_df("SELECT * FROM empresas WHERE id = ?", (empresa_atual(),))
+def calcular_indicadores(df):
     if df.empty:
-        return None
-    return df.iloc[0]
+        return {
+            "receita": 0,
+            "custo": 0,
+            "despesa_fixa": 0,
+            "despesa_variavel": 0,
+            "investimento": 0,
+            "divida": 0,
+            "retirada": 0,
+            "lucro_bruto": 0,
+            "lucro_operacional": 0,
+            "lucro_liquido": 0,
+            "caixa": 0,
+            "margem_bruta": 0,
+            "margem_liquida": 0,
+            "contas_pagar": 0,
+            "contas_receber": 0,
+            "vencidas": 0,
+            "a_vencer": 0,
+            "ponto_equilibrio": 0
+        }
 
-# =========================================================
-# PIX
-# =========================================================
-def crc16(payload):
-    crc = 0xFFFF
-    polynomial = 0x1021
-    for char in payload:
-        crc ^= ord(char) << 8
-        for _ in range(8):
-            if crc & 0x8000:
-                crc = (crc << 1) ^ polynomial
-            else:
-                crc <<= 1
-            crc &= 0xFFFF
-    return f"{crc:04X}"
+    receita = df[df["tipo"] == "Receita"]["valor"].sum()
+    custo = df[df["tipo"] == "Custo"]["valor"].sum()
+    despesa_fixa = df[df["tipo"] == "Despesa fixa"]["valor"].sum()
+    despesa_variavel = df[df["tipo"] == "Despesa variável"]["valor"].sum()
+    investimento = df[df["tipo"] == "Investimento"]["valor"].sum()
+    divida = df[df["tipo"] == "Dívida"]["valor"].sum()
+    retirada = df[df["tipo"] == "Retirada do dono"]["valor"].sum()
+
+    lucro_bruto = receita - custo
+    lucro_operacional = lucro_bruto - despesa_fixa - despesa_variavel
+    lucro_liquido = lucro_operacional - divida
+    caixa = receita - custo - despesa_fixa - despesa_variavel - investimento - divida - retirada
+
+    margem_bruta = (lucro_bruto / receita * 100) if receita > 0 else 0
+    margem_liquida = (lucro_liquido / receita * 100) if receita > 0 else 0
+    ponto_equilibrio = despesa_fixa / (margem_bruta / 100) if margem_bruta > 0 else 0
+
+    pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
+
+    contas_pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
+    contas_receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
+    vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
+    a_vencer = pendentes[pendentes["status_real"].isin(["Pendente", "Vence hoje"])]["valor"].sum()
+
+    return {
+        "receita": receita,
+        "custo": custo,
+        "despesa_fixa": despesa_fixa,
+        "despesa_variavel": despesa_variavel,
+        "investimento": investimento,
+        "divida": divida,
+        "retirada": retirada,
+        "lucro_bruto": lucro_bruto,
+        "lucro_operacional": lucro_operacional,
+        "lucro_liquido": lucro_liquido,
+        "caixa": caixa,
+        "margem_bruta": margem_bruta,
+        "margem_liquida": margem_liquida,
+        "contas_pagar": contas_pagar,
+        "contas_receber": contas_receber,
+        "vencidas": vencidas,
+        "a_vencer": a_vencer,
+        "ponto_equilibrio": ponto_equilibrio
+    }
 
 
-def campo(id_campo, valor):
-    valor = str(valor)
-    return f"{id_campo}{len(valor):02d}{valor}"
-
-
-def gerar_pix_copia_cola(chave, nome, cidade, valor, descricao):
-    chave = str(chave).strip()
-    nome = str(nome).strip()[:25].upper()
-    cidade = str(cidade).strip()[:15].upper()
-    descricao = str(descricao).strip()[:25]
-    gui = campo("00", "BR.GOV.BCB.PIX")
-    chave_pix = campo("01", chave)
-    desc = campo("02", descricao) if descricao else ""
-    merchant_account = campo("26", gui + chave_pix + desc)
-    payload = ""
-    payload += campo("00", "01")
-    payload += merchant_account
-    payload += campo("52", "0000")
-    payload += campo("53", "986")
-    if valor and float(valor) > 0:
-        payload += campo("54", f"{float(valor):.2f}")
-    payload += campo("58", "BR")
-    payload += campo("59", nome if nome else "EMPRESA")
-    payload += campo("60", cidade if cidade else "GOIANIA")
-    payload += campo("62", campo("05", "***"))
-    payload_sem_crc = payload + "6304"
-    return payload_sem_crc + crc16(payload_sem_crc)
-
-# =========================================================
-# LOGIN
-# =========================================================
-def tela_login():
-    st.title("💰 Sistema Financeiro Profissional")
-    st.subheader("Login de acesso")
-
-    with st.form("form_login"):
-        usuario = st.text_input("Usuário")
-        senha = st.text_input("Senha", type="password")
-        entrar = st.form_submit_button("Entrar")
-
-    if entrar:
-        conn = conectar()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, usuario, senha, nome, IFNULL(tipo, 'Usuário'), IFNULL(empresa_id, 1)
-            FROM usuarios 
-            WHERE usuario = ? AND senha = ?
-        """, (usuario, senha))
-        user = cursor.fetchone()
-        conn.close()
-
-        if user:
-            st.session_state["logado"] = True
-            st.session_state["usuario"] = user[1]
-            st.session_state["nome"] = user[3]
-            st.session_state["tipo"] = user[4]
-            st.session_state["empresa_id"] = user[5]
-            st.success("Login realizado com sucesso!")
-            st.rerun()
-        else:
-            st.error("Usuário ou senha incorretos.")
-
-# =========================================================
-# DASHBOARD
-# =========================================================
-def pagina_dashboard():
-    st.title("📊 Dashboard estilo Nubank")
-    df = carregar_lancamentos()
-
-    if df.empty:
-        st.info("Nenhum lançamento cadastrado ainda.")
-        return
-
-    df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
-
-    entradas = df[df["tipo"] == "Entrada"]["valor"].sum()
-    saidas = df[df["tipo"] == "Saída"]["valor"].sum()
-    saldo = entradas - saidas
-
-    st.markdown("""
-        <style>
-        .card-nubank { background: linear-gradient(135deg, #6D28D9, #9333EA); padding: 28px; border-radius: 22px; color: white; box-shadow: 0px 8px 25px rgba(0,0,0,0.25); margin-bottom: 18px; }
-        .card-nubank h2 { font-size: 20px; margin-bottom: 5px; }
-        .card-nubank h1 { font-size: 42px; margin-top: 0px; }
-        </style>
-    """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-        <div class="card-nubank">
-            <h2>Saldo atual</h2>
-            <h1>{formatar_moeda(saldo)}</h1>
-            <p>Entradas: {formatar_moeda(entradas)} | Saídas: {formatar_moeda(saidas)}</p>
+def card(titulo, valor, subtitulo=""):
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-title">{titulo}</div>
+            <div class="metric-value">{valor}</div>
+            <div class="metric-sub">{subtitulo}</div>
         </div>
-    """, unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Entradas", formatar_moeda(entradas))
-    col2.metric("Saídas", formatar_moeda(saidas))
-    col3.metric("Resultado", formatar_moeda(saldo))
-
-    st.divider()
-    st.subheader("📈 Evolução financeira")
-
-    df_grafico = df.dropna(subset=["data"]).copy()
-
-    if not df_grafico.empty:
-        resumo_diario = df_grafico.groupby(
-            [df_grafico["data"].dt.strftime("%d/%m/%Y"), "tipo"]
-        )["valor"].sum().reset_index()
-
-        resumo_diario.columns = ["Data", "Tipo", "Valor"]
-
-        resumo_diario["Valor"] = resumo_diario["Valor"].apply(formatar_moeda)
-
-        mostrar_tabela(resumo_diario)
-    else:
-        st.info("Nenhuma data válida para gerar evolução financeira.")
-
-    st.divider()
-    st.subheader("📋 Últimos lançamentos")
-    mostrar_tabela(df.head(10))
-
-# =========================================================
-# ENTRADAS E SAÍDAS
-# =========================================================
-def pagina_lancamentos():
-    st.title("💵 Entradas e Saídas")
-
-    with st.form("form_lancamento"):
-        col1, col2 = st.columns(2)
-        with col1:
-            data_lancamento = st.date_input("Data", value=date.today())
-            tipo = st.selectbox("Tipo", ["Entrada", "Saída"])
-            categoria = st.selectbox("Categoria", ["Venda", "Compra", "Despesa", "Salário", "Aluguel", "Combustível", "Manutenção", "Parcela", "Pix", "Promissória", "Outros"])
-        with col2:
-            valor = st.number_input("Valor", min_value=0.0, step=10.0)
-            forma_pagamento = st.selectbox("Forma de pagamento", ["Dinheiro", "Pix", "Cartão", "Boleto", "Promissória", "Transferência"])
-            status = st.selectbox("Status", ["Pago", "Pendente", "Atrasado"])
-        descricao = st.text_input("Descrição")
-        observacao = st.text_area("Observação")
-        salvar = st.form_submit_button("Salvar lançamento")
-
-    if salvar:
-        executar_sql("""
-            INSERT INTO lancamentos 
-            (empresa_id, data, tipo, categoria, descricao, valor, forma_pagamento, status, observacao)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (empresa_atual(), str(data_lancamento), tipo, categoria, descricao, valor, forma_pagamento, status, observacao))
-        st.success("Lançamento salvo com sucesso!")
-        st.rerun()
-
-    st.divider()
-    st.subheader("Lançamentos cadastrados")
-    df = carregar_lancamentos()
-    if not df.empty:
-        mostrar_tabela(df)
-        id_excluir = st.number_input("ID para excluir lançamento", min_value=1, step=1)
-        if st.button("Excluir lançamento"):
-            executar_sql("DELETE FROM lancamentos WHERE id = ? AND IFNULL(empresa_id, 1) = ?", (id_excluir, empresa_atual()))
-            st.success("Lançamento excluído.")
-            st.rerun()
-    else:
-        st.info("Nenhum lançamento cadastrado.")
-
-# =========================================================
-# CONTAS A PAGAR / RECEBER
-# =========================================================
-def pagina_contas():
-    st.title("📅 Contas a Pagar e Receber")
-
-    with st.form("form_contas"):
-        descricao = st.text_input("Descrição")
-        tipo = st.selectbox("Tipo", ["A pagar", "A receber"])
-        valor = st.number_input("Valor", min_value=0.0, step=10.0)
-        vencimento = st.date_input("Vencimento")
-        status = st.selectbox("Status", ["Pendente", "Pago", "Recebido", "Atrasado"])
-        observacao = st.text_area("Observação")
-        salvar = st.form_submit_button("Salvar conta")
-
-    if salvar:
-        executar_sql("""
-            INSERT INTO contas (empresa_id, descricao, tipo, valor, vencimento, status, observacao)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (empresa_atual(), descricao, tipo, valor, str(vencimento), status, observacao))
-        st.success("Conta salva com sucesso!")
-        st.rerun()
-
-    df = carregar_contas()
-    if not df.empty:
-        df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-        col1, col2 = st.columns(2)
-        col1.metric("Total a pagar", formatar_moeda(df[df["tipo"] == "A pagar"]["valor"].sum()))
-        col2.metric("Total a receber", formatar_moeda(df[df["tipo"] == "A receber"]["valor"].sum()))
-        mostrar_tabela(df)
-    else:
-        st.info("Nenhuma conta cadastrada.")
+        """,
+        unsafe_allow_html=True
+    )
 
 
-def pagina_contas_receber():
-    st.title("💰 Contas a Receber")
-    st.subheader("Cadastrar conta a receber")
-    clientes = carregar_clientes()
-    nomes_clientes = clientes["nome"].tolist() if not clientes.empty else []
+# =====================================================
+# PDF
+# =====================================================
 
-    with st.form("form_contas_receber"):
-        cliente = st.selectbox("Cliente", nomes_clientes) if nomes_clientes else st.text_input("Cliente")
-        descricao = st.text_input("Descrição")
-        valor = st.number_input("Valor a receber", min_value=0.0, step=10.0)
-        vencimento = st.date_input("Data de vencimento")
-        status = st.selectbox("Status", ["Pendente", "Recebido", "Atrasado"])
-        forma_pagamento = st.selectbox("Forma de pagamento", ["Dinheiro", "Pix", "Cartão", "Boleto", "Promissória", "Transferência"])
-        observacao = st.text_area("Observação")
-        salvar = st.form_submit_button("Salvar conta a receber")
-
-    if salvar:
-        executar_sql("""
-            INSERT INTO contas (empresa_id, descricao, tipo, valor, vencimento, status, observacao)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (empresa_atual(), f"{cliente} - {descricao}", "A receber", valor, str(vencimento), status, f"Forma de pagamento: {forma_pagamento} | {observacao}"))
-        st.success("Conta a receber salva com sucesso!")
-        st.rerun()
-
-    df = carregar_contas()
-    if df.empty:
-        st.info("Nenhuma conta a receber cadastrada.")
-        return
-
-    df = df[df["tipo"] == "A receber"]
-    if df.empty:
-        st.info("Nenhuma conta a receber cadastrada.")
-        return
-
-    df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-    df["vencimento_data"] = pd.to_datetime(df["vencimento"], errors="coerce").dt.date
-    hoje = date.today()
-    df.loc[(df["status"] != "Recebido") & (df["status"] != "Pago") & (df["vencimento_data"] < hoje), "status"] = "Atrasado"
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total a receber", formatar_moeda(df[df["status"] != "Recebido"]["valor"].sum()))
-    col2.metric("Total recebido", formatar_moeda(df[df["status"].isin(["Recebido", "Pago"])]["valor"].sum()))
-    col3.metric("Total atrasado", formatar_moeda(df[df["status"] == "Atrasado"]["valor"].sum()))
-
-    filtro = st.selectbox("Filtrar por status", ["Todos", "Pendente", "Recebido", "Atrasado"])
-    df_mostrar = df if filtro == "Todos" else df[df["status"] == filtro]
-    mostrar_tabela(df_mostrar.drop(columns=["vencimento_data"], errors="ignore"))
-
-    st.divider()
-    id_receber = st.number_input("ID da conta recebida", min_value=1, step=1)
-    if st.button("Marcar como recebido"):
-        executar_sql("UPDATE contas SET status = ? WHERE id = ? AND tipo = ? AND IFNULL(empresa_id, 1) = ?", ("Recebido", id_receber, "A receber", empresa_atual()))
-        st.success("Conta marcada como recebida!")
-        st.rerun()
-
-    id_excluir = st.number_input("ID para excluir conta a receber", min_value=1, step=1, key="excluir_receber")
-    if st.button("Excluir conta a receber"):
-        executar_sql("DELETE FROM contas WHERE id = ? AND tipo = ? AND IFNULL(empresa_id, 1) = ?", (id_excluir, "A receber", empresa_atual()))
-        st.success("Conta a receber excluída!")
-        st.rerun()
-
-# =========================================================
-# PARCELAS / CRM / ESTOQUE
-# =========================================================
-def pagina_parcelas():
-    st.title("🧾 Controle de Parcelas")
-    clientes = carregar_clientes()
-    nomes_clientes = clientes["nome"].tolist() if not clientes.empty else []
-    with st.form("form_parcelas"):
-        cliente = st.selectbox("Cliente", nomes_clientes) if nomes_clientes else st.text_input("Cliente")
-        descricao = st.text_input("Descrição")
-        valor = st.number_input("Valor da parcela", min_value=0.0, step=10.0)
-        vencimento = st.date_input("Vencimento")
-        status = st.selectbox("Status", ["Pendente", "Pago", "Atrasado"])
-        salvar = st.form_submit_button("Salvar parcela")
-    if salvar:
-        executar_sql("INSERT INTO parcelas (empresa_id, cliente, descricao, valor, vencimento, status) VALUES (?, ?, ?, ?, ?, ?)", (empresa_atual(), cliente, descricao, valor, str(vencimento), status))
-        st.success("Parcela salva com sucesso!")
-        st.rerun()
-    df = carregar_parcelas()
-    if not df.empty:
-        df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Pendente", formatar_moeda(df[df["status"] == "Pendente"]["valor"].sum()))
-        col2.metric("Pago", formatar_moeda(df[df["status"] == "Pago"]["valor"].sum()))
-        col3.metric("Atrasado", formatar_moeda(df[df["status"] == "Atrasado"]["valor"].sum()))
-        mostrar_tabela(df)
-    else:
-        st.info("Nenhuma parcela cadastrada.")
-
-
-def pagina_clientes():
-    st.title("👥 CRM Financeiro / Clientes")
-    with st.form("form_clientes"):
-        nome = st.text_input("Nome")
-        telefone = st.text_input("Telefone")
-        cpf = st.text_input("CPF")
-        endereco = st.text_input("Endereço")
-        observacao = st.text_area("Observação")
-        salvar = st.form_submit_button("Salvar cliente")
-    if salvar:
-        executar_sql("INSERT INTO clientes (empresa_id, nome, telefone, cpf, endereco, observacao) VALUES (?, ?, ?, ?, ?, ?)", (empresa_atual(), nome, telefone, cpf, endereco, observacao))
-        st.success("Cliente salvo com sucesso!")
-        st.rerun()
-    df = carregar_clientes()
-    if not df.empty:
-        pesquisa = st.text_input("Pesquisar cliente")
-        if pesquisa:
-            df = df[df["nome"].str.contains(pesquisa, case=False, na=False) | df["telefone"].str.contains(pesquisa, case=False, na=False) | df["cpf"].str.contains(pesquisa, case=False, na=False)]
-        mostrar_tabela(df)
-    else:
-        st.info("Nenhum cliente cadastrado.")
-
-
-def pagina_estoque():
-    st.title("📦 Controle de Estoque")
-    with st.form("form_estoque"):
-        produto = st.text_input("Produto")
-        categoria = st.text_input("Categoria")
-        quantidade = st.number_input("Quantidade", min_value=0, step=1)
-        valor_custo = st.number_input("Valor de custo", min_value=0.0, step=10.0)
-        valor_venda = st.number_input("Valor de venda", min_value=0.0, step=10.0)
-        observacao = st.text_area("Observação")
-        salvar = st.form_submit_button("Salvar produto")
-    if salvar:
-        executar_sql("INSERT INTO estoque (empresa_id, produto, categoria, quantidade, valor_custo, valor_venda, observacao) VALUES (?, ?, ?, ?, ?, ?, ?)", (empresa_atual(), produto, categoria, quantidade, valor_custo, valor_venda, observacao))
-        st.success("Produto salvo com sucesso!")
-        st.rerun()
-    df = carregar_estoque()
-    if not df.empty:
-        df["quantidade"] = pd.to_numeric(df["quantidade"], errors="coerce").fillna(0)
-        df["valor_custo"] = pd.to_numeric(df["valor_custo"], errors="coerce").fillna(0)
-        df["valor_venda"] = pd.to_numeric(df["valor_venda"], errors="coerce").fillna(0)
-        total_custo = (df["quantidade"] * df["valor_custo"]).sum()
-        total_venda = (df["quantidade"] * df["valor_venda"]).sum()
-        lucro = total_venda - total_custo
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total em custo", formatar_moeda(total_custo))
-        col2.metric("Total em venda", formatar_moeda(total_venda))
-        col3.metric("Lucro previsto", formatar_moeda(lucro))
-        mostrar_tabela(df)
-    else:
-        st.info("Nenhum produto cadastrado.")
-
-# =========================================================
-# PIX / RELATÓRIOS / IA / WHATSAPP
-# =========================================================
-def pagina_pix():
-    st.title("⚡ Integração Pix")
-    empresa = dados_empresa()
-    if empresa is None:
-        st.warning("Cadastre uma empresa primeiro.")
-        return
-    with st.form("form_pix_config"):
-        chave = st.text_input("Chave Pix", value=str(empresa["pix_chave"]) if pd.notna(empresa["pix_chave"]) else "")
-        nome = st.text_input("Nome recebedor", value=str(empresa["pix_nome"]) if pd.notna(empresa["pix_nome"]) else "")
-        cidade = st.text_input("Cidade", value=str(empresa["pix_cidade"]) if pd.notna(empresa["pix_cidade"]) else "GOIANIA")
-        salvar_config = st.form_submit_button("Salvar configuração Pix")
-    if salvar_config:
-        executar_sql("UPDATE empresas SET pix_chave = ?, pix_nome = ?, pix_cidade = ? WHERE id = ?", (chave, nome, cidade, empresa_atual()))
-        st.success("Configuração Pix salva!")
-        st.rerun()
-    valor = st.number_input("Valor do Pix", min_value=0.0, step=10.0)
-    descricao = st.text_input("Descrição do pagamento", value="Pagamento")
-    if st.button("Gerar Pix"):
-        empresa = dados_empresa()
-        if not empresa["pix_chave"]:
-            st.error("Cadastre a chave Pix primeiro.")
-        else:
-            pix = gerar_pix_copia_cola(empresa["pix_chave"], empresa["pix_nome"], empresa["pix_cidade"], valor, descricao)
-            st.success("Pix gerado com sucesso!")
-            st.text_area("Pix copia e cola", pix, height=180)
-
-
-def gerar_relatorio_texto(df, titulo):
-    linhas = [titulo, "=" * 60, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ""]
-    for _, row in df.iterrows():
-        linhas.append(f"{row.get('data', '')} | {row.get('tipo', '')} | {row.get('categoria', '')} | {row.get('descricao', '')} | {formatar_moeda(row.get('valor', 0))} | {row.get('status', '')}")
-    return "\n".join(linhas)
-
-
-def gerar_pdf_simples(df, titulo):
+def gerar_pdf_relatorio(df, ind):
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.pdfgen import canvas
-        buffer = io.BytesIO()
-        pdf = canvas.Canvas(buffer, pagesize=A4)
-        largura, altura = A4
-        y = altura - 50
-        pdf.setFont("Helvetica-Bold", 14)
-        pdf.drawString(40, y, titulo)
-        y -= 25
-        pdf.setFont("Helvetica", 9)
-        pdf.drawString(40, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-        y -= 30
-        for _, row in df.iterrows():
-            texto = f"{row.get('data', '')} | {row.get('tipo', '')} | {row.get('categoria', '')} | {row.get('descricao', '')} | {formatar_moeda(row.get('valor', 0))}"
-            pdf.drawString(40, y, texto[:110])
-            y -= 18
-            if y < 50:
-                pdf.showPage()
-                pdf.setFont("Helvetica", 9)
-                y = altura - 50
-        pdf.save()
-        buffer.seek(0)
-        return buffer.getvalue()
+        from reportlab.lib.units import cm
     except Exception:
         return None
 
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
 
-def pagina_relatorios():
-    st.title("📑 Relatórios PDF / CSV")
-    df = carregar_lancamentos()
-    if df.empty:
-        st.info("Nenhum dado para gerar relatório.")
-        return
-    df["data"] = pd.to_datetime(df["data"], errors="coerce")
-    df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-    col1, col2 = st.columns(2)
-    with col1:
-        data_inicio = st.date_input("Data inicial", value=date.today().replace(day=1))
-    with col2:
-        data_fim = st.date_input("Data final", value=date.today())
-    df_filtrado = df[(df["data"] >= pd.to_datetime(data_inicio)) & (df["data"] <= pd.to_datetime(data_fim))]
-    if df_filtrado.empty:
-        st.warning("Nenhum lançamento encontrado nesse período.")
-        return
-    entradas = df_filtrado[df_filtrado["tipo"] == "Entrada"]["valor"].sum()
-    saidas = df_filtrado[df_filtrado["tipo"] == "Saída"]["valor"].sum()
-    saldo = entradas - saidas
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Entradas", formatar_moeda(entradas))
-    col2.metric("Saídas", formatar_moeda(saidas))
-    col3.metric("Saldo", formatar_moeda(saldo))
-    mostrar_tabela(df_filtrado)
-    csv = df_filtrado.to_csv(index=False).encode("utf-8")
-    st.download_button("Baixar CSV", csv, "relatorio_financeiro.csv", "text/csv")
-    pdf = gerar_pdf_simples(df_filtrado, "Relatório Financeiro")
-    if pdf:
-        st.download_button("Baixar PDF", pdf, "relatorio_financeiro.pdf", "application/pdf")
-    else:
-        txt = gerar_relatorio_texto(df_filtrado, "Relatório Financeiro")
-        st.warning("Para gerar PDF real, instale o reportlab.")
-        st.code(r'.\venv\Scripts\python.exe -m pip install reportlab')
-        st.download_button("Baixar relatório em TXT", txt.encode("utf-8"), "relatorio_financeiro.txt", "text/plain")
+    largura, altura = A4
 
+    y = altura - 2 * cm
 
-def pagina_ia():
-    st.title("🤖 IA para Análise Financeira")
-    df = carregar_lancamentos()
-    if df.empty:
-        st.info("Cadastre lançamentos para gerar análise.")
-        return
-    df["valor"] = pd.to_numeric(df["valor"], errors="coerce").fillna(0)
-    entradas = df[df["tipo"] == "Entrada"]["valor"].sum()
-    saidas = df[df["tipo"] == "Saída"]["valor"].sum()
-    saldo = entradas - saidas
-    st.write(f"Total de entradas: **{formatar_moeda(entradas)}**")
-    st.write(f"Total de saídas: **{formatar_moeda(saidas)}**")
-    st.write(f"Saldo atual: **{formatar_moeda(saldo)}**")
-    if saldo > 0:
-        st.success("Sua empresa está com saldo positivo. Continue controlando as despesas e mantenha uma reserva.")
-    elif saldo == 0:
-        st.warning("Seu saldo está zerado. O ideal é criar margem de lucro e controlar melhor as saídas.")
-    else:
-        st.error("Seu saldo está negativo. É necessário reduzir despesas, cobrar pendências ou aumentar entradas.")
-    categorias = df.groupby("categoria")["valor"].sum().sort_values(ascending=False).reset_index()
-    if not categorias.empty:
-        st.subheader("Categorias com maior movimentação")
-        mostrar_tabela(categorias)
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(2 * cm, y, "Relatório Financeiro")
+    y -= 1 * cm
 
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(2 * cm, y, f"Empresa: {st.session_state.usuario['empresa_nome']}")
+    y -= 0.5 * cm
+    pdf.drawString(2 * cm, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    y -= 1 * cm
 
-def pagina_whatsapp():
-    st.title("📲 Integração WhatsApp Manual")
-    st.info("Gere mensagens prontas e link para abrir no WhatsApp.")
-    clientes = carregar_clientes()
-    nomes_clientes = clientes["nome"].tolist() if not clientes.empty else []
-    if nomes_clientes:
-        cliente_nome = st.selectbox("Cliente", nomes_clientes)
-        cliente_row = clientes[clientes["nome"] == cliente_nome].iloc[0]
-        telefone = str(cliente_row["telefone"])
-    else:
-        cliente_nome = st.text_input("Nome do cliente")
-        telefone = st.text_input("Telefone com DDD")
-    valor = st.number_input("Valor", min_value=0.0, step=10.0)
-    vencimento = st.date_input("Vencimento")
-    tipo_msg = st.selectbox("Tipo de mensagem", ["Cobrança amigável", "Lembrete de vencimento", "Agradecimento", "Oferta"])
-    if st.button("Gerar mensagem"):
-        if tipo_msg == "Cobrança amigável":
-            mensagem = f"Olá, {cliente_nome}! Tudo bem?\n\nPassando para lembrar sobre o valor de {formatar_moeda(valor)}, com vencimento em {vencimento.strftime('%d/%m/%Y')}.\n\nQualquer dúvida, estou à disposição."
-        elif tipo_msg == "Lembrete de vencimento":
-            mensagem = f"Olá, {cliente_nome}! Tudo certo?\n\nSua parcela no valor de {formatar_moeda(valor)} vence em {vencimento.strftime('%d/%m/%Y')}.\n\nObrigado pela atenção."
-        elif tipo_msg == "Oferta":
-            mensagem = f"Olá, {cliente_nome}! Temos uma condição especial disponível para você.\n\nMe chama aqui para eu te passar os detalhes."
-        else:
-            mensagem = f"Olá, {cliente_nome}!\n\nObrigado pela confiança. Conte sempre conosco."
-        st.text_area("Mensagem pronta", mensagem, height=180)
-        telefone_limpo = "".join(filter(str.isdigit, telefone))
-        if telefone_limpo:
-            link = f"https://wa.me/55{telefone_limpo}?text={urllib.parse.quote(mensagem)}"
-            st.markdown(f"[Abrir no WhatsApp]({link})")
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Resumo")
+    y -= 0.7 * cm
+
+    pdf.setFont("Helvetica", 10)
+    linhas = [
+        ("Receita", moeda(ind["receita"])),
+        ("Custo", moeda(ind["custo"])),
+        ("Despesa fixa", moeda(ind["despesa_fixa"])),
+        ("Despesa variável", moeda(ind["despesa_variavel"])),
+        ("Lucro bruto", moeda(ind["lucro_bruto"])),
+        ("Lucro líquido", moeda(ind["lucro_liquido"])),
+        ("Caixa", moeda(ind["caixa"])),
+        ("Contas a pagar", moeda(ind["contas_pagar"])),
+        ("Contas a receber", moeda(ind["contas_receber"])),
+        ("Vencidas", moeda(ind["vencidas"])),
+    ]
+
+    for nome, valor in linhas:
+        pdf.drawString(2 * cm, y, f"{nome}: {valor}")
+        y -= 0.45 * cm
+
+    y -= 0.5 * cm
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Últimos lançamentos")
+    y -= 0.7 * cm
+
+    pdf.setFont("Helvetica", 8)
+
+    if not df.empty:
+        ultimos = df.sort_values("data", ascending=False).head(15)
+        for _, row in ultimos.iterrows():
+            linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
+            pdf.drawString(2 * cm, y, linha[:110])
+            y -= 0.35 * cm
+
+            if y < 2 * cm:
+                pdf.showPage()
+                y = altura - 2 * cm
+                pdf.setFont("Helvetica", 8)
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
 
 
-def pagina_whatsapp_automatico():
-    st.title("🤖 WhatsApp Automático → Sistema")
-    st.success("Esta aba mostra como ligar o WhatsApp ao sistema usando o arquivo whatsapp_api.py.")
-    st.write("Mensagens aceitas pelo robô:")
-    st.code("""
-entrada venda prisma 45900 pix pago
-saida compra peça 350 dinheiro pago
-compra pneu 1200 pix pago
-venda moto cg 9999 promissória pendente
-recebi parcela João 800 pix pago
-paguei aluguel 1500 pix pago
-""")
-    st.subheader("1. Instalar biblioteca da API")
-    st.code(r".\venv\Scripts\python.exe -m pip install fastapi uvicorn")
-    st.subheader("2. Rodar a API do WhatsApp em outro terminal")
-    st.code(r".\venv\Scripts\python.exe -m uvicorn whatsapp_api:app --host 0.0.0.0 --port 8000")
-    st.subheader("3. Teste local sem WhatsApp")
-    st.code(r'''Invoke-RestMethod -Uri "http://localhost:8000/whatsapp" -Method POST -ContentType "application/json" -Body '{"texto":"entrada venda prisma 45900 pix pago"}' ''')
-    st.info("Depois disso, basta ligar esse webhook no n8n, Z-API, Evolution API ou WhatsApp Cloud API.")
+# =====================================================
+# TELA PRINCIPAL
+# =====================================================
 
-# =========================================================
-# NOTIFICAÇÕES / BACKUP / MULTIEMPRESA / ADMIN / MYSQL / ANDROID
-# =========================================================
-def pagina_notificacoes():
-    st.title("🔔 Notificações Automáticas")
-    hoje = date.today()
-    limite = hoje + timedelta(days=3)
-    contas = carregar_contas()
-    parcelas = carregar_parcelas()
-    st.subheader("Contas vencidas ou próximas do vencimento")
-    if not contas.empty:
-        contas["vencimento_data"] = pd.to_datetime(contas["vencimento"], errors="coerce").dt.date
-        alertas = contas[(contas["status"] != "Pago") & (contas["status"] != "Recebido") & (contas["vencimento_data"] <= limite)]
-        mostrar_tabela(alertas.drop(columns=["vencimento_data"], errors="ignore")) if not alertas.empty else st.success("Nenhuma conta vencida ou próxima do vencimento.")
-    else:
-        st.info("Nenhuma conta cadastrada.")
-    st.divider()
-    st.subheader("Parcelas vencidas ou próximas do vencimento")
-    if not parcelas.empty:
-        parcelas["vencimento_data"] = pd.to_datetime(parcelas["vencimento"], errors="coerce").dt.date
-        alertas = parcelas[(parcelas["status"] != "Pago") & (parcelas["vencimento_data"] <= limite)]
-        mostrar_tabela(alertas.drop(columns=["vencimento_data"], errors="ignore")) if not alertas.empty else st.success("Nenhuma parcela vencida ou próxima do vencimento.")
-    else:
-        st.info("Nenhuma parcela cadastrada.")
-
-
-def pagina_backup():
-    st.title("☁️ Backup em Nuvem / Local")
-    if os.path.exists(DB_NAME):
-        with open(DB_NAME, "rb") as file:
-            st.download_button("Baixar backup local", file, f"backup_financeiro_{datetime.now().strftime('%Y%m%d_%H%M')}.db", "application/octet-stream")
-    else:
-        st.warning("Banco de dados ainda não encontrado.")
-    st.info("Backup em nuvem pode ser integrado futuramente com Google Drive, Dropbox, OneDrive ou MySQL online.")
-
-
-def pagina_multiempresas():
-    st.title("🏢 Multiempresas")
-    with st.form("form_empresa"):
-        nome = st.text_input("Nome da empresa")
-        cnpj = st.text_input("CNPJ")
-        telefone = st.text_input("Telefone")
-        endereco = st.text_input("Endereço")
-        pix_chave = st.text_input("Chave Pix")
-        pix_nome = st.text_input("Nome para Pix")
-        pix_cidade = st.text_input("Cidade Pix", value="GOIANIA")
-        salvar = st.form_submit_button("Salvar empresa")
-    if salvar:
-        executar_sql("INSERT INTO empresas (nome, cnpj, telefone, endereco, pix_chave, pix_nome, pix_cidade) VALUES (?, ?, ?, ?, ?, ?, ?)", (nome, cnpj, telefone, endereco, pix_chave, pix_nome, pix_cidade))
-        st.success("Empresa cadastrada com sucesso!")
-        st.rerun()
-    empresas = carregar_empresas()
-    if not empresas.empty:
-        mostrar_tabela(empresas)
-        opcoes = {f"{row['id']} - {row['nome']}": row["id"] for _, row in empresas.iterrows()}
-        escolha = st.selectbox("Selecionar empresa atual", list(opcoes.keys()))
-        if st.button("Usar esta empresa"):
-            st.session_state["empresa_id"] = opcoes[escolha]
-            st.success("Empresa selecionada com sucesso!")
-            st.rerun()
-
-
-def pagina_admin():
-    st.title("⚙️ Painel Administrativo")
-    empresas = carregar_empresas()
-    empresas_opcoes = {f"{row['id']} - {row['nome']}": row["id"] for _, row in empresas.iterrows()}
-    with st.form("form_usuario"):
-        nome = st.text_input("Nome")
-        usuario = st.text_input("Usuário")
-        senha = st.text_input("Senha", type="password")
-        tipo = st.selectbox("Tipo", ["Administrador", "Usuário"])
-        empresa_escolhida = st.selectbox("Empresa", list(empresas_opcoes.keys())) if empresas_opcoes else None
-        salvar = st.form_submit_button("Criar usuário")
-    if salvar:
-        try:
-            empresa_id = empresas_opcoes[empresa_escolhida] if empresa_escolhida else 1
-            executar_sql("INSERT INTO usuarios (usuario, senha, nome, tipo, empresa_id) VALUES (?, ?, ?, ?, ?)", (usuario, senha, nome, tipo, empresa_id))
-            st.success("Usuário criado com sucesso!")
-            st.rerun()
-        except Exception:
-            st.error("Esse usuário já existe ou ocorreu algum erro.")
-    usuarios = carregar_df("""
-        SELECT usuarios.id, usuarios.usuario, usuarios.nome, usuarios.tipo, empresas.nome AS empresa
-        FROM usuarios
-        LEFT JOIN empresas ON empresas.id = usuarios.empresa_id
-        ORDER BY usuarios.id DESC
-    """)
-    mostrar_tabela(usuarios)
-
-
-def pagina_mysql():
-    st.title("🗄️ Banco de Dados SQLite / MySQL")
-    st.success("Este sistema está rodando com SQLite local.")
-    st.write(f"Arquivo do banco atual: `{DB_NAME}`")
-    st.info("Para versão online com MySQL, instale mysql-connector-python e troque a função conectar().")
-    st.code(r".\venv\Scripts\python.exe -m pip install mysql-connector-python")
-
-
-def pagina_android():
-    st.title("📱 App Android APK")
-    st.info("Este sistema pode virar app Android usando WebView ou PWA.")
-    st.write("1. Hospedar o sistema. 2. Criar app WebView. 3. Gerar APK pelo Android Studio.")
-    st.code(r".\venv\Scripts\python.exe -m streamlit run main.py")
-
-# =========================================================
-# APP PRINCIPAL
-# =========================================================
 def app():
-    empresa = dados_empresa()
-    nome_empresa = empresa["nome"] if empresa is not None else "Empresa"
-    st.sidebar.title("💰 Sistema Financeiro")
-    st.sidebar.write(f"Empresa: {nome_empresa}")
-    st.sidebar.write(f"Usuário: {st.session_state.get('nome', '')}")
-    st.sidebar.write(f"Tipo: {st.session_state.get('tipo', '')}")
+    usuario = st.session_state.usuario
 
-    menu = st.sidebar.radio("Menu", [
-        "Dashboard Nubank",
-        "Entradas e Saídas",
-        "Parcelas",
-        "Contas a Pagar/Receber",
-        "Contas a Receber",
-        "Pix",
-        "Relatórios PDF",
-        "IA Financeira",
-        "CRM / Clientes",
-        "Estoque",
-        "WhatsApp Manual",
-        "WhatsApp Automático",
-        "Notificações",
-        "Backup",
-        "Multiempresas",
-        "Painel Administrativo",
-        "SQLite / MySQL",
-        "App Android APK"
-    ])
+    st.sidebar.title("💼 Sistema Financeiro")
+    st.sidebar.write(f"**Empresa:** {usuario['empresa_nome']}")
+    st.sidebar.write(f"**Usuário:** {usuario['nome']}")
+    st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
+
+    menu = st.sidebar.radio(
+        "Menu",
+        [
+            "Dashboard",
+            "Entradas e Saídas",
+            "Parcelas",
+            "Contas a Pagar/Receber",
+            "Contas a Receber",
+            "Pix",
+            "Relatórios PDF",
+            "IA Financeira",
+            "CRM / Clientes",
+            "Estoque",
+            "WhatsApp Manual",
+            "Usuários",
+            "Configurações"
+        ]
+    )
 
     if st.sidebar.button("Sair"):
-        st.session_state["logado"] = False
-        st.session_state["usuario"] = ""
-        st.session_state["nome"] = ""
-        st.session_state["tipo"] = ""
-        st.session_state["empresa_id"] = 1
+        del st.session_state.usuario
         st.rerun()
 
-    if menu == "Dashboard Nubank": pagina_dashboard()
-    elif menu == "Entradas e Saídas": pagina_lancamentos()
-    elif menu == "Parcelas": pagina_parcelas()
-    elif menu == "Contas a Pagar/Receber": pagina_contas()
-    elif menu == "Contas a Receber": pagina_contas_receber()
-    elif menu == "Pix": pagina_pix()
-    elif menu == "Relatórios PDF": pagina_relatorios()
-    elif menu == "IA Financeira": pagina_ia()
-    elif menu == "CRM / Clientes": pagina_clientes()
-    elif menu == "Estoque": pagina_estoque()
-    elif menu == "WhatsApp Manual": pagina_whatsapp()
-    elif menu == "WhatsApp Automático": pagina_whatsapp_automatico()
-    elif menu == "Notificações": pagina_notificacoes()
-    elif menu == "Backup": pagina_backup()
-    elif menu == "Multiempresas": pagina_multiempresas()
-    elif menu == "Painel Administrativo": pagina_admin()
-    elif menu == "SQLite / MySQL": pagina_mysql()
-    elif menu == "App Android APK": pagina_android()
+    df = carregar_lancamentos()
+    ind = calcular_indicadores(df)
 
-# =========================================================
-# INICIALIZAÇÃO
-# =========================================================
-if "logado" not in st.session_state: st.session_state["logado"] = False
-if "usuario" not in st.session_state: st.session_state["usuario"] = ""
-if "nome" not in st.session_state: st.session_state["nome"] = ""
-if "tipo" not in st.session_state: st.session_state["tipo"] = ""
-if "empresa_id" not in st.session_state: st.session_state["empresa_id"] = 1
+    # =================================================
+    # DASHBOARD
+    # =================================================
+    if menu == "Dashboard":
+        st.title("📊 Dashboard estilo Nubank")
 
-if st.session_state["logado"]:
-    app()
-else:
+        if df.empty:
+            st.info("Nenhum lançamento cadastrado ainda.")
+
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            card("Receita total", moeda(ind["receita"]), "Total de entradas")
+        with c2:
+            card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
+        with c3:
+            card("Saldo em caixa", moeda(ind["caixa"]), "Entradas - saídas")
+        with c4:
+            card("Vencidas", moeda(ind["vencidas"]), "Atenção")
+
+        st.write("")
+
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            card("Custos", moeda(ind["custo"]))
+        with c6:
+            card("Despesas", moeda(ind["despesa_fixa"] + ind["despesa_variavel"]))
+        with c7:
+            card("A receber", moeda(ind["contas_receber"]))
+        with c8:
+            card("A pagar", moeda(ind["contas_pagar"]))
+
+        st.divider()
+
+        if not df.empty:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.subheader("Evolução mensal")
+                mensal = df.groupby(["mes", "tipo"])["valor"].sum().reset_index()
+                graf = mensal.pivot(index="mes", columns="tipo", values="valor").fillna(0)
+                st.line_chart(graf)
+
+            with col2:
+                st.subheader("Categorias")
+                cat = df.groupby("categoria")["valor"].sum().sort_values(ascending=False).head(10)
+                st.bar_chart(cat)
+
+            st.subheader("Últimos lançamentos")
+            tabela = df.sort_values("data", ascending=False).head(10).copy()
+            tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
+            tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+            st.dataframe(tabela, use_container_width=True)
+
+    # =================================================
+    # LANÇAMENTOS
+    # =================================================
+    elif menu == "Entradas e Saídas":
+        st.title("💸 Entradas e Saídas")
+
+        with st.form("form_lancamento"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                data_lanc = st.date_input("Data", value=date.today())
+                vencimento = st.date_input("Vencimento", value=date.today())
+                tipo = st.selectbox("Tipo", list(TIPOS_LANCAMENTO.keys()))
+
+            with col2:
+                categoria = st.selectbox("Categoria", TIPOS_LANCAMENTO[tipo])
+                descricao = st.text_input("Descrição")
+                cliente = st.text_input("Cliente / Fornecedor")
+
+            with col3:
+                valor = st.number_input("Valor", min_value=0.0, step=1.0, format="%.2f")
+                forma = st.selectbox("Forma de pagamento", FORMAS_PAGAMENTO)
+                conta = st.selectbox("Conta", CONTAS)
+
+            col4, col5, col6 = st.columns(3)
+
+            with col4:
+                status = st.selectbox("Status", STATUS_OPCOES)
+            with col5:
+                parcela_total = st.number_input("Total de parcelas", min_value=1, value=1, step=1)
+            with col6:
+                observacao = st.text_input("Observação")
+
+            salvar = st.form_submit_button("Salvar lançamento", use_container_width=True)
+
+            if salvar:
+                if valor <= 0:
+                    st.error("Digite um valor maior que zero.")
+                else:
+                    total = int(parcela_total)
+                    valor_parcela = valor / total
+
+                    for parcela in range(1, total + 1):
+                        data_parcela = data_lanc + timedelta(days=30 * (parcela - 1))
+                        venc_parcela = vencimento + timedelta(days=30 * (parcela - 1))
+
+                        executar(
+                            """
+                            INSERT INTO lancamentos
+                            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+                            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+                            parcela_total, observacao, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                empresa_id_atual(),
+                                usuario_id_atual(),
+                                str(data_parcela),
+                                str(venc_parcela),
+                                tipo,
+                                categoria,
+                                descricao,
+                                cliente,
+                                float(valor_parcela),
+                                forma,
+                                conta,
+                                status,
+                                parcela,
+                                total,
+                                observacao,
+                                datetime.now().isoformat()
+                            )
+                        )
+
+                    st.success("Lançamento salvo com sucesso.")
+                    st.rerun()
+
+        st.subheader("Lançamentos cadastrados")
+
+        if df.empty:
+            st.info("Nenhum lançamento cadastrado.")
+        else:
+            tabela = df.copy()
+            tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
+            tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+            st.dataframe(tabela, use_container_width=True)
+
+            st.subheader("Editar / Excluir")
+            id_edit = st.selectbox("Selecione o ID", df["id"].tolist())
+            item = df[df["id"] == id_edit].iloc[0]
+
+            novo_status = st.selectbox(
+                "Novo status",
+                STATUS_OPCOES,
+                index=STATUS_OPCOES.index(item["status"]) if item["status"] in STATUS_OPCOES else 0
+            )
+
+            novo_valor = st.number_input(
+                "Novo valor",
+                min_value=0.0,
+                value=float(item["valor"]),
+                step=1.0
+            )
+
+            nova_desc = st.text_input("Nova descrição", value=item["descricao"])
+
+            col_a, col_b = st.columns(2)
+
+            if col_a.button("Atualizar lançamento"):
+                executar(
+                    """
+                    UPDATE lancamentos
+                    SET status = ?, valor = ?, descricao = ?
+                    WHERE id = ? AND empresa_id = ?
+                    """,
+                    (novo_status, novo_valor, nova_desc, int(id_edit), empresa_id_atual())
+                )
+                st.success("Atualizado.")
+                st.rerun()
+
+            if col_b.button("Excluir lançamento"):
+                executar(
+                    """
+                    DELETE FROM lancamentos
+                    WHERE id = ? AND empresa_id = ?
+                    """,
+                    (int(id_edit), empresa_id_atual())
+                )
+                st.warning("Excluído.")
+                st.rerun()
+
+    # =================================================
+    # PARCELAS
+    # =================================================
+    elif menu == "Parcelas":
+        st.title("📆 Controle de Parcelas")
+
+        if df.empty:
+            st.info("Nenhuma parcela cadastrada.")
+        else:
+            parcelas = df[df["parcela_total"] > 1].copy()
+
+            if parcelas.empty:
+                st.info("Nenhum lançamento parcelado.")
+            else:
+                parcelas["data"] = parcelas["data"].dt.strftime("%d/%m/%Y")
+                parcelas["vencimento"] = parcelas["vencimento"].dt.strftime("%d/%m/%Y")
+                st.dataframe(parcelas, use_container_width=True)
+
+    # =================================================
+    # CONTAS A PAGAR / RECEBER
+    # =================================================
+    elif menu == "Contas a Pagar/Receber":
+        st.title("📌 Contas a Pagar / Receber")
+
+        if df.empty:
+            st.info("Nenhuma conta cadastrada.")
+        else:
+            contas = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])].copy()
+
+            filtro = st.selectbox(
+                "Filtrar",
+                ["Todas", "A pagar", "A receber", "Vencidas", "Vence hoje"]
+            )
+
+            if filtro == "A pagar":
+                contas = contas[contas["tipo"] != "Receita"]
+            elif filtro == "A receber":
+                contas = contas[contas["tipo"] == "Receita"]
+            elif filtro == "Vencidas":
+                contas = contas[contas["status_real"] == "Vencido"]
+            elif filtro == "Vence hoje":
+                contas = contas[contas["status_real"] == "Vence hoje"]
+
+            if contas.empty:
+                st.info("Nenhuma conta encontrada.")
+            else:
+                contas["data"] = contas["data"].dt.strftime("%d/%m/%Y")
+                contas["vencimento"] = contas["vencimento"].dt.strftime("%d/%m/%Y")
+                st.dataframe(contas, use_container_width=True)
+
+    # =================================================
+    # CONTAS A RECEBER
+    # =================================================
+    elif menu == "Contas a Receber":
+        st.title("💰 Contas a Receber")
+
+        if df.empty:
+            st.info("Nenhuma conta a receber.")
+        else:
+            receber = df[
+                (df["tipo"] == "Receita") &
+                (df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"]))
+            ].copy()
+
+            if receber.empty:
+                st.success("Nenhuma conta a receber pendente.")
+            else:
+                receber["data"] = receber["data"].dt.strftime("%d/%m/%Y")
+                receber["vencimento"] = receber["vencimento"].dt.strftime("%d/%m/%Y")
+                st.dataframe(receber, use_container_width=True)
+
+    # =================================================
+    # PIX
+    # =================================================
+    elif menu == "Pix":
+        st.title("💳 Pix")
+
+        chave = st.text_input("Chave Pix")
+        valor_pix = st.number_input("Valor", min_value=0.0, step=1.0)
+        descricao_pix = st.text_input("Descrição")
+
+        if st.button("Gerar texto de cobrança"):
+            texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
+            st.code(texto)
+
+    # =================================================
+    # PDF
+    # =================================================
+    elif menu == "Relatórios PDF":
+        st.title("📄 Relatórios PDF")
+
+        st.write("Baixe um resumo financeiro em PDF.")
+
+        pdf = gerar_pdf_relatorio(df, ind)
+
+        if pdf is None:
+            st.warning("Biblioteca reportlab não instalada. Confira se ela está no requirements.txt.")
+        else:
+            st.download_button(
+                "Baixar relatório PDF",
+                data=pdf,
+                file_name="relatorio_financeiro.pdf",
+                mime="application/pdf"
+            )
+
+        if not df.empty:
+            csv = df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "Baixar CSV",
+                data=csv,
+                file_name="lancamentos.csv",
+                mime="text/csv"
+            )
+
+    # =================================================
+    # IA FINANCEIRA
+    # =================================================
+    elif menu == "IA Financeira":
+        st.title("🤖 IA Financeira")
+
+        if df.empty:
+            st.info("Cadastre lançamentos para receber uma análise.")
+        else:
+            st.subheader("Diagnóstico automático")
+
+            if ind["lucro_liquido"] < 0:
+                st.markdown(
+                    """
+                    <div class="danger-box">
+                    Seu negócio está com prejuízo líquido. É necessário reduzir custos, revisar despesas fixas
+                    ou aumentar a margem das vendas.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            elif ind["margem_liquida"] < 10:
+                st.markdown(
+                    """
+                    <div class="warning-box">
+                    Sua margem líquida está baixa. O negócio está dando lucro, mas ainda com pouca sobra.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    """
+                    <div class="success-box">
+                    O negócio apresenta resultado saudável no período analisado.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            st.write(f"**Margem bruta:** {percentual(ind['margem_bruta'])}")
+            st.write(f"**Margem líquida:** {percentual(ind['margem_liquida'])}")
+            st.write(f"**Ponto de equilíbrio:** {moeda(ind['ponto_equilibrio'])}")
+
+            pergunta = st.text_area("Faça uma pergunta financeira")
+
+            if st.button("Responder"):
+                st.info(
+                    "Análise local: acompanhe os vencidos, reduza despesas fixas e priorize receitas recorrentes. "
+                    "Para IA real com OpenAI, depois conectamos sua API."
+                )
+
+    # =================================================
+    # CRM
+    # =================================================
+    elif menu == "CRM / Clientes":
+        st.title("👥 CRM / Clientes")
+
+        with st.form("form_cliente"):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                nome = st.text_input("Nome")
+                telefone = st.text_input("Telefone / WhatsApp")
+                email = st.text_input("E-mail")
+
+            with col2:
+                documento = st.text_input("CPF / CNPJ")
+                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro"])
+                obs = st.text_area("Observação")
+
+            if st.form_submit_button("Salvar cliente", use_container_width=True):
+                executar(
+                    """
+                    INSERT INTO clientes
+                    (empresa_id, nome, telefone, email, documento, tipo, observacao, criado_em)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        empresa_id_atual(),
+                        nome,
+                        telefone,
+                        email,
+                        documento,
+                        tipo_cliente,
+                        obs,
+                        datetime.now().isoformat()
+                    )
+                )
+                st.success("Cliente salvo.")
+                st.rerun()
+
+        clientes = carregar_clientes()
+
+        if clientes.empty:
+            st.info("Nenhum cliente cadastrado.")
+        else:
+            st.dataframe(clientes, use_container_width=True)
+
+    # =================================================
+    # ESTOQUE
+    # =================================================
+    elif menu == "Estoque":
+        st.title("📦 Estoque")
+
+        with st.form("form_estoque"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                produto = st.text_input("Produto")
+                categoria = st.text_input("Categoria")
+                fornecedor = st.text_input("Fornecedor")
+
+            with col2:
+                quantidade = st.number_input("Quantidade", min_value=0.0, step=1.0)
+                custo_unitario = st.number_input("Custo unitário", min_value=0.0, step=1.0)
+
+            with col3:
+                preco_venda = st.number_input("Preço de venda", min_value=0.0, step=1.0)
+                obs = st.text_area("Observação")
+
+            if st.form_submit_button("Salvar produto", use_container_width=True):
+                executar(
+                    """
+                    INSERT INTO estoque
+                    (empresa_id, produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, observacao, criado_em)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        empresa_id_atual(),
+                        produto,
+                        categoria,
+                        quantidade,
+                        custo_unitario,
+                        preco_venda,
+                        fornecedor,
+                        obs,
+                        datetime.now().isoformat()
+                    )
+                )
+                st.success("Produto salvo.")
+                st.rerun()
+
+        estoque = carregar_estoque()
+
+        if estoque.empty:
+            st.info("Nenhum produto cadastrado.")
+        else:
+            estoque["valor_custo_total"] = estoque["quantidade"] * estoque["custo_unitario"]
+            estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
+            st.dataframe(estoque, use_container_width=True)
+
+    # =================================================
+    # WHATSAPP MANUAL
+    # =================================================
+    elif menu == "WhatsApp Manual":
+        st.title("📲 WhatsApp Manual")
+
+        telefone = st.text_input("Telefone com DDD", placeholder="62999999999")
+        nome = st.text_input("Nome do cliente")
+        valor_msg = st.number_input("Valor", min_value=0.0, step=1.0)
+        venc_msg = st.date_input("Vencimento", value=date.today())
+
+        mensagem = st.text_area(
+            "Mensagem",
+            value=f"Olá, tudo bem? Passando para lembrar sobre o pagamento no valor de {moeda(valor_msg)}."
+        )
+
+        if st.button("Gerar link WhatsApp"):
+            texto = mensagem.replace("{nome}", nome)
+            texto = texto.replace("{valor}", moeda(valor_msg))
+            texto = texto.replace("{vencimento}", venc_msg.strftime("%d/%m/%Y"))
+
+            link = f"https://wa.me/55{telefone}?text={quote(texto)}"
+            st.markdown(f"[Abrir WhatsApp]({link})")
+
+    # =================================================
+    # USUÁRIOS
+    # =================================================
+    elif menu == "Usuários":
+        st.title("👤 Usuários")
+
+        if tipo_usuario_atual() != "Administrador":
+            st.warning("Somente administrador pode acessar esta área.")
+        else:
+            with st.form("form_usuario"):
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    nome = st.text_input("Nome do usuário")
+                    email = st.text_input("E-mail")
+                    senha = st.text_input("Senha", type="password")
+
+                with col2:
+                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO)
+                    ativo = st.checkbox("Ativo", value=True)
+
+                if st.form_submit_button("Criar usuário", use_container_width=True):
+                    try:
+                        executar(
+                            """
+                            INSERT INTO usuarios
+                            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                empresa_id_atual(),
+                                nome,
+                                email,
+                                hash_senha(senha),
+                                tipo_user,
+                                int(ativo),
+                                datetime.now().isoformat()
+                            )
+                        )
+                        st.success("Usuário criado.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Erro: {e}")
+
+            usuarios = consultar(
+                """
+                SELECT id, nome, email, tipo, ativo, criado_em
+                FROM usuarios
+                WHERE empresa_id = ?
+                """,
+                (empresa_id_atual(),)
+            )
+
+            st.dataframe(usuarios, use_container_width=True)
+
+    # =================================================
+    # CONFIGURAÇÕES
+    # =================================================
+    elif menu == "Configurações":
+        st.title("⚙️ Configurações")
+
+        empresa = consultar(
+            "SELECT * FROM empresas WHERE id = ?",
+            (empresa_id_atual(),)
+        )
+
+        if empresa.empty:
+            st.error("Empresa não encontrada.")
+        else:
+            emp = empresa.iloc[0]
+
+            nome = st.text_input("Nome da empresa", value=emp["nome"])
+            documento = st.text_input("Documento", value=emp["documento"] or "")
+            telefone = st.text_input("Telefone", value=emp["telefone"] or "")
+            cidade = st.text_input("Cidade", value=emp["cidade"] or "")
+
+            if st.button("Salvar configurações"):
+                executar(
+                    """
+                    UPDATE empresas
+                    SET nome = ?, documento = ?, telefone = ?, cidade = ?
+                    WHERE id = ?
+                    """,
+                    (nome, documento, telefone, cidade, empresa_id_atual())
+                )
+                st.success("Configurações atualizadas.")
+                st.rerun()
+
+        st.subheader("Backup local")
+
+        backup = {
+            "empresa": usuario["empresa_nome"],
+            "lancamentos": df.to_dict(orient="records") if not df.empty else [],
+            "gerado_em": datetime.now().isoformat()
+        }
+
+        st.download_button(
+            "Baixar backup JSON",
+            data=json.dumps(backup, ensure_ascii=False, indent=4, default=str),
+            file_name="backup_sistema_financeiro.json",
+            mime="application/json"
+        )
+
+
+# =====================================================
+# INICIAR SISTEMA
+# =====================================================
+
+criar_tabelas()
+criar_admin_padrao()
+
+if "usuario" not in st.session_state:
     tela_login()
+else:
+    app()
