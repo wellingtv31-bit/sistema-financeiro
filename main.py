@@ -23,6 +23,9 @@ st.set_page_config(
 
 DB_PATH = "sistema_financeiro.db"
 
+# WhatsApp comercial que vai receber os leads da demonstração
+WHATSAPP_COMERCIAL = "5564992774409"
+
 
 # =====================================================
 # IMAGENS
@@ -1399,7 +1402,7 @@ def tela_publica_comercial():
         )
 
     with col2:
-        telefone = st.text_input("Telefone / WhatsApp", placeholder="62999999999", key="demo_telefone")
+        telefone = st.text_input("Telefone / WhatsApp do cliente", placeholder="Ex: 64999999999", key="demo_telefone")
         email = st.text_input("E-mail profissional", placeholder="contato@empresa.com", key="demo_email")
         necessidade = st.selectbox(
             "Principal necessidade",
@@ -1408,20 +1411,18 @@ def tela_publica_comercial():
         )
 
     if st.button("Agendar Demonstração pelo WhatsApp", use_container_width=True, key="btn_agendar_demo_final"):
-        if telefone:
-            texto = (
-                f"Olá! Quero agendar uma demonstração da Global Software.\n\n"
-                f"Nome: {nome}\n"
-                f"Empresa: {empresa}\n"
-                f"Segmento: {segmento}\n"
-                f"E-mail: {email}\n"
-                f"Necessidade principal: {necessidade}\n\n"
-                f"Quero ver como o sistema pode ajudar minha empresa."
-            )
-            link = f"https://wa.me/55{telefone}?text={quote(texto)}"
-            st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
-        else:
-            st.warning("Digite o telefone com DDD para gerar o link.")
+        texto = (
+            f"Olá! Quero agendar uma demonstração da Global Software.\n\n"
+            f"Nome: {nome}\n"
+            f"Empresa: {empresa}\n"
+            f"Segmento: {segmento}\n"
+            f"WhatsApp do cliente: {telefone}\n"
+            f"E-mail: {email}\n"
+            f"Necessidade principal: {necessidade}\n\n"
+            f"Quero ver como o sistema pode ajudar minha empresa."
+        )
+        link = f"https://wa.me/{WHATSAPP_COMERCIAL}?text={quote(texto)}"
+        st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
 
     html("</div>")
 
