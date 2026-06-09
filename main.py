@@ -10,10 +10,6 @@ from io import BytesIO
 from urllib.parse import quote
 
 
-# =====================================================
-# CONFIGURAÇÃO INICIAL
-# =====================================================
-
 st.set_page_config(
     page_title="Sistema Financeiro Premium",
     page_icon="💼",
@@ -23,10 +19,6 @@ st.set_page_config(
 
 DB_PATH = "sistema_financeiro.db"
 
-
-# =====================================================
-# FUNÇÕES DE IMAGEM
-# =====================================================
 
 def imagem_base64(caminho):
     arquivo = Path(caminho)
@@ -44,10 +36,6 @@ banner_base64 = imagem_base64("banner_login.png")
 if not banner_base64:
     banner_base64 = logo_base64
 
-
-# =====================================================
-# ESTILO VISUAL PREMIUM V3 - PRETO + DOURADO
-# =====================================================
 
 st.markdown(
     """
@@ -455,39 +443,6 @@ st.markdown(
         color: #fff1bd !important;
     }
 
-    div[data-baseweb="popover"] {
-        background: transparent !important;
-    }
-
-    div[data-baseweb="menu"],
-    ul[role="listbox"] {
-        background: #050f1d !important;
-        border: 1px solid rgba(212,175,55,0.38) !important;
-        border-radius: 16px !important;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.55) !important;
-        padding: 8px !important;
-    }
-
-    li[role="option"],
-    div[role="option"] {
-        background: #050f1d !important;
-        color: #f7df8a !important;
-        font-weight: 800 !important;
-        border-radius: 12px !important;
-    }
-
-    li[role="option"]:hover,
-    div[role="option"]:hover {
-        background: rgba(212,175,55,0.18) !important;
-        color: #fff1bd !important;
-    }
-
-    li[aria-selected="true"],
-    div[aria-selected="true"] {
-        background: rgba(212,175,55,0.26) !important;
-        color: #fff1bd !important;
-    }
-
     div[data-baseweb="select"] * {
         color: #fff1bd !important;
     }
@@ -496,6 +451,93 @@ st.markdown(
     div[data-testid="stSelectbox"] label p {
         color: #d4af37 !important;
         font-weight: 900 !important;
+    }
+
+    div[data-baseweb="popover"] {
+        background: transparent !important;
+    }
+
+    div[data-baseweb="menu"],
+    ul[role="listbox"],
+    div[role="listbox"] {
+        background: #030a14 !important;
+        border: 1px solid rgba(212,175,55,0.42) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 18px 45px rgba(0,0,0,0.65) !important;
+        padding: 8px !important;
+    }
+
+    div[data-baseweb="menu"] *,
+    ul[role="listbox"] *,
+    div[role="listbox"] * {
+        background-color: #030a14 !important;
+        color: #f7df8a !important;
+        font-weight: 850 !important;
+    }
+
+    li[role="option"],
+    div[role="option"] {
+        background: #030a14 !important;
+        background-color: #030a14 !important;
+        color: #f7df8a !important;
+        font-weight: 850 !important;
+        border-radius: 12px !important;
+        border: 1px solid transparent !important;
+    }
+
+    li[role="option"] *,
+    div[role="option"] * {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #f7df8a !important;
+    }
+
+    li[role="option"]:hover,
+    div[role="option"]:hover,
+    li[role="option"]:focus,
+    div[role="option"]:focus {
+        background: rgba(212,175,55,0.18) !important;
+        background-color: rgba(212,175,55,0.18) !important;
+        color: #fff1bd !important;
+        border: 1px solid rgba(212,175,55,0.32) !important;
+    }
+
+    li[role="option"]:hover *,
+    div[role="option"]:hover *,
+    li[role="option"]:focus *,
+    div[role="option"]:focus * {
+        color: #fff1bd !important;
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    li[aria-selected="true"],
+    div[aria-selected="true"],
+    li[role="option"][aria-selected="true"],
+    div[role="option"][aria-selected="true"] {
+        background: linear-gradient(90deg, rgba(212,175,55,0.28), rgba(212,175,55,0.12)) !important;
+        background-color: rgba(212,175,55,0.22) !important;
+        color: #fff1bd !important;
+        border: 1px solid rgba(212,175,55,0.42) !important;
+    }
+
+    li[aria-selected="true"] *,
+    div[aria-selected="true"] *,
+    li[role="option"][aria-selected="true"] *,
+    div[role="option"][aria-selected="true"] * {
+        color: #fff1bd !important;
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    div[data-baseweb="menu"] div:hover {
+        background-color: rgba(212,175,55,0.16) !important;
+        color: #fff1bd !important;
+    }
+
+    div[data-baseweb="menu"] div:hover * {
+        background-color: transparent !important;
+        color: #fff1bd !important;
     }
 
     .stButton > button {
@@ -587,10 +629,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-# =====================================================
-# FUNÇÕES BÁSICAS
-# =====================================================
 
 def conectar():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -700,10 +738,6 @@ def cabecalho_interno(menu_atual):
         unsafe_allow_html=True
     )
 
-
-# =====================================================
-# BANCO DE DADOS
-# =====================================================
 
 def criar_tabelas():
     con = conectar()
@@ -826,10 +860,6 @@ def criar_admin_padrao():
         )
 
 
-# =====================================================
-# DADOS FIXOS
-# =====================================================
-
 TIPOS_USUARIO = [
     "Administrador",
     "Gerente",
@@ -920,10 +950,6 @@ STATUS_OPCOES = [
     "Recebido"
 ]
 
-
-# =====================================================
-# LOGIN
-# =====================================================
 
 def tela_login():
     st.markdown(
@@ -1084,10 +1110,6 @@ def tela_login():
     st.markdown("</div>", unsafe_allow_html=True)
 
 
-# =====================================================
-# USUÁRIO ATUAL E PERMISSÕES
-# =====================================================
-
 def empresa_id_atual():
     return int(st.session_state.usuario["empresa_id"])
 
@@ -1160,10 +1182,6 @@ def menus_por_tipo_usuario():
     return permissoes.get(tipo, ["Dashboard"])
 
 
-# =====================================================
-# CARREGAMENTO
-# =====================================================
-
 def carregar_lancamentos():
     df = consultar(
         """
@@ -1210,10 +1228,6 @@ def carregar_estoque():
         (empresa_id_atual(),)
     )
 
-
-# =====================================================
-# CÁLCULOS
-# =====================================================
 
 def calcular_indicadores(df):
     if df.empty:
@@ -1283,10 +1297,6 @@ def calcular_indicadores(df):
         "ponto_equilibrio": ponto_equilibrio
     }
 
-
-# =====================================================
-# RELATÓRIO PDF
-# =====================================================
 
 def gerar_pdf_relatorio(df, ind):
     try:
@@ -1360,10 +1370,6 @@ def gerar_pdf_relatorio(df, ind):
 
     return buffer
 
-
-# =====================================================
-# APP PRINCIPAL
-# =====================================================
 
 def app():
     usuario = st.session_state.usuario
@@ -2164,10 +2170,6 @@ def app():
             key="download_backup_json"
         )
 
-
-# =====================================================
-# INICIAR
-# =====================================================
 
 criar_tabelas()
 criar_admin_padrao()
