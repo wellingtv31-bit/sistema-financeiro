@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import json
 import base64
+from pathlib import Path
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from urllib.parse import quote
@@ -16,104 +17,271 @@ from urllib.parse import quote
 st.set_page_config(
     page_title="Sistema Financeiro Premium",
     page_icon="💼",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 DB_PATH = "sistema_financeiro.db"
 
 
 # =====================================================
-# IMAGEM DE FUNDO / LOGO
+# LOGO / IMAGEM
 # =====================================================
 
 def imagem_base64(caminho):
-    try:
-        with open(caminho, "rb") as img:
+    arquivo = Path(caminho)
+    if arquivo.exists():
+        with open(arquivo, "rb") as img:
             return base64.b64encode(img.read()).decode()
-    except Exception:
-        return ""
+    return ""
 
 
 logo_base64 = imagem_base64("logo.png")
 
 
 # =====================================================
-# ESTILO VISUAL
+# ESTILO VISUAL PREMIUM V2
 # =====================================================
 
 st.markdown(
     f"""
     <style>
+    #MainMenu {{
+        visibility: hidden;
+    }}
+
+    footer {{
+        visibility: hidden;
+    }}
+
+    header {{
+        visibility: hidden;
+    }}
+
     .stApp {{
-        background-image:
-            linear-gradient(rgba(246, 247, 251, 0.92), rgba(246, 247, 251, 0.92)),
+        background:
+            linear-gradient(rgba(248,250,252,0.78), rgba(248,250,252,0.78)),
             url("data:image/png;base64,{logo_base64}");
         background-repeat: no-repeat;
         background-position: center center;
-        background-size: 420px;
+        background-size: 75%;
         background-attachment: fixed;
     }}
 
+    .block-container {{
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 1280px;
+    }}
+
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, #36115c 0%, #171321 100%);
-        color: white;
+        background:
+            linear-gradient(rgba(15,23,42,0.94), rgba(15,23,42,0.98)),
+            url("data:image/png;base64,{logo_base64}");
+        background-repeat: no-repeat;
+        background-position: center 96%;
+        background-size: 88%;
+        border-right: 1px solid rgba(255,255,255,0.12);
     }}
 
     [data-testid="stSidebar"] * {{
-        color: white;
+        color: white !important;
+    }}
+
+    h1, h2, h3 {{
+        color: #0f172a;
+        font-weight: 900;
+        letter-spacing: -0.5px;
+    }}
+
+    .premium-card {{
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(255,255,255,0.75);
+        border-radius: 28px;
+        padding: 34px;
+        box-shadow: 0 18px 48px rgba(15,23,42,0.12);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }}
+
+    .login-title {{
+        font-size: 48px;
+        font-weight: 950;
+        color: #0f172a;
+        line-height: 1.05;
+        margin-bottom: 12px;
+    }}
+
+    .login-subtitle {{
+        font-size: 18px;
+        color: #64748b;
+        margin-bottom: 24px;
+    }}
+
+    .login-info {{
+        background: rgba(239,246,255,0.95);
+        border-left: 6px solid #2563eb;
+        color: #1e3a8a;
+        padding: 14px 18px;
+        border-radius: 16px;
+        font-size: 15px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 24px rgba(37,99,235,0.08);
+    }}
+
+    .logo-box {{
+        background: rgba(255,255,255,0.38);
+        border: 1px solid rgba(255,255,255,0.70);
+        border-radius: 32px;
+        min-height: 520px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 18px 45px rgba(15,23,42,0.10);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }}
+
+    .logo-box img {{
+        width: 96%;
+        max-width: 560px;
+        opacity: 0.98;
+        filter: drop-shadow(0px 18px 32px rgba(15,23,42,0.25));
     }}
 
     .metric-card {{
         background: rgba(255,255,255,0.94);
-        border-radius: 18px;
-        padding: 22px;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-        border-left: 6px solid #7c3aed;
-        min-height: 120px;
-        backdrop-filter: blur(4px);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+        border: 1px solid rgba(255,255,255,0.75);
+        border-left: 7px solid #2563eb;
+        min-height: 128px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
     }}
 
     .metric-title {{
-        color: #6b7280;
+        color: #64748b;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
     }}
 
     .metric-value {{
-        color: #111827;
-        font-size: 28px;
-        font-weight: 800;
-        margin-top: 4px;
+        color: #0f172a;
+        font-size: 30px;
+        font-weight: 950;
+        margin-top: 6px;
     }}
 
     .metric-sub {{
-        color: #6b7280;
+        color: #64748b;
         font-size: 13px;
-        margin-top: 2px;
+        margin-top: 3px;
     }}
 
     .success-box {{
-        background: #ecfdf5;
-        border-left: 5px solid #10b981;
-        padding: 12px;
-        border-radius: 10px;
+        background: rgba(236,253,245,0.95);
+        border-left: 6px solid #10b981;
+        padding: 14px 18px;
+        border-radius: 16px;
         color: #064e3b;
+        box-shadow: 0 8px 22px rgba(16,185,129,0.08);
     }}
 
     .warning-box {{
-        background: #fffbeb;
-        border-left: 5px solid #f59e0b;
-        padding: 12px;
-        border-radius: 10px;
+        background: rgba(255,251,235,0.95);
+        border-left: 6px solid #f59e0b;
+        padding: 14px 18px;
+        border-radius: 16px;
         color: #78350f;
+        box-shadow: 0 8px 22px rgba(245,158,11,0.08);
     }}
 
     .danger-box {{
-        background: #fef2f2;
-        border-left: 5px solid #ef4444;
-        padding: 12px;
-        border-radius: 10px;
+        background: rgba(254,242,242,0.95);
+        border-left: 6px solid #ef4444;
+        padding: 14px 18px;
+        border-radius: 16px;
         color: #7f1d1d;
+        box-shadow: 0 8px 22px rgba(239,68,68,0.08);
+    }}
+
+    .stTextInput input,
+    .stNumberInput input,
+    .stDateInput input,
+    .stTextArea textarea {{
+        border-radius: 14px !important;
+        border: 1px solid #cbd5e1 !important;
+        background: rgba(255,255,255,0.94) !important;
+    }}
+
+    .stSelectbox div[data-baseweb="select"] > div {{
+        border-radius: 14px !important;
+        background: rgba(255,255,255,0.94) !important;
+    }}
+
+    .stButton > button {{
+        background: linear-gradient(90deg, #1d4ed8, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 0.70rem 1rem;
+        font-weight: 850;
+        box-shadow: 0 10px 22px rgba(37,99,235,0.22);
+        transition: all 0.2s ease-in-out;
+    }}
+
+    .stButton > button:hover {{
+        transform: translateY(-1px);
+        background: linear-gradient(90deg, #1e40af, #3b82f6);
+        color: white;
+    }}
+
+    .stDownloadButton > button {{
+        background: linear-gradient(90deg, #047857, #10b981);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 0.70rem 1rem;
+        font-weight: 850;
+        box-shadow: 0 10px 22px rgba(16,185,129,0.22);
+    }}
+
+    div[data-testid="stDataFrame"] {{
+        background: rgba(255,255,255,0.88);
+        border-radius: 18px;
+        padding: 8px;
+        box-shadow: 0 10px 25px rgba(15,23,42,0.06);
+    }}
+
+    button[data-baseweb="tab"] {{
+        font-size: 16px !important;
+        font-weight: 850 !important;
+    }}
+
+    @media (max-width: 900px) {{
+        .stApp {{
+            background-size: 125%;
+        }}
+
+        .login-title {{
+            font-size: 34px;
+        }}
+
+        .login-subtitle {{
+            font-size: 15px;
+        }}
+
+        .logo-box {{
+            min-height: 260px;
+        }}
+
+        .premium-card {{
+            padding: 22px;
+        }}
     }}
     </style>
     """,
@@ -217,8 +385,7 @@ def criar_tabelas():
     con = conectar()
     cur = con.cursor()
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS empresas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
@@ -227,11 +394,9 @@ def criar_tabelas():
             cidade TEXT,
             criado_em TEXT
         )
-        """
-    )
+    """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             empresa_id INTEGER,
@@ -242,11 +407,9 @@ def criar_tabelas():
             ativo INTEGER DEFAULT 1,
             criado_em TEXT
         )
-        """
-    )
+    """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS lancamentos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             empresa_id INTEGER,
@@ -266,11 +429,9 @@ def criar_tabelas():
             observacao TEXT,
             criado_em TEXT
         )
-        """
-    )
+    """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             empresa_id INTEGER,
@@ -282,11 +443,9 @@ def criar_tabelas():
             observacao TEXT,
             criado_em TEXT
         )
-        """
-    )
+    """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS estoque (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             empresa_id INTEGER,
@@ -299,8 +458,7 @@ def criar_tabelas():
             observacao TEXT,
             criado_em TEXT
         )
-        """
-    )
+    """)
 
     con.commit()
     con.close()
@@ -356,60 +514,13 @@ TIPOS_USUARIO = [
 ]
 
 TIPOS_LANCAMENTO = {
-    "Receita": [
-        "Venda",
-        "Serviço",
-        "Comissão",
-        "Entrada",
-        "Recebimento de parcela",
-        "Outras receitas"
-    ],
-    "Custo": [
-        "Produto vendido",
-        "Fornecedor",
-        "Matéria-prima",
-        "Frete de compra",
-        "Taxa de cartão",
-        "Comissão paga"
-    ],
-    "Despesa fixa": [
-        "Aluguel",
-        "Internet",
-        "Sistema",
-        "Funcionário",
-        "Contador",
-        "Telefone",
-        "MEI / Imposto fixo"
-    ],
-    "Despesa variável": [
-        "Energia",
-        "Água",
-        "Marketing",
-        "Manutenção",
-        "Transporte",
-        "Alimentação",
-        "Outras despesas"
-    ],
-    "Investimento": [
-        "Equipamento",
-        "Curso",
-        "Ferramenta",
-        "Reforma",
-        "Estoque",
-        "Publicidade estratégica"
-    ],
-    "Dívida": [
-        "Empréstimo",
-        "Financiamento",
-        "Cartão de crédito",
-        "Juros",
-        "Parcela de dívida"
-    ],
-    "Retirada do dono": [
-        "Pró-labore",
-        "Saque pessoal",
-        "Distribuição de lucro"
-    ]
+    "Receita": ["Venda", "Serviço", "Comissão", "Entrada", "Recebimento de parcela", "Outras receitas"],
+    "Custo": ["Produto vendido", "Fornecedor", "Matéria-prima", "Frete de compra", "Taxa de cartão", "Comissão paga"],
+    "Despesa fixa": ["Aluguel", "Internet", "Sistema", "Funcionário", "Contador", "Telefone", "MEI / Imposto fixo"],
+    "Despesa variável": ["Energia", "Água", "Marketing", "Manutenção", "Transporte", "Alimentação", "Outras despesas"],
+    "Investimento": ["Equipamento", "Curso", "Ferramenta", "Reforma", "Estoque", "Publicidade estratégica"],
+    "Dívida": ["Empréstimo", "Financiamento", "Cartão de crédito", "Juros", "Parcela de dívida"],
+    "Retirada do dono": ["Pró-labore", "Saque pessoal", "Distribuição de lucro"]
 }
 
 FORMAS_PAGAMENTO = [
@@ -444,86 +555,112 @@ STATUS_OPCOES = [
 # =====================================================
 
 def tela_login():
-    st.title("💼 Sistema Financeiro Premium")
-    st.caption("Controle completo de finanças, empresas, usuários, parcelas, relatórios e clientes.")
+    col1, col2 = st.columns([1.15, 1], gap="large")
 
-    aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
+    with col1:
+        st.markdown('<div class="premium-card">', unsafe_allow_html=True)
 
-    with aba1:
-        st.subheader("Acessar sistema")
+        st.markdown(
+            """
+            <div class="login-title">💼 Sistema Financeiro Premium</div>
+            <div class="login-subtitle">
+                Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes e permissões.
+            </div>
+            <div class="login-info">
+                <b>Login padrão para teste:</b> admin@empresa.com &nbsp; | &nbsp; <b>Senha:</b> 123456
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-        email = st.text_input("E-mail", key="login_email")
-        senha = st.text_input("Senha", type="password", key="login_senha")
+        aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
 
-        if st.button("Entrar", use_container_width=True, key="btn_login"):
-            usuario = consultar(
-                """
-                SELECT u.*, e.nome as empresa_nome
-                FROM usuarios u
-                LEFT JOIN empresas e ON e.id = u.empresa_id
-                WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
-                """,
-                (email, hash_senha(senha))
-            )
+        with aba1:
+            st.subheader("Acessar sistema")
 
-            if usuario.empty:
-                st.error("E-mail ou senha inválidos.")
-            else:
-                st.session_state.usuario = usuario.iloc[0].to_dict()
-                st.rerun()
+            email = st.text_input("E-mail", key="login_email")
+            senha = st.text_input("Senha", type="password", key="login_senha")
 
-        st.info("Login padrão para teste: admin@empresa.com | Senha: 123456")
+            if st.button("Entrar", use_container_width=True, key="btn_login"):
+                usuario = consultar(
+                    """
+                    SELECT u.*, e.nome as empresa_nome
+                    FROM usuarios u
+                    LEFT JOIN empresas e ON e.id = u.empresa_id
+                    WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
+                    """,
+                    (email, hash_senha(senha))
+                )
 
-    with aba2:
-        st.subheader("Cadastrar nova empresa")
+                if usuario.empty:
+                    st.error("E-mail ou senha inválidos.")
+                else:
+                    st.session_state.usuario = usuario.iloc[0].to_dict()
+                    st.rerun()
 
-        nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
-        documento = st.text_input("CNPJ / CPF", key="cad_documento")
-        telefone = st.text_input("Telefone", key="cad_telefone")
-        cidade = st.text_input("Cidade", key="cad_cidade")
+        with aba2:
+            st.subheader("Cadastrar nova empresa")
 
-        nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
-        email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
-        senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
+            nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
+            documento = st.text_input("CNPJ / CPF", key="cad_documento")
+            telefone = st.text_input("Telefone", key="cad_telefone")
+            cidade = st.text_input("Cidade", key="cad_cidade")
 
-        if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
-            if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
-                st.warning("Preencha todos os campos obrigatórios.")
-            else:
-                try:
-                    executar(
-                        """
-                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
-                        VALUES (?, ?, ?, ?, ?)
-                        """,
-                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
-                    )
+            nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
+            email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
+            senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
 
-                    empresa_id = consultar(
-                        "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
-                        (nome_empresa,)
-                    ).iloc[0]["id"]
-
-                    executar(
-                        """
-                        INSERT INTO usuarios
-                        (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            int(empresa_id),
-                            nome_usuario,
-                            email_usuario,
-                            hash_senha(senha_usuario),
-                            "Administrador",
-                            1,
-                            datetime.now().isoformat()
+            if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
+                if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
+                    st.warning("Preencha todos os campos obrigatórios.")
+                else:
+                    try:
+                        executar(
+                            """
+                            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+                            VALUES (?, ?, ?, ?, ?)
+                            """,
+                            (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
                         )
-                    )
 
-                    st.success("Empresa criada com sucesso. Agora faça login.")
-                except Exception as e:
-                    st.error(f"Erro ao criar empresa: {e}")
+                        empresa_id = consultar(
+                            "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
+                            (nome_empresa,)
+                        ).iloc[0]["id"]
+
+                        executar(
+                            """
+                            INSERT INTO usuarios
+                            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                int(empresa_id),
+                                nome_usuario,
+                                email_usuario,
+                                hash_senha(senha_usuario),
+                                "Administrador",
+                                1,
+                                datetime.now().isoformat()
+                            )
+                        )
+
+                        st.success("Empresa criada com sucesso. Agora faça login.")
+                    except Exception as e:
+                        st.error(f"Erro ao criar empresa: {e}")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        if logo_base64:
+            st.markdown(
+                f"""
+                <div class="logo-box">
+                    <img src="data:image/png;base64,{logo_base64}">
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 
 # =====================================================
@@ -810,6 +947,9 @@ def gerar_pdf_relatorio(df, ind):
 def app():
     usuario = st.session_state.usuario
 
+    if Path("logo.png").exists():
+        st.sidebar.image("logo.png", use_container_width=True)
+
     st.sidebar.title("💼 Sistema Financeiro")
     st.sidebar.write(f"**Empresa:** {usuario['empresa_nome']}")
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
@@ -830,11 +970,8 @@ def app():
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
 
-    # =================================================
-    # DASHBOARD
-    # =================================================
     if menu == "Dashboard":
-        st.title("📊 Dashboard estilo Nubank")
+        st.title("📊 Dashboard Financeiro Premium")
 
         if df.empty:
             st.info("Nenhum lançamento cadastrado ainda.")
@@ -891,9 +1028,6 @@ def app():
             tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
             st.dataframe(tabela, use_container_width=True)
 
-    # =================================================
-    # ENTRADAS E SAÍDAS
-    # =================================================
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
 
@@ -1030,9 +1164,6 @@ def app():
                 st.warning("Excluído.")
                 st.rerun()
 
-    # =================================================
-    # PARCELAS
-    # =================================================
     elif menu == "Parcelas":
         st.title("📆 Controle de Parcelas")
 
@@ -1048,9 +1179,6 @@ def app():
                 parcelas["vencimento"] = parcelas["vencimento"].dt.strftime("%d/%m/%Y")
                 st.dataframe(parcelas, use_container_width=True)
 
-    # =================================================
-    # CONTAS A PAGAR / RECEBER
-    # =================================================
     elif menu == "Contas a Pagar/Receber":
         st.title("📌 Contas a Pagar / Receber")
 
@@ -1084,9 +1212,6 @@ def app():
                 contas["vencimento"] = contas["vencimento"].dt.strftime("%d/%m/%Y")
                 st.dataframe(contas, use_container_width=True)
 
-    # =================================================
-    # CONTAS A RECEBER
-    # =================================================
     elif menu == "Contas a Receber":
         st.title("💰 Contas a Receber")
 
@@ -1105,9 +1230,6 @@ def app():
                 receber["vencimento"] = receber["vencimento"].dt.strftime("%d/%m/%Y")
                 st.dataframe(receber, use_container_width=True)
 
-    # =================================================
-    # PIX
-    # =================================================
     elif menu == "Pix":
         st.title("💳 Pix")
 
@@ -1119,9 +1241,6 @@ def app():
             texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
             st.code(texto)
 
-    # =================================================
-    # PDF
-    # =================================================
     elif menu == "Relatórios PDF":
         st.title("📄 Relatórios PDF")
 
@@ -1148,9 +1267,6 @@ def app():
                 key="download_csv"
             )
 
-    # =================================================
-    # IA FINANCEIRA
-    # =================================================
     elif menu == "IA Financeira":
         st.title("🤖 IA Financeira")
 
@@ -1202,9 +1318,6 @@ def app():
                     "Para IA real com OpenAI, depois conectamos sua API."
                 )
 
-    # =================================================
-    # CRM
-    # =================================================
     elif menu == "CRM / Clientes":
         st.title("👥 CRM / Clientes")
 
@@ -1250,9 +1363,6 @@ def app():
         else:
             st.dataframe(clientes, use_container_width=True)
 
-    # =================================================
-    # ESTOQUE
-    # =================================================
     elif menu == "Estoque":
         st.title("📦 Estoque")
 
@@ -1304,9 +1414,6 @@ def app():
             estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
             st.dataframe(estoque, use_container_width=True)
 
-    # =================================================
-    # WHATSAPP MANUAL
-    # =================================================
     elif menu == "WhatsApp Manual":
         st.title("📲 WhatsApp Manual")
 
@@ -1329,9 +1436,6 @@ def app():
             link = f"https://wa.me/55{telefone}?text={quote(texto)}"
             st.markdown(f"[Abrir WhatsApp]({link})")
 
-    # =================================================
-    # USUÁRIOS E PERMISSÕES
-    # =================================================
     elif menu == "Usuários":
         st.title("👤 Usuários e Permissões")
 
@@ -1516,9 +1620,6 @@ def app():
                         st.warning("Usuário excluído.")
                         st.rerun()
 
-    # =================================================
-    # CONFIGURAÇÕES
-    # =================================================
     elif menu == "Configurações":
         st.title("⚙️ Configurações")
 
