@@ -1,306 +1,2892 @@
+import streamlit as st
+import pandas as pd
+import sqlite3
+import hashlib
+import json
+import base64
+from pathlib import Path
+from datetime import date, datetime, timedelta
+from io import BytesIO
+from urllib.parse import quote
+
+
+# =====================================================
+# CONFIGURAÇÃO INICIAL
+# =====================================================
+
+st.set_page_config(
+    page_title="Global Software | Sistema Financeiro Premium",
+    page_icon="💼",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+DB_PATH = "sistema_financeiro.db"
+WHATSAPP_COMERCIAL = "5564992774409"
+TAG_DEMO = "__DEMO_GLOBAL_SOFTWARE__"
+
+
+# =====================================================
+# IMAGENS
+# =====================================================
+
+def imagem_base64(caminho):
+    arquivo = Path(caminho)
+    if arquivo.exists():
+        with open(arquivo, "rb") as img:
+            return base64.b64encode(img.read()).decode()
+    return ""
+
+
+logo_base64 = imagem_base64("logo.png")
+banner_base64 = imagem_base64("banner_login.png")
+
+if not banner_base64:
+    banner_base64 = logo_base64
+
+
+# =====================================================
+# CSS PREMIUM
+# =====================================================
+
+st.markdown("""
+<style>
+#MainMenu, footer, header {
+    visibility: hidden;
+}
+
+.stApp {
+    background:
+        radial-gradient(circle at top left, rgba(223,255,107,0.10), transparent 32%),
+        linear-gradient(135deg, #001d2b 0%, #002b3d 50%, #001520 100%);
+    color: #ffffff;
+}
+
+.block-container {
+    padding-top: 1rem;
+    padding-bottom: 2.5rem;
+    max-width: 1380px;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 950 !important;
+}
+
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, rgba(0,29,43,0.99), rgba(0,43,61,0.99));
+    border-right: 1px solid rgba(223,255,107,0.18);
+}
+
+section[data-testid="stSidebar"] * {
+    color: #f7ffe4 !important;
+}
+
+section[data-testid="stSidebar"] img {
+    border-radius: 18px;
+    border: 1px solid rgba(223,255,107,0.28);
+    margin-bottom: 12px;
+}
+
+.gs-card-dark {
+    border-radius: 28px;
+    padding: 32px;
+    background:
+        radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
+        linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
+    border: 1px solid rgba(223,255,107,0.22);
+    box-shadow: 0 18px 44px rgba(0,0,0,0.25);
+    color: white;
+    margin-bottom: 18px;
+}
+
+.gs-card-white {
+    border-radius: 28px;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e5edf2;
+    box-shadow: 0 18px 55px rgba(0,43,61,0.08);
+    color: #052c3d;
+    margin-bottom: 18px;
+}
+
+.gs-section-white {
+    background: #f7fbfd;
+    border-radius: 34px;
+    padding: 46px 30px;
+    margin: 24px 0;
+    color: #052c3d;
+}
+
+.gs-section-dark {
+    background: #002b3d;
+    border-radius: 34px;
+    padding: 46px 30px;
+    margin: 24px 0;
+    color: white;
+    border: 1px solid rgba(223,255,107,0.16);
+}
+
+.gs-title-big {
+    font-size: 56px;
+    line-height: 1.04;
+    font-weight: 950;
+    color: white;
+    letter-spacing: -1.5px;
+}
+
+.gs-title-big span {
+    color: #dfff6b;
+}
+
+.gs-subtitle {
+    font-size: 20px;
+    line-height: 1.62;
+    color: rgba(255,255,255,0.72);
+}
+
+.gs-kicker {
+    color: #dfff6b;
+    letter-spacing: 5px;
+    font-size: 13px;
+    font-weight: 950;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.gs-section-title {
+    font-size: 42px;
+    line-height: 1.12;
+    font-weight: 950;
+    color: #052c3d;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.gs-section-title-dark {
+    font-size: 42px;
+    line-height: 1.12;
+    font-weight: 950;
+    color: white;
+    text-align: center;
+    letter-spacing: -1px;
+}
+
+.gs-muted {
+    color: #6c7b86;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.gs-muted-light {
+    color: rgba(255,255,255,0.65);
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.gs-btn-fake {
+    display: inline-block;
+    padding: 18px 32px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d;
+    font-size: 17px;
+    font-weight: 950;
+    box-shadow: 0 18px 45px rgba(223,255,107,0.20);
+    border: 1px solid rgba(223,255,107,0.50);
+}
+
+.gs-btn-dark {
+    display: inline-block;
+    padding: 18px 32px;
+    border-radius: 999px;
+    background: #002b3d;
+    color: #dfff6b;
+    font-size: 17px;
+    font-weight: 950;
+    box-shadow: 0 18px 45px rgba(0,43,61,0.20);
+    border: 1px solid rgba(223,255,107,0.30);
+}
+
+.gs-floating {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 22px;
+    z-index: 9999;
+    background: #002b3d;
+    color: #dfff6b !important;
+    border: 1px solid rgba(223,255,107,0.38);
+    box-shadow: 0 18px 55px rgba(0,43,61,0.36);
+    padding: 15px 30px;
+    border-radius: 999px;
+    font-weight: 950;
+    font-size: 16px;
+    text-decoration: none !important;
+}
+
+.gs-up {
+    position: fixed;
+    left: 22px;
+    bottom: 22px;
+    z-index: 9998;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: #002b3d;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    text-decoration: none !important;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+}
+
+.app-header,
+.menu-panel,
+.commercial-panel,
+.form-box {
+    border-radius: 26px;
+    border: 1px solid rgba(223,255,107,0.18);
+    background: linear-gradient(180deg, rgba(0,43,61,0.92), rgba(0,29,43,0.96));
+    box-shadow: 0 22px 60px rgba(0,0,0,0.30);
+    color: #f7ffe4;
+}
+
+.app-header {
+    padding: 28px 30px;
+    margin-bottom: 20px;
+}
+
+.app-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.app-title {
+    font-size: 34px;
+    font-weight: 950;
+    color: white;
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.app-subtitle {
+    font-size: 15px;
+    color: rgba(255,255,255,0.68);
+    line-height: 1.5;
+}
+
+.app-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.app-badge {
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(223,255,107,0.08);
+    border: 1px solid rgba(223,255,107,0.22);
+    color: #dfff6b;
+    font-size: 13px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.menu-panel {
+    padding: 18px;
+    margin-bottom: 22px;
+}
+
+.menu-title {
+    font-size: 16px;
+    font-weight: 950;
+    color: #dfff6b;
+    margin-bottom: 12px;
+}
+
+.commercial-panel,
+.form-box {
+    padding: 28px;
+    margin-bottom: 22px;
+}
+
+.commercial-card,
+.metric-card,
+.price-card {
+    border-radius: 24px;
+    padding: 24px;
+    background:
+        radial-gradient(circle at top right, rgba(223,255,107,0.10), transparent 42%),
+        linear-gradient(145deg, rgba(0,55,77,0.98), rgba(0,29,43,0.98));
+    border: 1px solid rgba(223,255,107,0.20);
+    box-shadow: 0 16px 38px rgba(0,0,0,0.22);
+    min-height: 155px;
+    color: white;
+}
+
+.commercial-card-title,
+.price-title,
+.metric-title {
+    color: #dfff6b;
+    font-size: 18px;
+    font-weight: 950;
+    margin-bottom: 9px;
+}
+
+.commercial-card-text,
+.price-desc,
+.metric-sub {
+    color: rgba(255,255,255,0.68);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.metric-value,
+.price-value {
+    color: white;
+    font-size: 29px;
+    font-weight: 950;
+    margin-top: 6px;
+}
+
+.success-box {
+    background: rgba(16,185,129,0.13);
+    border-left: 6px solid #10b981;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #d1fae5;
+}
+
+.warning-box {
+    background: rgba(245,158,11,0.14);
+    border-left: 6px solid #f59e0b;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #fef3c7;
+}
+
+.danger-box {
+    background: rgba(239,68,68,0.14);
+    border-left: 6px solid #ef4444;
+    padding: 14px 18px;
+    border-radius: 16px;
+    color: #fee2e2;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 8px 0 4px 0;
+}
+
+.login-title {
+    font-size: 46px;
+    font-weight: 950;
+    color: white;
+    margin-bottom: 10px;
+    line-height: 1.05;
+}
+
+.login-subtitle {
+    font-size: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+    color: rgba(255,255,255,0.70);
+    line-height: 1.6;
+}
+
+.login-info {
+    margin: 18px auto 28px auto;
+    max-width: 980px;
+    background: rgba(223,255,107,0.08);
+    border: 1px solid rgba(223,255,107,0.22);
+    border-radius: 18px;
+    padding: 14px 18px;
+    text-align: center;
+    color: #dfff6b;
+    font-size: 15px;
+}
+
+.hero-box {
+    min-height: 430px;
+    border-radius: 28px;
+    border: 1px solid rgba(223,255,107,0.22);
+    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    background: rgba(0,29,43,0.72);
+}
+
+.hero-inner {
+    width: 100%;
+    display: flex;
+    align-items: end;
+    justify-content: start;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center center !important;
+    background-color: rgba(0,29,43,0.76);
+    position: relative;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(0,29,43,0.02), rgba(0,29,43,0.70)),
+        linear-gradient(90deg, rgba(0,29,43,0.46), rgba(0,29,43,0.04));
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 30px;
+    max-width: 88%;
+}
+
+.hero-content h3 {
+    font-size: 31px;
+    margin-bottom: 8px;
+    color: white !important;
+}
+
+.hero-content p {
+    margin: 0;
+    color: rgba(255,255,255,0.72) !important;
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.logo-box {
+    min-height: 430px;
+    border-radius: 28px;
+    border: 1px solid rgba(223,255,107,0.22);
+    background:
+        radial-gradient(circle at center, rgba(223,255,107,0.09), transparent 56%),
+        linear-gradient(180deg, rgba(0,43,61,0.55), rgba(0,29,43,0.90));
+    box-shadow: 0 26px 70px rgba(0,0,0,0.40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow: hidden;
+}
+
+.logo-box img {
+    width: 82%;
+    max-width: 380px;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 20px 34px rgba(0,0,0,0.34));
+}
+
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stTextArea textarea {
+    border-radius: 16px !important;
+    border: 1px solid rgba(0,43,61,0.20) !important;
+    background: rgba(255,255,255,0.98) !important;
+    color: #052c3d !important;
+}
+
+.stSelectbox div[data-baseweb="select"] > div {
+    border-radius: 16px !important;
+    background: rgba(255,255,255,0.98) !important;
+    border: 1px solid rgba(0,43,61,0.20) !important;
+    color: #052c3d !important;
+    min-height: 44px;
+}
+
+.stSelectbox span,
+div[data-baseweb="select"] * {
+    color: #052c3d !important;
+}
+
+div[data-baseweb="menu"],
+ul[role="listbox"],
+div[role="listbox"] {
+    background: white !important;
+    border: 1px solid #e5edf2 !important;
+    border-radius: 16px !important;
+    color: #052c3d !important;
+}
+
+div[data-baseweb="menu"] *,
+ul[role="listbox"] *,
+div[role="listbox"] * {
+    background-color: white !important;
+    color: #052c3d !important;
+    font-weight: 800 !important;
+}
+
+.stButton > button {
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d !important;
+    border: none;
+    border-radius: 999px;
+    padding: 0.82rem 1.2rem;
+    font-weight: 950;
+    box-shadow: 0 12px 28px rgba(223,255,107,0.20);
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(90deg, #efffa6, #dfff6b);
+    color: #002b3d !important;
+}
+
+.stDownloadButton > button {
+    background: linear-gradient(90deg, #dfff6b, #c9ff4f);
+    color: #002b3d !important;
+    border: none;
+    border-radius: 999px;
+    font-weight: 950;
+}
+
+div[data-testid="stDataFrame"] {
+    background: rgba(255,255,255,0.94);
+    border-radius: 20px;
+    padding: 8px;
+    border: 1px solid rgba(223,255,107,0.18);
+}
+
+div[role="radiogroup"] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+div[role="radiogroup"] label {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(223,255,107,0.18) !important;
+    border-radius: 999px !important;
+    padding: 10px 14px !important;
+    margin: 0 !important;
+    color: white !important;
+    font-weight: 850 !important;
+}
+
+div[role="radiogroup"] label * {
+    color: white !important;
+    font-weight: 850 !important;
+}
+
+div[data-testid="stAlert"] {
+    background: rgba(255,255,255,0.95);
+    color: #052c3d;
+    border-radius: 16px;
+    border: 1px solid #e5edf2;
+}
+
+div[data-testid="stAlert"] * {
+    color: #052c3d !important;
+}
+
+@media (max-width: 980px) {
+    .gs-title-big {
+        font-size: 38px;
+    }
+
+    .gs-section-title,
+    .gs-section-title-dark {
+        font-size: 30px;
+    }
+
+    .gs-floating {
+        width: calc(100% - 120px);
+        text-align: center;
+        padding: 14px 16px;
+        font-size: 14px;
+    }
+
+    .login-title,
+    .app-title {
+        font-size: 28px;
+    }
+
+    .hero-box,
+    .logo-box {
+        min-height: 300px;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
+
+
+# =====================================================
+# FUNÇÕES BÁSICAS
+# =====================================================
+
+def html(codigo):
+    st.markdown(codigo.strip(), unsafe_allow_html=True)
+
+
+def conectar():
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
+
+
+def executar(sql, params=()):
+    con = conectar()
+    cur = con.cursor()
+    cur.execute(sql, params)
+    con.commit()
+    con.close()
+
+
+def consultar(sql, params=()):
+    con = conectar()
+    df = pd.read_sql_query(sql, con, params=params)
+    con.close()
+    return df
+
+
+def hash_senha(senha):
+    return hashlib.sha256(senha.encode("utf-8")).hexdigest()
+
+
+def moeda(valor):
+    try:
+        valor = float(valor)
+    except Exception:
+        valor = 0
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def percentual(valor):
+    try:
+        valor = float(valor)
+    except Exception:
+        valor = 0
+    return f"{valor:.1f}%".replace(".", ",")
+
+
+def data_br(valor):
+    try:
+        return pd.to_datetime(valor).strftime("%d/%m/%Y")
+    except Exception:
+        return ""
+
+
+def mes_atual_str():
+    return date.today().strftime("%Y-%m")
+
+
+def inicio_mes():
+    return date.today().replace(day=1)
+
+
+def status_automatico(status, vencimento):
+    if status in ["Pago", "Recebido"]:
+        return status
+
+    try:
+        venc = pd.to_datetime(vencimento).date()
+        dias = (venc - date.today()).days
+    except Exception:
+        dias = 0
+
+    if dias < 0:
+        return "Vencido"
+    if dias == 0:
+        return "Vence hoje"
+    return "Pendente"
+
+
+def card(titulo, valor, subtitulo=""):
+    html(f"""
+<div class="metric-card">
+    <div class="metric-title">{titulo}</div>
+    <div class="metric-value">{valor}</div>
+    <div class="metric-sub">{subtitulo}</div>
+</div>
+""")
+
+
+def comercial_card(titulo, texto):
+    html(f"""
+<div class="commercial-card">
+    <div class="commercial-card-title">{titulo}</div>
+    <div class="commercial-card-text">{texto}</div>
+</div>
+""")
+
+
+def preco_card(titulo, valor, texto):
+    html(f"""
+<div class="price-card">
+    <div class="price-title">{titulo}</div>
+    <div class="price-value">{valor}</div>
+    <div class="price-desc">{texto}</div>
+</div>
+""")
+
+
+def cabecalho_interno(menu_atual):
+    usuario = st.session_state.usuario
+
+    html(f"""
+<div class="app-header">
+    <div class="app-header-top">
+        <div>
+            <div class="app-title">Painel Global Software</div>
+            <div class="app-subtitle">
+                Área atual: <b>{menu_atual}</b>. Gestão completa, clara, segura e profissional.
+            </div>
+        </div>
+        <div class="app-badges">
+            <div class="app-badge">Empresa: {usuario['empresa_nome']}</div>
+            <div class="app-badge">Usuário: {usuario['nome']}</div>
+            <div class="app-badge">Perfil: {usuario['tipo']}</div>
+        </div>
+    </div>
+</div>
+""")
+
+
+# =====================================================
+# BANCO DE DADOS
+# =====================================================
+
+def coluna_existe(tabela, coluna):
+    con = conectar()
+    cur = con.cursor()
+    cur.execute(f"PRAGMA table_info({tabela})")
+    colunas = [linha[1] for linha in cur.fetchall()]
+    con.close()
+    return coluna in colunas
+
+
+def adicionar_coluna(tabela, coluna, tipo):
+    if not coluna_existe(tabela, coluna):
+        executar(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {tipo}")
+
+
+def criar_tabelas():
+    con = conectar()
+    cur = con.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS empresas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            documento TEXT,
+            telefone TEXT,
+            cidade TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            senha_hash TEXT NOT NULL,
+            tipo TEXT NOT NULL,
+            ativo INTEGER DEFAULT 1,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS lancamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            data TEXT,
+            vencimento TEXT,
+            tipo TEXT,
+            categoria TEXT,
+            descricao TEXT,
+            cliente_fornecedor TEXT,
+            valor REAL,
+            forma_pagamento TEXT,
+            conta TEXT,
+            status TEXT,
+            parcela_atual INTEGER,
+            parcela_total INTEGER,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            nome TEXT,
+            telefone TEXT,
+            email TEXT,
+            documento TEXT,
+            tipo TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS estoque (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            produto TEXT,
+            categoria TEXT,
+            quantidade REAL,
+            custo_unitario REAL,
+            preco_venda REAL,
+            fornecedor TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS funcionarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            nome TEXT,
+            cargo TEXT,
+            telefone TEXT,
+            documento TEXT,
+            data_admissao TEXT,
+            salario_base REAL,
+            tipo_contrato TEXT,
+            status TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS folha_pagamento (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            funcionario_id INTEGER,
+            mes_referencia TEXT,
+            salario_base REAL,
+            horas_extras REAL,
+            valor_hora_extra REAL,
+            comissao REAL,
+            bonus REAL,
+            premiacao REAL,
+            desconto REAL,
+            meta_valor REAL,
+            meta_batida TEXT,
+            total_bruto REAL,
+            total_liquido REAL,
+            status TEXT,
+            data_pagamento TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS metas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            funcionario_id INTEGER,
+            mes_referencia TEXT,
+            descricao TEXT,
+            meta_valor REAL,
+            realizado REAL,
+            premio REAL,
+            status TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    con.commit()
+    con.close()
+
+    adicionar_coluna("estoque", "estoque_minimo", "REAL DEFAULT 0")
+    adicionar_coluna("estoque", "codigo", "TEXT")
+    adicionar_coluna("clientes", "limite_credito", "REAL DEFAULT 0")
+    adicionar_coluna("clientes", "status_cliente", "TEXT DEFAULT 'Ativo'")
+
+
+def criar_admin_padrao():
+    empresas = consultar("SELECT * FROM empresas")
+
+    if empresas.empty:
+        executar(
+            """
+            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ("Global Software", "", "", "", datetime.now().isoformat())
+        )
+
+    empresa = consultar("SELECT id FROM empresas ORDER BY id ASC LIMIT 1").iloc[0]["id"]
+
+    admin = consultar("SELECT * FROM usuarios WHERE email = ?", ("admin@empresa.com",))
+
+    if admin.empty:
+        executar(
+            """
+            INSERT INTO usuarios
+            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(empresa),
+                "Administrador",
+                "admin@empresa.com",
+                hash_senha("123456"),
+                "Administrador",
+                1,
+                datetime.now().isoformat()
+            )
+        )
+
+
+# =====================================================
+# DADOS FIXOS
+# =====================================================
+
+TIPOS_USUARIO = ["Administrador", "Gerente", "Financeiro", "Vendedor"]
+
+TIPOS_LANCAMENTO = {
+    "Receita": ["Venda", "Serviço", "Comissão", "Entrada", "Recebimento de parcela", "Outras receitas"],
+    "Custo": ["Produto vendido", "Fornecedor", "Matéria-prima", "Frete de compra", "Taxa de cartão", "Comissão paga"],
+    "Despesa fixa": ["Aluguel", "Internet", "Sistema", "Funcionário", "Contador", "Telefone", "MEI / Imposto fixo", "Folha de pagamento"],
+    "Despesa variável": ["Energia", "Água", "Marketing", "Manutenção", "Transporte", "Alimentação", "Outras despesas"],
+    "Investimento": ["Equipamento", "Curso", "Ferramenta", "Reforma", "Estoque", "Publicidade estratégica"],
+    "Dívida": ["Empréstimo", "Financiamento", "Cartão de crédito", "Juros", "Parcela de dívida"],
+    "Retirada do dono": ["Pró-labore", "Saque pessoal", "Distribuição de lucro"]
+}
+
+FORMAS_PAGAMENTO = ["Dinheiro", "Pix", "Cartão de débito", "Cartão de crédito", "Boleto", "Transferência", "Promissória", "Outro"]
+CONTAS = ["Caixa", "Banco", "Conta digital", "Carteira", "Cartão", "Outro"]
+STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
+
+
+# =====================================================
+# DADOS DE EXEMPLO
+# =====================================================
+
+def existe_dados_exemplo():
+    df = consultar(
+        "SELECT COUNT(*) as total FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id_atual(), f"%{TAG_DEMO}%")
+    )
+    return int(df.iloc[0]["total"]) > 0
+
+
+def carregar_dados_exemplo():
+    if existe_dados_exemplo():
+        return False, "Os dados de exemplo já foram carregados. Para carregar novamente, limpe os dados demo primeiro."
+
+    empresa_id = empresa_id_atual()
+    usuario_id = usuario_id_atual()
+    hoje = date.today()
+    mes_ref = mes_atual_str()
+    criado = datetime.now().isoformat()
+
+    clientes_demo = [
+        ("Mercado Boa Compra", "64990000001", "financeiro@boacompra.com", "11.111.111/0001-11", "Cliente", 15000, "Ativo"),
+        ("Oficina Central", "64990000002", "contato@oficinacentral.com", "22.222.222/0001-22", "Cliente", 8000, "Ativo"),
+        ("Auto Peças Goiás", "64990000003", "vendas@autopecasgoias.com", "33.333.333/0001-33", "Fornecedor", 0, "Ativo"),
+        ("Clínica Vida", "64990000004", "adm@clinicavida.com", "44.444.444/0001-44", "Cliente", 12000, "Ativo"),
+        ("Construtora Sol", "64990000005", "financeiro@construtorasol.com", "55.555.555/0001-55", "Cliente", 30000, "Ativo"),
+        ("Loja Estilo", "64990000006", "contato@lojaestilo.com", "66.666.666/0001-66", "Cliente", 6000, "Ativo"),
+        ("Restaurante Sabor", "64990000007", "adm@restaurantesabor.com", "77.777.777/0001-77", "Cliente", 9000, "Ativo"),
+        ("Transportes Forte", "64990000008", "financeiro@transportesforte.com", "88.888.888/0001-88", "Cliente", 20000, "Ativo"),
+    ]
+
+    for nome, telefone, email, documento, tipo, limite, status in clientes_demo:
+        executar(
+            """
+            INSERT INTO clientes
+            (empresa_id, nome, telefone, email, documento, tipo, observacao, criado_em, limite_credito, status_cliente)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, nome, telefone, email, documento, tipo, f"Cliente de demonstração {TAG_DEMO}", criado, limite, status)
+        )
+
+    estoque_demo = [
+        ("Sistema Financeiro Premium", "GS-001", "Software", 18, 250, 1490, "Global Software", 5),
+        ("Implantação Sistema", "GS-002", "Serviço", 10, 120, 800, "Equipe Interna", 3),
+        ("Treinamento Equipe", "GS-003", "Serviço", 8, 80, 500, "Equipe Interna", 3),
+        ("Suporte Premium", "GS-004", "Assinatura", 25, 60, 297, "Global Software", 8),
+        ("Automação WhatsApp", "GS-005", "Integração", 4, 300, 1200, "Parceiro API", 5),
+        ("Relatório Personalizado", "GS-006", "Serviço", 2, 150, 650, "Global Software", 3),
+    ]
+
+    for produto, codigo, categoria, qtd, custo, venda, fornecedor, minimo in estoque_demo:
+        executar(
+            """
+            INSERT INTO estoque
+            (empresa_id, produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, observacao, criado_em, estoque_minimo, codigo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, produto, categoria, qtd, custo, venda, fornecedor, f"Produto de demonstração {TAG_DEMO}", criado, minimo, codigo)
+        )
+
+    funcionarios_demo = [
+        ("Ana Paula", "Financeiro", "64991000001", "000.000.001-00", hoje - timedelta(days=420), 3200, "CLT", "Ativo"),
+        ("Carlos Mendes", "Vendedor", "64991000002", "000.000.002-00", hoje - timedelta(days=300), 2200, "Comissionado", "Ativo"),
+        ("Juliana Rocha", "Gerente", "64991000003", "000.000.003-00", hoje - timedelta(days=520), 4500, "CLT", "Ativo"),
+        ("Pedro Lima", "Suporte", "64991000004", "000.000.004-00", hoje - timedelta(days=180), 2500, "PJ", "Ativo"),
+    ]
+
+    funcionario_ids = []
+
+    for nome, cargo, telefone, documento, admissao, salario, contrato, status in funcionarios_demo:
+        executar(
+            """
+            INSERT INTO funcionarios
+            (empresa_id, nome, cargo, telefone, documento, data_admissao, salario_base, tipo_contrato, status, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, nome, cargo, telefone, documento, str(admissao), salario, contrato, status, f"Funcionário de demonstração {TAG_DEMO}", criado)
+        )
+
+        ultimo = consultar(
+            "SELECT id FROM funcionarios WHERE empresa_id = ? AND nome = ? ORDER BY id DESC LIMIT 1",
+            (empresa_id, nome)
+        )
+        funcionario_ids.append(int(ultimo.iloc[0]["id"]))
+
+    lancamentos_demo = [
+        (hoje - timedelta(days=45), hoje - timedelta(days=45), "Receita", "Venda", "Venda sistema financeiro - Mercado Boa Compra", "Mercado Boa Compra", 8900, "Pix", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=38), hoje - timedelta(days=38), "Receita", "Serviço", "Implantação sistema - Clínica Vida", "Clínica Vida", 5200, "Transferência", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=32), hoje - timedelta(days=32), "Receita", "Venda", "Licença premium - Construtora Sol", "Construtora Sol", 12400, "Boleto", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=25), hoje - timedelta(days=25), "Receita", "Serviço", "Treinamento equipe - Loja Estilo", "Loja Estilo", 2500, "Pix", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=20), hoje - timedelta(days=20), "Receita", "Venda", "Automação financeira - Restaurante Sabor", "Restaurante Sabor", 6900, "Boleto", "Banco", "Recebido", 1, 1),
+        (hoje - timedelta(days=12), hoje - timedelta(days=12), "Receita", "Comissão", "Comissão implantação - Transportes Forte", "Transportes Forte", 1800, "Pix", "Banco", "Recebido", 1, 1),
+
+        (hoje - timedelta(days=15), hoje - timedelta(days=15), "Despesa fixa", "Aluguel", "Aluguel escritório", "Imobiliária Goiás", 2800, "Boleto", "Banco", "Pago", 1, 1),
+        (hoje - timedelta(days=14), hoje - timedelta(days=14), "Despesa fixa", "Internet", "Internet fibra empresarial", "Operadora", 220, "Pix", "Banco", "Pago", 1, 1),
+        (hoje - timedelta(days=10), hoje - timedelta(days=10), "Despesa variável", "Marketing", "Campanha tráfego pago", "Meta Ads", 1600, "Cartão de crédito", "Cartão", "Pago", 1, 1),
+        (hoje - timedelta(days=8), hoje - timedelta(days=8), "Despesa fixa", "Sistema", "Ferramentas e hospedagem", "Serviços Cloud", 690, "Cartão de crédito", "Cartão", "Pago", 1, 1),
+        (hoje - timedelta(days=5), hoje - timedelta(days=5), "Custo", "Fornecedor", "Custos de implantação e API", "Parceiro API", 1350, "Pix", "Banco", "Pago", 1, 1),
+
+        (hoje - timedelta(days=35), hoje - timedelta(days=12), "Receita", "Recebimento de parcela", "Parcela vencida - Oficina Central", "Oficina Central", 2700, "Boleto", "Banco", "Pendente", 1, 3),
+        (hoje - timedelta(days=30), hoje - timedelta(days=7), "Receita", "Recebimento de parcela", "Mensalidade vencida - Loja Estilo", "Loja Estilo", 1490, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje - timedelta(days=24), hoje - timedelta(days=3), "Receita", "Serviço", "Suporte premium vencido - Restaurante Sabor", "Restaurante Sabor", 297, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje - timedelta(days=18), hoje - timedelta(days=1), "Receita", "Venda", "Licença pendente - Transportes Forte", "Transportes Forte", 3900, "Boleto", "Banco", "Pendente", 1, 1),
+
+        (hoje, hoje + timedelta(days=3), "Receita", "Venda", "Nova proposta - Clínica Vida", "Clínica Vida", 7800, "Pix", "Banco", "Pendente", 1, 1),
+        (hoje, hoje + timedelta(days=7), "Despesa fixa", "Contador", "Honorários contábeis", "Contabilidade Prime", 650, "Boleto", "Banco", "Pendente", 1, 1),
+        (hoje, hoje + timedelta(days=10), "Despesa variável", "Manutenção", "Manutenção equipamentos", "Técnico Local", 480, "Pix", "Caixa", "Pendente", 1, 1),
+    ]
+
+    for data_lanc, venc, tipo, categoria, descricao, cliente, valor, forma, conta, status, parc_atual, parc_total in lancamentos_demo:
+        executar(
+            """
+            INSERT INTO lancamentos
+            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+            parcela_total, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                empresa_id,
+                usuario_id,
+                str(data_lanc),
+                str(venc),
+                tipo,
+                categoria,
+                descricao,
+                cliente,
+                float(valor),
+                forma,
+                conta,
+                status,
+                parc_atual,
+                parc_total,
+                f"Lançamento de demonstração {TAG_DEMO}",
+                criado
+            )
+        )
+
+    folha_demo = [
+        (funcionario_ids[0], 3200, 6, 25, 0, 200, 0, 150, 0, "Não", "Pago"),
+        (funcionario_ids[1], 2200, 4, 22, 1800, 300, 500, 100, 15000, "Sim", "Pago"),
+        (funcionario_ids[2], 4500, 2, 35, 0, 500, 800, 250, 30000, "Sim", "Pago"),
+        (funcionario_ids[3], 2500, 3, 25, 0, 150, 0, 100, 0, "Não", "Pendente"),
+    ]
+
+    for func_id, salario, horas, valor_hora, comissao, bonus, premiacao, desconto, meta, meta_batida, status in folha_demo:
+        bruto = salario + (horas * valor_hora) + comissao + bonus + premiacao
+        liquido = bruto - desconto
+        executar(
+            """
+            INSERT INTO folha_pagamento
+            (empresa_id, funcionario_id, mes_referencia, salario_base, horas_extras, valor_hora_extra,
+            comissao, bonus, premiacao, desconto, meta_valor, meta_batida, total_bruto, total_liquido,
+            status, data_pagamento, observacao, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                empresa_id,
+                func_id,
+                mes_ref,
+                salario,
+                horas,
+                valor_hora,
+                comissao,
+                bonus,
+                premiacao,
+                desconto,
+                meta,
+                meta_batida,
+                bruto,
+                liquido,
+                status,
+                str(hoje),
+                f"Folha de demonstração {TAG_DEMO}",
+                criado
+            )
+        )
+
+    metas_demo = [
+        (funcionario_ids[1], "Meta de vendas de software", 25000, 18400, 800, "Em andamento"),
+        (funcionario_ids[2], "Meta de implantação mensal", 30000, 33000, 1200, "Batida"),
+        (funcionario_ids[0], "Meta de redução de inadimplência", 10000, 7200, 500, "Em andamento"),
+        (funcionario_ids[3], "Meta de tickets de suporte", 100, 88, 300, "Em andamento"),
+    ]
+
+    for func_id, desc, meta, realizado, premio, status in metas_demo:
+        executar(
+            """
+            INSERT INTO metas
+            (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (empresa_id, func_id, mes_ref, f"[DEMO] {desc} {TAG_DEMO}", meta, realizado, premio, status, criado)
+        )
+
+    return True, "Dados de exemplo carregados com sucesso."
+
+
+def limpar_dados_exemplo():
+    empresa_id = empresa_id_atual()
+
+    executar(
+        "DELETE FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM clientes WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM estoque WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM folha_pagamento WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM metas WHERE empresa_id = ? AND descricao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    executar(
+        "DELETE FROM funcionarios WHERE empresa_id = ? AND observacao LIKE ?",
+        (empresa_id, f"%{TAG_DEMO}%")
+    )
+
+    return True, "Dados de exemplo removidos com sucesso."
+
+
+# =====================================================
+# CARREGAMENTO
+# =====================================================
+
+def empresa_id_atual():
+    return int(st.session_state.usuario["empresa_id"])
+
+
+def usuario_id_atual():
+    return int(st.session_state.usuario["id"])
+
+
+def tipo_usuario_atual():
+    return st.session_state.usuario["tipo"]
+
+
+def carregar_lancamentos():
+    df = consultar(
+        """
+        SELECT *
+        FROM lancamentos
+        WHERE empresa_id = ?
+        ORDER BY vencimento ASC, data DESC, id DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+    if not df.empty:
+        df["data"] = pd.to_datetime(df["data"])
+        df["vencimento"] = pd.to_datetime(df["vencimento"])
+        df["mes"] = df["data"].dt.strftime("%Y-%m")
+        df["status_real"] = df.apply(lambda x: status_automatico(x["status"], x["vencimento"]), axis=1)
+
+    return df
+
+
+def carregar_clientes():
+    return consultar("SELECT * FROM clientes WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
+
+
+def carregar_estoque():
+    return consultar("SELECT * FROM estoque WHERE empresa_id = ? ORDER BY produto ASC", (empresa_id_atual(),))
+
+
+def carregar_funcionarios():
+    return consultar("SELECT * FROM funcionarios WHERE empresa_id = ? ORDER BY nome ASC", (empresa_id_atual(),))
+
+
+def carregar_folha():
+    return consultar(
+        """
+        SELECT f.*, fun.nome as funcionario_nome, fun.cargo
+        FROM folha_pagamento f
+        LEFT JOIN funcionarios fun ON fun.id = f.funcionario_id
+        WHERE f.empresa_id = ?
+        ORDER BY f.mes_referencia DESC, fun.nome ASC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def carregar_metas():
+    return consultar(
+        """
+        SELECT m.*, fun.nome as funcionario_nome
+        FROM metas m
+        LEFT JOIN funcionarios fun ON fun.id = m.funcionario_id
+        WHERE m.empresa_id = ?
+        ORDER BY m.mes_referencia DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+# =====================================================
+# CÁLCULOS
+# =====================================================
+
+def calcular_indicadores(df):
+    if df.empty:
+        return {
+            "receita": 0,
+            "saidas": 0,
+            "lucro": 0,
+            "caixa": 0,
+            "pagas_mes": 0,
+            "receber": 0,
+            "pagar": 0,
+            "vencidas": 0
+        }
+
+    receita = df[df["tipo"] == "Receita"]["valor"].sum()
+    saidas = df[df["tipo"] != "Receita"]["valor"].sum()
+    lucro = receita - saidas
+    caixa = lucro
+
+    inicio = pd.to_datetime(inicio_mes())
+    fim = pd.to_datetime(date.today())
+
+    pagas_mes = df[
+        (df["status"].isin(["Pago", "Recebido"])) &
+        (df["data"] >= inicio) &
+        (df["data"] <= fim)
+    ]["valor"].sum()
+
+    pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
+    receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
+    pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
+    vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
+
+    return {
+        "receita": receita,
+        "saidas": saidas,
+        "lucro": lucro,
+        "caixa": caixa,
+        "pagas_mes": pagas_mes,
+        "receber": receber,
+        "pagar": pagar,
+        "vencidas": vencidas
+    }
+
+
+def calcular_folha_total(salario, horas, valor_hora, comissao, bonus, premiacao, desconto):
+    bruto = salario + (horas * valor_hora) + comissao + bonus + premiacao
+    liquido = bruto - desconto
+    return bruto, liquido
+
+
+# =====================================================
+# PDF
+# =====================================================
+
 def gerar_pdf_relatorio(df, ind):
     try:
         from reportlab.lib.pagesizes import A4
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import cm
-        from reportlab.lib import colors
     except Exception:
         return None
 
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     largura, altura = A4
+    y = altura - 2 * cm
 
-    empresa_nome = st.session_state.usuario["empresa_nome"]
-    data_emissao = datetime.now().strftime("%d/%m/%Y às %H:%M")
-
-    cor_navy = colors.HexColor("#002B3D")
-    cor_navy_escuro = colors.HexColor("#001D2B")
-    cor_verde = colors.HexColor("#DFFF6B")
-    cor_cinza = colors.HexColor("#6C7B86")
-    cor_claro = colors.HexColor("#F4F8FB")
-    cor_branco = colors.white
-    cor_vermelho = colors.HexColor("#D93025")
-    cor_verde_ok = colors.HexColor("#0F9D58")
-
-    def desenhar_capa():
-        pdf.setFillColor(cor_navy_escuro)
-        pdf.rect(0, 0, largura, altura, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_navy)
-        pdf.roundRect(1.2 * cm, 1.2 * cm, largura - 2.4 * cm, altura - 2.4 * cm, 24, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_verde)
-        pdf.circle(largura - 3.1 * cm, altura - 3.1 * cm, 1.2 * cm, fill=1, stroke=0)
-
-        if Path("logo.png").exists():
-            try:
-                pdf.drawImage(
-                    "logo.png",
-                    2 * cm,
-                    altura - 4.6 * cm,
-                    width=3.2 * cm,
-                    height=3.2 * cm,
-                    preserveAspectRatio=True,
-                    mask="auto"
-                )
-            except Exception:
-                pdf.setFillColor(cor_verde)
-                pdf.setFont("Helvetica-Bold", 22)
-                pdf.drawString(2 * cm, altura - 3.1 * cm, "GS")
-        else:
-            pdf.setFillColor(cor_verde)
-            pdf.setFont("Helvetica-Bold", 22)
-            pdf.drawString(2 * cm, altura - 3.1 * cm, "GS")
-
-        pdf.setFillColor(cor_branco)
-        pdf.setFont("Helvetica-Bold", 24)
-        pdf.drawString(2 * cm, altura - 6.4 * cm, "GLOBAL SOFTWARE")
-
-        pdf.setFillColor(cor_verde)
-        pdf.setFont("Helvetica-Bold", 28)
-        pdf.drawString(2 * cm, altura - 9.2 * cm, "RELATÓRIO FINANCEIRO")
-        pdf.drawString(2 * cm, altura - 10.4 * cm, "EXECUTIVO")
-
-        pdf.setFillColor(colors.HexColor("#D7E2E8"))
-        pdf.setFont("Helvetica", 12)
-        pdf.drawString(2 * cm, altura - 12.1 * cm, f"Empresa: {empresa_nome}")
-        pdf.drawString(2 * cm, altura - 12.9 * cm, f"Gerado em: {data_emissao}")
-
-        pdf.setFillColor(cor_verde)
-        pdf.roundRect(2 * cm, altura - 15.2 * cm, 7.8 * cm, 1.1 * cm, 14, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_navy_escuro)
-        pdf.setFont("Helvetica-Bold", 11)
-        pdf.drawCentredString(5.9 * cm, altura - 14.85 * cm, "GESTÃO • CONTROLE • RESULTADOS")
-
-        pdf.setFillColor(colors.HexColor("#D7E2E8"))
-        pdf.setFont("Helvetica", 10)
-        pdf.drawString(2 * cm, 2.5 * cm, "Documento gerado automaticamente pelo Sistema Financeiro Premium.")
-        pdf.drawString(2 * cm, 2.0 * cm, "Global Software — inteligência para gestão empresarial.")
-
-        pdf.showPage()
-
-    def cabecalho_pagina(titulo):
-        pdf.setFillColor(cor_navy)
-        pdf.rect(0, altura - 2.4 * cm, largura, 2.4 * cm, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_verde)
-        pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(1.5 * cm, altura - 1.35 * cm, "GLOBAL SOFTWARE")
-
-        pdf.setFillColor(cor_branco)
-        pdf.setFont("Helvetica-Bold", 15)
-        pdf.drawRightString(largura - 1.5 * cm, altura - 1.35 * cm, titulo)
-
-        pdf.setFillColor(cor_cinza)
-        pdf.setFont("Helvetica", 8)
-        pdf.drawString(1.5 * cm, altura - 2.0 * cm, f"Empresa: {empresa_nome}")
-        pdf.drawRightString(largura - 1.5 * cm, altura - 2.0 * cm, f"Emitido em {data_emissao}")
-
-    def rodape():
-        pdf.setFillColor(cor_cinza)
-        pdf.setFont("Helvetica", 8)
-        pdf.drawString(1.5 * cm, 1.0 * cm, "Global Software | Sistema Financeiro Premium")
-        pdf.drawRightString(largura - 1.5 * cm, 1.0 * cm, "Relatório gerencial")
-
-    def bloco_resumo(x, y, w, h, titulo, valor, subtitulo, positivo=True):
-        pdf.setFillColor(cor_claro)
-        pdf.roundRect(x, y, w, h, 12, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_navy)
-        pdf.setFont("Helvetica-Bold", 9)
-        pdf.drawString(x + 0.35 * cm, y + h - 0.55 * cm, titulo)
-
-        if positivo:
-            pdf.setFillColor(cor_verde_ok)
-        else:
-            pdf.setFillColor(cor_vermelho)
-
-        pdf.setFont("Helvetica-Bold", 15)
-        pdf.drawString(x + 0.35 * cm, y + h - 1.25 * cm, valor)
-
-        pdf.setFillColor(cor_cinza)
-        pdf.setFont("Helvetica", 7.5)
-        pdf.drawString(x + 0.35 * cm, y + 0.35 * cm, subtitulo)
-
-    desenhar_capa()
-    cabecalho_pagina("Resumo Executivo")
-
-    y = altura - 3.7 * cm
-
-    pdf.setFillColor(cor_navy)
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawString(1.5 * cm, y, "Resumo financeiro")
-    y -= 0.45 * cm
-
-    pdf.setFillColor(cor_cinza)
-    pdf.setFont("Helvetica", 9)
-    pdf.drawString(1.5 * cm, y, "Visão geral dos principais indicadores da empresa.")
-    y -= 1.1 * cm
-
-    bloco_w = 5.55 * cm
-    bloco_h = 2.25 * cm
-    espaco = 0.45 * cm
-
-    x1 = 1.5 * cm
-    x2 = x1 + bloco_w + espaco
-    x3 = x2 + bloco_w + espaco
-
-    bloco_resumo(x1, y, bloco_w, bloco_h, "Receita total", moeda(ind["receita"]), "Entradas registradas", True)
-    bloco_resumo(x2, y, bloco_w, bloco_h, "Saídas totais", moeda(ind["saidas"]), "Custos, despesas e dívidas", False)
-    bloco_resumo(x3, y, bloco_w, bloco_h, "Lucro / Resultado", moeda(ind["lucro"]), "Receita menos saídas", ind["lucro"] >= 0)
-
-    y -= bloco_h + 0.55 * cm
-
-    bloco_resumo(x1, y, bloco_w, bloco_h, "Caixa estimado", moeda(ind["caixa"]), "Resultado acumulado", ind["caixa"] >= 0)
-    bloco_resumo(x2, y, bloco_w, bloco_h, "A receber", moeda(ind["receber"]), "Receitas pendentes", True)
-    bloco_resumo(x3, y, bloco_w, bloco_h, "Vencidas", moeda(ind["vencidas"]), "Contas em atraso", False)
-
-    y -= bloco_h + 1.0 * cm
-
-    pdf.setFillColor(cor_navy)
     pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(1.5 * cm, y, "Análise rápida")
-    y -= 0.65 * cm
+    pdf.drawString(2 * cm, y, "Relatório Financeiro - Global Software")
+    y -= 1 * cm
 
-    pdf.setFillColor(cor_cinza)
     pdf.setFont("Helvetica", 10)
+    pdf.drawString(2 * cm, y, f"Empresa: {st.session_state.usuario['empresa_nome']}")
+    y -= 0.5 * cm
+    pdf.drawString(2 * cm, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
+    y -= 1 * cm
 
-    if ind["lucro"] < 0:
-        analise = "A empresa apresenta resultado negativo. Recomenda-se revisar despesas, custos, folha e inadimplência."
-    elif ind["vencidas"] > 0:
-        analise = "A empresa apresenta lucro, porém possui valores vencidos. Recomenda-se priorizar cobrança e renegociação."
-    else:
-        analise = "A empresa apresenta controle saudável. Recomenda-se manter acompanhamento de caixa, estoque e contas a receber."
-
-    linhas_analise = [
-        analise,
-        f"Contas pagas ou recebidas no mês: {moeda(ind['pagas_mes'])}.",
-        f"Valores a pagar em aberto: {moeda(ind['pagar'])}.",
+    linhas = [
+        ("Receita", moeda(ind["receita"])),
+        ("Saídas", moeda(ind["saidas"])),
+        ("Lucro", moeda(ind["lucro"])),
+        ("Caixa", moeda(ind["caixa"])),
+        ("Contas pagas no mês", moeda(ind["pagas_mes"])),
+        ("A receber", moeda(ind["receber"])),
+        ("A pagar", moeda(ind["pagar"])),
+        ("Vencidas", moeda(ind["vencidas"])),
     ]
 
-    for linha in linhas_analise:
-        pdf.drawString(1.5 * cm, y, f"• {linha}")
-        y -= 0.55 * cm
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Resumo")
+    y -= 0.7 * cm
+    pdf.setFont("Helvetica", 10)
 
-    rodape()
-    pdf.showPage()
+    for nome, valor in linhas:
+        pdf.drawString(2 * cm, y, f"{nome}: {valor}")
+        y -= 0.45 * cm
 
-    cabecalho_pagina("Últimos Lançamentos")
+    y -= 0.5 * cm
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(2 * cm, y, "Últimos lançamentos")
+    y -= 0.7 * cm
+    pdf.setFont("Helvetica", 8)
 
-    y = altura - 3.6 * cm
+    if not df.empty:
+        ultimos = df.sort_values("data", ascending=False).head(18)
 
-    pdf.setFillColor(cor_navy)
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawString(1.5 * cm, y, "Últimos lançamentos financeiros")
-    y -= 0.9 * cm
+        for _, row in ultimos.iterrows():
+            linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
+            pdf.drawString(2 * cm, y, linha[:110])
+            y -= 0.35 * cm
 
-    if df.empty:
-        pdf.setFillColor(cor_cinza)
-        pdf.setFont("Helvetica", 10)
-        pdf.drawString(1.5 * cm, y, "Nenhum lançamento cadastrado.")
-    else:
-        tabela = df.sort_values("data", ascending=False).head(28).copy()
-
-        colunas = [
-            ("Data", 1.5 * cm, 2.0 * cm),
-            ("Tipo", 3.7 * cm, 3.0 * cm),
-            ("Descrição", 6.7 * cm, 6.4 * cm),
-            ("Valor", 13.1 * cm, 2.7 * cm),
-            ("Status", 15.9 * cm, 3.0 * cm),
-        ]
-
-        pdf.setFillColor(cor_navy)
-        pdf.roundRect(1.3 * cm, y - 0.18 * cm, largura - 2.6 * cm, 0.7 * cm, 8, fill=1, stroke=0)
-
-        pdf.setFillColor(cor_verde)
-        pdf.setFont("Helvetica-Bold", 8)
-
-        for nome_col, x, w in colunas:
-            pdf.drawString(x, y, nome_col)
-
-        y -= 0.65 * cm
-
-        pdf.setFont("Helvetica", 7.5)
-
-        for i, (_, row) in enumerate(tabela.iterrows()):
             if y < 2 * cm:
-                rodape()
                 pdf.showPage()
-                cabecalho_pagina("Últimos Lançamentos")
-                y = altura - 3.5 * cm
+                y = altura - 2 * cm
+                pdf.setFont("Helvetica", 8)
 
-            if i % 2 == 0:
-                pdf.setFillColor(colors.HexColor("#F7FBFD"))
-                pdf.roundRect(1.3 * cm, y - 0.18 * cm, largura - 2.6 * cm, 0.55 * cm, 5, fill=1, stroke=0)
-
-            pdf.setFillColor(colors.HexColor("#052C3D"))
-
-            data_txt = data_br(row["data"])
-            tipo_txt = str(row["tipo"])[:18]
-            desc_txt = str(row["descricao"])[:42]
-            valor_txt = moeda(row["valor"])
-            status_txt = str(row.get("status_real", row["status"]))[:16]
-
-            pdf.drawString(1.5 * cm, y, data_txt)
-            pdf.drawString(3.7 * cm, y, tipo_txt)
-            pdf.drawString(6.7 * cm, y, desc_txt)
-            pdf.drawRightString(15.2 * cm, y, valor_txt)
-
-            if status_txt in ["Pago", "Recebido"]:
-                pdf.setFillColor(cor_verde_ok)
-            elif status_txt in ["Vencido", "Vence hoje"]:
-                pdf.setFillColor(cor_vermelho)
-            else:
-                pdf.setFillColor(colors.HexColor("#F59E0B"))
-
-            pdf.setFont("Helvetica-Bold", 7.5)
-            pdf.drawString(15.9 * cm, y, status_txt)
-            pdf.setFont("Helvetica", 7.5)
-
-            y -= 0.55 * cm
-
-    rodape()
-    pdf.showPage()
-
-    cabecalho_pagina("Conclusão")
-
-    y = altura - 3.8 * cm
-
-    pdf.setFillColor(cor_navy)
-    pdf.setFont("Helvetica-Bold", 20)
-    pdf.drawString(1.5 * cm, y, "Conclusão gerencial")
-    y -= 1.0 * cm
-
-    pdf.setFillColor(cor_cinza)
-    pdf.setFont("Helvetica", 10)
-
-    conclusoes = [
-        "Este relatório apresenta uma visão executiva da saúde financeira da empresa.",
-        "Use os indicadores para acompanhar receita, saídas, lucro, inadimplência e valores pendentes.",
-        "Acompanhe este relatório semanalmente para melhorar decisões e reduzir riscos financeiros.",
-        "A Global Software ajuda sua empresa a sair do improviso e trabalhar com dados organizados.",
-    ]
-
-    for item in conclusoes:
-        pdf.drawString(1.8 * cm, y, f"• {item}")
-        y -= 0.65 * cm
-
-    y -= 0.6 * cm
-
-    pdf.setFillColor(cor_navy)
-    pdf.roundRect(1.5 * cm, y - 2.0 * cm, largura - 3 * cm, 2.0 * cm, 14, fill=1, stroke=0)
-
-    pdf.setFillColor(cor_verde)
-    pdf.setFont("Helvetica-Bold", 13)
-    pdf.drawCentredString(largura / 2, y - 0.75 * cm, "GLOBAL SOFTWARE")
-
-    pdf.setFillColor(cor_branco)
-    pdf.setFont("Helvetica", 9)
-    pdf.drawCentredString(largura / 2, y - 1.25 * cm, "Sistema Financeiro Premium para empresas que querem crescer com controle.")
-
-    rodape()
     pdf.save()
     buffer.seek(0)
     return buffer
+
+
+# =====================================================
+# IA AJUDA
+# =====================================================
+
+def responder_ajuda(pergunta):
+    p = pergunta.lower()
+
+    if "lançamento" in p or "entrada" in p or "saída" in p or "despesa" in p or "receita" in p:
+        return "Para cadastrar uma entrada ou saída, vá na aba **Entradas e Saídas**. Escolha data, vencimento, tipo, categoria, descrição, valor, forma de pagamento e status."
+
+    if "cliente" in p and "inadimplente" in p:
+        return "Para ver clientes inadimplentes, acesse **Clientes Inadimplentes**. O sistema considera inadimplente todo cliente que possui Receita vencida."
+
+    if "cliente" in p or "crm" in p:
+        return "Para cadastrar clientes, vá em **Clientes / CRM**. Preencha nome, telefone, e-mail, documento, limite de crédito, tipo e observação."
+
+    if "estoque" in p or "produto" in p:
+        return "Para controlar estoque, acesse **Estoque**. Cadastre produto, código, categoria, quantidade, estoque mínimo, custo, preço de venda e fornecedor."
+
+    if "funcionário" in p or "funcionario" in p:
+        return "Para cadastrar funcionários, acesse **Funcionários**. Informe nome, cargo, telefone, documento, data de admissão, salário base, tipo de contrato e status."
+
+    if "folha" in p or "pagamento" in p or "salário" in p or "salario" in p:
+        return "Para montar a folha de pagamento, acesse **Folha de Pagamento**. Selecione funcionário, mês, salário, horas extras, comissão, bônus, premiação, descontos e status."
+
+    if "meta" in p or "premiação" in p or "premiacao" in p or "bônus" in p or "bonus" in p:
+        return "Para cadastrar metas e premiações, vá em **Metas e Premiações**. Selecione funcionário, informe meta, realizado, prêmio e status."
+
+    if "relatório" in p or "relatorio" in p or "pdf" in p:
+        return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
+
+    if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
+        return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
+
+    if "dashboard" in p or "painel" in p:
+        return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
+
+    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, relatórios, WhatsApp e dashboard."
+
+
+# =====================================================
+# TELA PÚBLICA
+# =====================================================
+
+def tela_publica_comercial():
+    html('<a class="gs-up" href="#topo">↑</a>')
+    html('<a class="gs-floating" href="#demo">Agendar Demonstração →</a>')
+
+    logo_html = "GS"
+    if logo_base64:
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="width:100%;height:100%;object-fit:contain;padding:5px;">'
+
+    html(f"""
+<div id="topo" class="gs-card-dark">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <div style="width:58px;height:58px;border-radius:18px;background:rgba(255,255,255,0.06);border:1px solid rgba(223,255,107,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#dfff6b;font-weight:950;font-size:18px;">
+                {logo_html}
+            </div>
+            <div>
+                <div style="color:white;font-size:24px;letter-spacing:4px;font-weight:850;">GLOBAL SOFTWARE</div>
+                <div style="color:rgba(255,255,255,0.60);font-size:13px;margin-top:2px;">Sistema financeiro completo para empresas</div>
+            </div>
+        </div>
+        <div style="color:#dfff6b;border:1px solid rgba(223,255,107,0.32);background:rgba(223,255,107,0.08);padding:10px 16px;border-radius:999px;font-weight:900;font-size:13px;">
+            Gestão • Financeiro • Estoque • Folha
+        </div>
+    </div>
+</div>
+""")
+
+    col_hero, col_mock = st.columns([1.05, 0.95], gap="large")
+
+    with col_hero:
+        html("""
+<div class="gs-card-dark" style="min-height:520px;display:flex;align-items:center;">
+    <div>
+        <div class="gs-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
+        <div class="gs-title-big">
+            Software financeiro completo que sua empresa <span>precisa</span>.
+        </div>
+        <br>
+        <div class="gs-subtitle">
+            Controle contas a pagar, receber, clientes inadimplentes, estoque, funcionários,
+            folha de pagamento, metas, comissões, bônus e relatórios em uma única plataforma.
+        </div>
+        <br><br>
+        <span class="gs-btn-fake">Agendar Demonstração →</span>
+        &nbsp;&nbsp;
+        <span class="gs-btn-dark">Acessar sistema</span>
+    </div>
+</div>
+""")
+
+    with col_mock:
+        st.markdown("### 📊 Demonstração do painel")
+
+        m1, m2 = st.columns(2)
+
+        with m1:
+            st.metric("Receita do mês", "R$ 84.750")
+            st.metric("Inadimplentes", "12")
+
+        with m2:
+            st.metric("Lucro previsto", "R$ 26.400")
+            st.metric("Folha do mês", "R$ 18.900")
+
+        dados_demo = pd.DataFrame({
+            "Mês": ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"],
+            "Receita": [18000, 25000, 31000, 46000, 62000, 84750],
+            "Despesas": [9000, 12000, 18000, 22000, 31000, 38900],
+        })
+
+        st.line_chart(dados_demo.set_index("Mês"))
+        st.info("Painel demonstrativo com indicadores financeiros, inadimplentes, estoque e folha.")
+
+    col_acesso, col_vazio = st.columns([1, 1])
+
+    with col_acesso:
+        if st.button("Acessar área do sistema", use_container_width=True, key="btn_login_landing"):
+            st.session_state.tela_login_ativa = True
+            st.rerun()
+
+    html("""
+<div class="gs-section-dark">
+    <div style="text-align:center;font-size:42px;line-height:1.18;font-weight:950;color:white;">
+        A plataforma para empresas que querem sair do <span style="color:#dfff6b;">improviso</span>.
+    </div>
+</div>
+""")
+
+    html("""
+<div class="gs-section-white">
+    <div style="text-align:center;color:#7a8d98;letter-spacing:7px;font-size:14px;text-transform:uppercase;font-weight:800;margin-bottom:18px;">
+        FUNCIONALIDADES
+    </div>
+    <div class="gs-section-title">
+        Tudo o que seu financeiro precisa, em uma única plataforma.
+    </div>
+</div>
+""")
+
+    f1, f2, f3 = st.columns(3)
+
+    with f1:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">▣</div>
+    <h3 style="color:#052c3d;">Contas a pagar e receber</h3>
+    <p class="gs-muted">Visualize vencimentos, status, formas de pagamento, valores pendentes e contas pagas no mês.</p>
+</div>
+""")
+
+    with f2:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">↻</div>
+    <h3 style="color:#052c3d;">Clientes inadimplentes</h3>
+    <p class="gs-muted">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</p>
+</div>
+""")
+
+    with f3:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">▥</div>
+    <h3 style="color:#052c3d;">Estoque completo</h3>
+    <p class="gs-muted">Controle produtos, quantidade, custo, preço de venda, estoque mínimo e lucro previsto.</p>
+</div>
+""")
+
+    f4, f5, f6 = st.columns(3)
+
+    with f4:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">👥</div>
+    <h3 style="color:#052c3d;">Clientes e CRM</h3>
+    <p class="gs-muted">Cadastre clientes, fornecedores, contatos, limite de crédito, documentos e observações.</p>
+</div>
+""")
+
+    with f5:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">🧾</div>
+    <h3 style="color:#052c3d;">Folha de pagamento</h3>
+    <p class="gs-muted">Salário, horas extras, comissão, bônus, premiação, metas, descontos e total líquido.</p>
+</div>
+""")
+
+    with f6:
+        html("""
+<div class="gs-card-white">
+    <div style="font-size:42px;color:#002b3d;">🤖</div>
+    <h3 style="color:#052c3d;">IA de ajuda</h3>
+    <p class="gs-muted">O usuário pergunta como usar o sistema e recebe orientação dentro da própria plataforma.</p>
+</div>
+""")
+
+    html("""
+<div id="demo" class="gs-section-dark">
+    <div class="gs-section-title-dark">
+        Pronto para profissionalizar o financeiro da sua empresa?
+    </div>
+    <p class="gs-muted-light" style="text-align:center;font-size:20px;">
+        Agende uma demonstração gratuita e veja a Global Software na prática.
+    </p>
+</div>
+""")
+
+    html('<div class="gs-card-white">')
+    st.markdown("### Agendar demonstração")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        nome = st.text_input("Seu nome", placeholder="Ex: Fabrício Santos", key="demo_nome")
+        empresa = st.text_input("Nome da empresa", placeholder="Ex: Global Software", key="demo_empresa")
+        segmento = st.selectbox(
+            "Segmento da empresa",
+            ["Selecionar", "Comércio", "Serviços", "Veículos", "Oficina", "Igreja / Instituição", "Indústria", "Outro"],
+            key="demo_segmento"
+        )
+
+    with col2:
+        telefone = st.text_input("Telefone / WhatsApp do cliente", placeholder="Ex: 64999999999", key="demo_telefone")
+        email = st.text_input("E-mail profissional", placeholder="contato@empresa.com", key="demo_email")
+        necessidade = st.selectbox(
+            "Principal necessidade",
+            ["Controle financeiro", "Estoque", "Clientes inadimplentes", "Folha de pagamento", "Relatórios", "Sistema completo"],
+            key="demo_necessidade"
+        )
+
+    if st.button("Agendar Demonstração pelo WhatsApp", use_container_width=True, key="btn_agendar_demo_final"):
+        texto = (
+            f"Olá! Quero agendar uma demonstração da Global Software.\n\n"
+            f"Nome: {nome}\n"
+            f"Empresa: {empresa}\n"
+            f"Segmento: {segmento}\n"
+            f"WhatsApp do cliente: {telefone}\n"
+            f"E-mail: {email}\n"
+            f"Necessidade principal: {necessidade}\n\n"
+            f"Quero ver como o sistema pode ajudar minha empresa."
+        )
+        link = f"https://wa.me/{WHATSAPP_COMERCIAL}?text={quote(texto)}"
+        st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
+
+    html("</div>")
+
+
+# =====================================================
+# LOGIN
+# =====================================================
+
+def tela_login():
+    html("""
+<div class="login-header">
+    <div class="login-title">💼 Sistema Financeiro Premium</div>
+    <div class="login-subtitle">
+        Gestão completa de financeiro, clientes, estoque, funcionários, folha de pagamento, metas e relatórios.
+    </div>
+    <div class="login-info">
+        <b>Login padrão:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
+    </div>
+</div>
+""")
+
+    col_voltar1, col_voltar2, col_voltar3 = st.columns([1, 1, 1])
+
+    with col_voltar2:
+        if st.button("Voltar para apresentação pública", use_container_width=True, key="btn_voltar_publica"):
+            st.session_state.tela_login_ativa = False
+            st.rerun()
+
+    col1, col2 = st.columns([1.15, 0.85], gap="large")
+
+    with col1:
+        hero_bg = ""
+        if banner_base64:
+            hero_bg = f"background-image: url('data:image/png;base64,{banner_base64}');"
+
+        html(f"""
+<div class="hero-box">
+    <div class="hero-inner" style="{hero_bg}">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h3>Gestão inteligente e profissional</h3>
+            <p>
+                Controle financeiro completo, clientes, estoque, funcionários, folha de pagamento,
+                metas, relatórios e IA de ajuda.
+            </p>
+        </div>
+    </div>
+</div>
+""")
+
+    with col2:
+        if logo_base64:
+            html(f"""
+<div class="logo-box">
+    <img src="data:image/png;base64,{logo_base64}">
+</div>
+""")
+        else:
+            html("""
+<div class="logo-box">
+    <div style="text-align:center;">
+        <h3>GLOBAL SOFTWARE</h3>
+        <p>Sua logo aparecerá aqui quando o arquivo <b>logo.png</b> estiver na pasta do projeto.</p>
+    </div>
+</div>
+""")
+
+    html('<div class="form-box">')
+
+    aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
+
+    with aba1:
+        st.markdown("### Acessar sistema")
+
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            email = st.text_input("E-mail", key="login_email")
+
+        with col_b:
+            senha = st.text_input("Senha", type="password", key="login_senha")
+
+        if st.button("Entrar", use_container_width=True, key="btn_login"):
+            usuario = consultar(
+                """
+                SELECT u.*, e.nome as empresa_nome
+                FROM usuarios u
+                LEFT JOIN empresas e ON e.id = u.empresa_id
+                WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
+                """,
+                (email, hash_senha(senha))
+            )
+
+            if usuario.empty:
+                st.error("E-mail ou senha inválidos.")
+            else:
+                st.session_state.usuario = usuario.iloc[0].to_dict()
+                st.session_state.tela_login_ativa = False
+                st.rerun()
+
+    with aba2:
+        st.markdown("### Cadastrar nova empresa")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
+            documento = st.text_input("CNPJ / CPF", key="cad_documento")
+            telefone = st.text_input("Telefone", key="cad_telefone")
+            cidade = st.text_input("Cidade", key="cad_cidade")
+
+        with col2:
+            nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
+            email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
+            senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
+
+        if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
+            if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
+                st.warning("Preencha todos os campos obrigatórios.")
+            else:
+                try:
+                    executar(
+                        """
+                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
+                    )
+
+                    empresa_id = consultar(
+                        "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
+                        (nome_empresa,)
+                    ).iloc[0]["id"]
+
+                    executar(
+                        """
+                        INSERT INTO usuarios
+                        (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            int(empresa_id),
+                            nome_usuario,
+                            email_usuario,
+                            hash_senha(senha_usuario),
+                            "Administrador",
+                            1,
+                            datetime.now().isoformat()
+                        )
+                    )
+
+                    st.success("Empresa criada com sucesso. Agora faça login.")
+                except Exception as e:
+                    st.error(f"Erro ao criar empresa: {e}")
+
+    html("</div>")
+
+
+# =====================================================
+# PERMISSÕES
+# =====================================================
+
+def menus_por_tipo_usuario():
+    tipo = tipo_usuario_atual()
+
+    menus_administrador = [
+        "Dashboard",
+        "Entradas e Saídas",
+        "Contas Pagas no Mês",
+        "Clientes / CRM",
+        "Clientes Inadimplentes",
+        "Estoque",
+        "Funcionários",
+        "Folha de Pagamento",
+        "Metas e Premiações",
+        "Parcelas",
+        "Pix e WhatsApp",
+        "Relatórios",
+        "IA Financeira",
+        "Ajuda / Tutorial",
+        "Apresentação Comercial",
+        "Usuários",
+        "Configurações"
+    ]
+
+    permissoes = {
+        "Administrador": menus_administrador,
+        "Gerente": [
+            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
+            "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
+            "Metas e Premiações", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "IA Financeira", "Ajuda / Tutorial", "Configurações"
+        ],
+        "Financeiro": [
+            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
+            "Folha de Pagamento", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "IA Financeira", "Ajuda / Tutorial"
+        ],
+        "Vendedor": [
+            "Dashboard", "Clientes / CRM", "Clientes Inadimplentes", "Pix e WhatsApp", "Ajuda / Tutorial"
+        ]
+    }
+
+    return permissoes.get(tipo, ["Dashboard"])
+
+
+# =====================================================
+# APRESENTAÇÃO COMERCIAL ADMIN
+# =====================================================
+
+def tela_apresentacao_comercial():
+    if tipo_usuario_atual() != "Administrador":
+        st.warning("Esta área é exclusiva para administrador.")
+        return
+
+    html("""
+<div class="commercial-panel">
+    <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
+    <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
+    Use esta página como roteiro para vender o sistema. Mostre que a Global Software não é apenas
+    um financeiro, mas uma central de controle para a empresa.
+    </p>
+</div>
+""")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        comercial_card("Dor principal", "A empresa vende, mas não sabe exatamente quanto lucra, quem deve, o que venceu e para onde o dinheiro vai.")
+
+    with c2:
+        comercial_card("Solução", "Financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios em uma plataforma.")
+
+    with c3:
+        comercial_card("Resultado", "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer.")
+
+    html('<div class="commercial-panel">')
+    st.markdown("## Roteiro de venda")
+
+    roteiro = """
+Olá, tudo bem? Deixa eu te fazer uma pergunta: sua empresa sabe exatamente quanto lucra, quanto tem para receber, quanto pagou no mês, quais clientes estão inadimplentes e quanto custa sua equipe?
+
+A maioria das empresas não quebra por falta de venda. Quebra por falta de controle.
+
+A Global Software resolve isso em um só lugar:
+controle financeiro, clientes, inadimplentes, estoque, funcionários, folha de pagamento, bônus, comissão, horas extras, metas, premiações, relatórios e IA de ajuda.
+
+Na prática, o empresário passa a enxergar a empresa de verdade:
+o que entrou, o que saiu, quem deve, o que está vencido, o que está parado no estoque e quanto custa a operação.
+
+Não é apenas um sistema. É uma central de controle para a empresa crescer com organização.
+"""
+    st.text_area("Roteiro de apresentação", value=roteiro, height=260, key="roteiro_venda_completo")
+    html("</div>")
+
+    html('<div class="commercial-panel">')
+    st.markdown("## Sugestão de planos comerciais")
+
+    p1, p2, p3 = st.columns(3)
+
+    with p1:
+        preco_card("Plano Gestão Inicial", "R$ 147/mês", "Financeiro, clientes, contas a pagar, contas a receber, inadimplentes e relatórios básicos.")
+
+    with p2:
+        preco_card("Plano Gestão Completa", "R$ 297/mês", "Inclui financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios.")
+
+    with p3:
+        preco_card("Plano Premium Personalizado", "Sob consulta", "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras.")
+
+    html("</div>")
+
+
+# =====================================================
+# APP PRINCIPAL
+# =====================================================
+
+def app():
+    usuario = st.session_state.usuario
+
+    if Path("logo.png").exists():
+        st.sidebar.image("logo.png", use_container_width=True)
+
+    st.sidebar.title("💼 Global Software")
+    st.sidebar.write(f"**Empresa:** {usuario['empresa_nome']}")
+    st.sidebar.write(f"**Usuário:** {usuario['nome']}")
+    st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
+
+    df = carregar_lancamentos()
+    clientes = carregar_clientes()
+    estoque = carregar_estoque()
+    funcionarios = carregar_funcionarios()
+    folha = carregar_folha()
+    metas = carregar_metas()
+
+    ind = calcular_indicadores(df)
+    menus_liberados = menus_por_tipo_usuario()
+
+    if "menu_atual" not in st.session_state:
+        st.session_state.menu_atual = menus_liberados[0]
+
+    if st.session_state.menu_atual not in menus_liberados:
+        st.session_state.menu_atual = menus_liberados[0]
+
+    cabecalho_interno(st.session_state.menu_atual)
+
+    html('<div class="menu-panel">')
+    html('<div class="menu-title">Menu principal do sistema</div>')
+
+    menu = st.radio(
+        "Menu principal",
+        menus_liberados,
+        index=menus_liberados.index(st.session_state.menu_atual),
+        horizontal=True,
+        label_visibility="collapsed",
+        key="menu_radio"
+    )
+
+    st.session_state.menu_atual = menu
+    st.write("")
+
+    col_sair1, col_sair2, col_sair3 = st.columns([6, 1, 1])
+
+    with col_sair3:
+        if st.button("Sair", use_container_width=True, key="btn_sair_tela"):
+            del st.session_state.usuario
+            if "menu_atual" in st.session_state:
+                del st.session_state.menu_atual
+            st.rerun()
+
+    html("</div>")
+
+    menu = st.session_state.menu_atual
+
+    if menu == "Dashboard":
+        st.title("📊 Dashboard Executivo Premium")
+
+        inadimplentes_df = pd.DataFrame()
+        if not df.empty:
+            inadimplentes_df = df[(df["tipo"] == "Receita") & (df["status_real"] == "Vencido")]
+
+        total_estoque_custo = 0
+        itens_baixo = 0
+
+        if not estoque.empty:
+            estoque["valor_custo_total"] = estoque["quantidade"] * estoque["custo_unitario"]
+            estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
+            total_estoque_custo = estoque["valor_custo_total"].sum()
+            itens_baixo = estoque[estoque["quantidade"] <= estoque["estoque_minimo"]].shape[0]
+
+        folha_mes = 0
+        if not folha.empty:
+            folha_mes = folha[folha["mes_referencia"] == mes_atual_str()]["total_liquido"].sum()
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            card("Receita total", moeda(ind["receita"]), "Entradas registradas")
+
+        with c2:
+            card("Saídas totais", moeda(ind["saidas"]), "Custos, despesas e dívidas")
+
+        with c3:
+            card("Lucro / Resultado", moeda(ind["lucro"]), "Receita menos saídas")
+
+        with c4:
+            card("Contas pagas no mês", moeda(ind["pagas_mes"]), "Pagas ou recebidas no mês atual")
+
+        st.write("")
+
+        c5, c6, c7, c8 = st.columns(4)
+
+        with c5:
+            card(
+                "Clientes inadimplentes",
+                str(inadimplentes_df["cliente_fornecedor"].nunique()) if not inadimplentes_df.empty else "0",
+                moeda(inadimplentes_df["valor"].sum()) if not inadimplentes_df.empty else moeda(0)
+            )
+
+        with c6:
+            card("Estoque em custo", moeda(total_estoque_custo), f"{itens_baixo} item(ns) abaixo do mínimo")
+
+        with c7:
+            card("Folha do mês", moeda(folha_mes), f"{len(funcionarios)} funcionário(s) cadastrados")
+
+        with c8:
+            card("A receber", moeda(ind["receber"]), "Receitas pendentes")
+
+        st.divider()
+
+        if df.empty:
+            st.info("Nenhum lançamento cadastrado ainda. Vá em Configurações e clique em Carregar dados de exemplo.")
+        else:
+            col_g1, col_g2 = st.columns(2)
+
+            with col_g1:
+                st.subheader("📈 Movimento por mês")
+                graf = df.copy()
+                graf["mes"] = graf["data"].dt.strftime("%Y-%m")
+                resumo = graf.groupby(["mes", "tipo"])["valor"].sum().reset_index()
+                tabela_graf = resumo.pivot(index="mes", columns="tipo", values="valor").fillna(0)
+                st.line_chart(tabela_graf)
+
+            with col_g2:
+                st.subheader("🏷️ Gastos por categoria")
+                gastos = df[df["tipo"] != "Receita"]
+                if gastos.empty:
+                    st.info("Nenhum gasto registrado.")
+                else:
+                    st.bar_chart(gastos.groupby("categoria")["valor"].sum().sort_values(ascending=False).head(10))
+
+            st.divider()
+
+            st.subheader("⚠️ Contas críticas")
+            criticas = df[df["status_real"].isin(["Vencido", "Vence hoje"])].copy()
+
+            if criticas.empty:
+                st.success("Nenhuma conta vencida ou vencendo hoje.")
+            else:
+                criticas["vencimento"] = criticas["vencimento"].dt.strftime("%d/%m/%Y")
+                criticas["valor"] = criticas["valor"].apply(moeda)
+                st.dataframe(
+                    criticas[["vencimento", "tipo", "descricao", "cliente_fornecedor", "valor", "status_real"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+    elif menu == "Entradas e Saídas":
+        st.title("💸 Entradas e Saídas")
+
+        with st.form("form_lancamento"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                data_lanc = st.date_input("Data", value=date.today(), key="lanc_data")
+                vencimento = st.date_input("Vencimento", value=date.today(), key="lanc_vencimento")
+                tipo = st.selectbox("Tipo", list(TIPOS_LANCAMENTO.keys()), key="lanc_tipo")
+
+            with col2:
+                categoria = st.selectbox("Categoria", TIPOS_LANCAMENTO[tipo], key="lanc_categoria")
+                descricao = st.text_input("Descrição", key="lanc_descricao")
+                cliente = st.text_input("Cliente / Fornecedor", key="lanc_cliente")
+
+            with col3:
+                valor = st.number_input("Valor total", min_value=0.0, step=1.0, format="%.2f", key="lanc_valor")
+                forma = st.selectbox("Forma de pagamento", FORMAS_PAGAMENTO, key="lanc_forma")
+                conta = st.selectbox("Conta", CONTAS, key="lanc_conta")
+
+            col4, col5, col6 = st.columns(3)
+
+            with col4:
+                status = st.selectbox("Status", STATUS_OPCOES, key="lanc_status")
+
+            with col5:
+                parcela_total = st.number_input("Total de parcelas", min_value=1, value=1, step=1, key="lanc_parcelas")
+
+            with col6:
+                observacao = st.text_input("Observação", key="lanc_observacao")
+
+            salvar = st.form_submit_button("Salvar lançamento")
+
+            if salvar:
+                if valor <= 0:
+                    st.error("Digite um valor maior que zero.")
+                else:
+                    total = int(parcela_total)
+                    valor_parcela = valor / total
+
+                    for parcela in range(1, total + 1):
+                        data_parcela = data_lanc + timedelta(days=30 * (parcela - 1))
+                        venc_parcela = vencimento + timedelta(days=30 * (parcela - 1))
+
+                        executar(
+                            """
+                            INSERT INTO lancamentos
+                            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+                            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+                            parcela_total, observacao, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                empresa_id_atual(),
+                                usuario_id_atual(),
+                                str(data_parcela),
+                                str(venc_parcela),
+                                tipo,
+                                categoria,
+                                descricao,
+                                cliente,
+                                float(valor_parcela),
+                                forma,
+                                conta,
+                                status,
+                                parcela,
+                                total,
+                                observacao,
+                                datetime.now().isoformat()
+                            )
+                        )
+
+                    st.success("Lançamento salvo com sucesso.")
+                    st.rerun()
+
+        st.subheader("Lançamentos cadastrados")
+
+        if df.empty:
+            st.info("Nenhum lançamento cadastrado.")
+        else:
+            tabela = df.copy()
+            tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
+            tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+            tabela["valor_formatado"] = tabela["valor"].apply(moeda)
+
+            st.dataframe(
+                tabela[["id", "data", "vencimento", "tipo", "categoria", "descricao", "cliente_fornecedor", "valor_formatado", "status_real"]],
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.subheader("Editar / Excluir")
+
+            id_edit = st.selectbox("Selecione o ID", df["id"].tolist(), key="edit_id")
+            item = df[df["id"] == id_edit].iloc[0]
+
+            col_e1, col_e2, col_e3 = st.columns(3)
+
+            with col_e1:
+                novo_status = st.selectbox(
+                    "Novo status",
+                    STATUS_OPCOES,
+                    index=STATUS_OPCOES.index(item["status"]) if item["status"] in STATUS_OPCOES else 0,
+                    key="edit_status"
+                )
+
+            with col_e2:
+                novo_valor = st.number_input("Novo valor", min_value=0.0, value=float(item["valor"]), step=1.0, key="edit_valor")
+
+            with col_e3:
+                nova_desc = st.text_input("Nova descrição", value=item["descricao"], key="edit_desc")
+
+            col_a, col_b = st.columns(2)
+
+            if col_a.button("Atualizar lançamento", key="btn_atualizar_lancamento"):
+                executar(
+                    """
+                    UPDATE lancamentos
+                    SET status = ?, valor = ?, descricao = ?
+                    WHERE id = ? AND empresa_id = ?
+                    """,
+                    (novo_status, novo_valor, nova_desc, int(id_edit), empresa_id_atual())
+                )
+                st.success("Atualizado.")
+                st.rerun()
+
+            if col_b.button("Excluir lançamento", key="btn_excluir_lancamento"):
+                executar("DELETE FROM lancamentos WHERE id = ? AND empresa_id = ?", (int(id_edit), empresa_id_atual()))
+                st.warning("Excluído.")
+                st.rerun()
+
+    elif menu == "Contas Pagas no Mês":
+        st.title("✅ Contas Pagas no Mês")
+
+        if df.empty:
+            st.info("Nenhuma conta cadastrada.")
+        else:
+            mes_ref = st.text_input("Mês de referência", value=mes_atual_str(), key="mes_contas_pagas")
+
+            pagas = df[
+                (df["status"].isin(["Pago", "Recebido"])) &
+                (df["data"].dt.strftime("%Y-%m") == mes_ref)
+            ].copy()
+
+            if pagas.empty:
+                st.info("Nenhuma conta paga/recebida nesse mês.")
+            else:
+                total_pago = pagas["valor"].sum()
+                card("Total pago/recebido no mês", moeda(total_pago), f"Mês {mes_ref}")
+
+                pagas["data"] = pagas["data"].dt.strftime("%d/%m/%Y")
+                pagas["vencimento"] = pagas["vencimento"].dt.strftime("%d/%m/%Y")
+                pagas["valor_formatado"] = pagas["valor"].apply(moeda)
+
+                st.dataframe(
+                    pagas[["data", "vencimento", "tipo", "categoria", "descricao", "cliente_fornecedor", "valor_formatado", "status"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+    elif menu == "Clientes / CRM":
+        st.title("👥 Clientes / CRM")
+
+        with st.form("form_cliente"):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                nome = st.text_input("Nome", key="cliente_nome")
+                telefone = st.text_input("Telefone / WhatsApp", key="cliente_telefone")
+                email = st.text_input("E-mail", key="cliente_email")
+                documento = st.text_input("CPF / CNPJ", key="cliente_documento")
+
+            with col2:
+                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro"], key="cliente_tipo")
+                limite_credito = st.number_input("Limite de crédito", min_value=0.0, step=100.0, key="cliente_limite")
+                status_cliente = st.selectbox("Status do cliente", ["Ativo", "Inativo", "Bloqueado"], key="cliente_status")
+                obs = st.text_area("Observação", key="cliente_obs")
+
+            if st.form_submit_button("Salvar cliente"):
+                executar(
+                    """
+                    INSERT INTO clientes
+                    (empresa_id, nome, telefone, email, documento, tipo, observacao, criado_em, limite_credito, status_cliente)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (empresa_id_atual(), nome, telefone, email, documento, tipo_cliente, obs, datetime.now().isoformat(), limite_credito, status_cliente)
+                )
+                st.success("Cliente salvo.")
+                st.rerun()
+
+        if clientes.empty:
+            st.info("Nenhum cliente cadastrado.")
+        else:
+            st.dataframe(clientes, use_container_width=True, hide_index=True)
+
+    elif menu == "Clientes Inadimplentes":
+        st.title("🚨 Clientes Inadimplentes")
+
+        if df.empty:
+            st.info("Nenhum lançamento cadastrado.")
+        else:
+            inad = df[(df["tipo"] == "Receita") & (df["status_real"] == "Vencido")].copy()
+
+            if inad.empty:
+                st.success("Nenhum cliente inadimplente encontrado.")
+            else:
+                total_inad = inad["valor"].sum()
+                qtd_clientes = inad["cliente_fornecedor"].nunique()
+
+                c1, c2 = st.columns(2)
+
+                with c1:
+                    card("Clientes inadimplentes", str(qtd_clientes), "Clientes com receita vencida")
+
+                with c2:
+                    card("Valor inadimplente", moeda(total_inad), "Total vencido")
+
+                resumo = inad.groupby("cliente_fornecedor")["valor"].sum().reset_index()
+                resumo["valor_formatado"] = resumo["valor"].apply(moeda)
+
+                st.subheader("Resumo por cliente")
+                st.dataframe(resumo[["cliente_fornecedor", "valor_formatado"]], use_container_width=True, hide_index=True)
+
+                st.subheader("Detalhamento")
+                inad["vencimento"] = inad["vencimento"].dt.strftime("%d/%m/%Y")
+                inad["valor_formatado"] = inad["valor"].apply(moeda)
+
+                st.dataframe(
+                    inad[["vencimento", "cliente_fornecedor", "descricao", "valor_formatado", "forma_pagamento", "observacao"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+    elif menu == "Estoque":
+        st.title("📦 Controle de Estoque Completo")
+
+        with st.form("form_estoque"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                produto = st.text_input("Produto", key="est_produto")
+                codigo = st.text_input("Código / Referência", key="est_codigo")
+                categoria = st.text_input("Categoria", key="est_categoria")
+
+            with col2:
+                quantidade = st.number_input("Quantidade", min_value=0.0, step=1.0, key="est_quantidade")
+                estoque_minimo = st.number_input("Estoque mínimo", min_value=0.0, step=1.0, key="est_minimo")
+                fornecedor = st.text_input("Fornecedor", key="est_fornecedor")
+
+            with col3:
+                custo_unitario = st.number_input("Custo unitário", min_value=0.0, step=1.0, key="est_custo")
+                preco_venda = st.number_input("Preço de venda", min_value=0.0, step=1.0, key="est_preco")
+                obs = st.text_area("Observação", key="est_obs")
+
+            if st.form_submit_button("Salvar produto"):
+                executar(
+                    """
+                    INSERT INTO estoque
+                    (empresa_id, produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, observacao, criado_em, estoque_minimo, codigo)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (empresa_id_atual(), produto, categoria, quantidade, custo_unitario, preco_venda, fornecedor, obs, datetime.now().isoformat(), estoque_minimo, codigo)
+                )
+                st.success("Produto salvo.")
+                st.rerun()
+
+        if estoque.empty:
+            st.info("Nenhum produto cadastrado.")
+        else:
+            estoque["valor_custo_total"] = estoque["quantidade"] * estoque["custo_unitario"]
+            estoque["valor_venda_total"] = estoque["quantidade"] * estoque["preco_venda"]
+            estoque["lucro_previsto"] = estoque["valor_venda_total"] - estoque["valor_custo_total"]
+            estoque["alerta"] = estoque.apply(lambda x: "Baixo estoque" if x["quantidade"] <= x["estoque_minimo"] else "OK", axis=1)
+
+            c1, c2, c3 = st.columns(3)
+
+            with c1:
+                card("Valor em custo", moeda(estoque["valor_custo_total"].sum()), "Valor investido no estoque")
+
+            with c2:
+                card("Valor em venda", moeda(estoque["valor_venda_total"].sum()), "Potencial de venda")
+
+            with c3:
+                card("Lucro previsto", moeda(estoque["lucro_previsto"].sum()), "Venda menos custo")
+
+            st.dataframe(estoque, use_container_width=True, hide_index=True)
+
+    elif menu == "Funcionários":
+        st.title("👨‍💼 Cadastro de Funcionários")
+
+        with st.form("form_funcionario"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                nome = st.text_input("Nome do funcionário", key="fun_nome")
+                cargo = st.text_input("Cargo", key="fun_cargo")
+                telefone = st.text_input("Telefone", key="fun_telefone")
+
+            with col2:
+                documento = st.text_input("CPF / Documento", key="fun_doc")
+                data_admissao = st.date_input("Data de admissão", value=date.today(), key="fun_admissao")
+                salario_base = st.number_input("Salário base", min_value=0.0, step=100.0, key="fun_salario")
+
+            with col3:
+                tipo_contrato = st.selectbox("Tipo de contrato", ["CLT", "PJ", "Comissionado", "Freelancer", "Outro"], key="fun_contrato")
+                status_fun = st.selectbox("Status", ["Ativo", "Inativo", "Afastado"], key="fun_status")
+                obs = st.text_area("Observação", key="fun_obs")
+
+            if st.form_submit_button("Salvar funcionário"):
+                executar(
+                    """
+                    INSERT INTO funcionarios
+                    (empresa_id, nome, cargo, telefone, documento, data_admissao, salario_base, tipo_contrato, status, observacao, criado_em)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (empresa_id_atual(), nome, cargo, telefone, documento, str(data_admissao), salario_base, tipo_contrato, status_fun, obs, datetime.now().isoformat())
+                )
+                st.success("Funcionário salvo.")
+                st.rerun()
+
+        if funcionarios.empty:
+            st.info("Nenhum funcionário cadastrado.")
+        else:
+            funcionarios["salario_formatado"] = funcionarios["salario_base"].apply(moeda)
+            st.dataframe(funcionarios, use_container_width=True, hide_index=True)
+
+    elif menu == "Folha de Pagamento":
+        st.title("🧾 Folha de Pagamento Completa")
+
+        if funcionarios.empty:
+            st.warning("Cadastre funcionários antes de lançar folha de pagamento.")
+        else:
+            func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
+
+            with st.form("form_folha"):
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    funcionario_label = st.selectbox("Funcionário", list(func_dict.keys()), key="folha_func")
+                    funcionario_id = func_dict[funcionario_label]
+                    mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="folha_mes")
+                    funcionario_row = funcionarios[funcionarios["id"] == funcionario_id].iloc[0]
+                    salario = st.number_input("Salário base", min_value=0.0, value=float(funcionario_row["salario_base"] or 0), step=100.0, key="folha_salario")
+
+                with col2:
+                    horas_extras = st.number_input("Horas extras", min_value=0.0, step=1.0, key="folha_horas")
+                    valor_hora_extra = st.number_input("Valor da hora extra", min_value=0.0, step=10.0, key="folha_valor_hora")
+                    comissao = st.number_input("Comissão", min_value=0.0, step=50.0, key="folha_comissao")
+
+                with col3:
+                    bonus = st.number_input("Bônus", min_value=0.0, step=50.0, key="folha_bonus")
+                    premiacao = st.number_input("Premiação", min_value=0.0, step=50.0, key="folha_premiacao")
+                    desconto = st.number_input("Descontos", min_value=0.0, step=50.0, key="folha_desconto")
+
+                col4, col5, col6 = st.columns(3)
+
+                with col4:
+                    meta_valor = st.number_input("Meta do mês", min_value=0.0, step=100.0, key="folha_meta")
+                    meta_batida = st.selectbox("Meta batida?", ["Não", "Sim"], key="folha_meta_batida")
+
+                with col5:
+                    status_folha = st.selectbox("Status da folha", ["Pendente", "Pago"], key="folha_status")
+                    data_pagamento = st.date_input("Data de pagamento", value=date.today(), key="folha_pagamento")
+
+                with col6:
+                    observacao = st.text_area("Observação", key="folha_obs")
+
+                bruto, liquido = calcular_folha_total(salario, horas_extras, valor_hora_extra, comissao, bonus, premiacao, desconto)
+
+                st.info(f"Total bruto: {moeda(bruto)} | Total líquido: {moeda(liquido)}")
+
+                salvar = st.form_submit_button("Salvar folha")
+
+                if salvar:
+                    executar(
+                        """
+                        INSERT INTO folha_pagamento
+                        (empresa_id, funcionario_id, mes_referencia, salario_base, horas_extras, valor_hora_extra,
+                        comissao, bonus, premiacao, desconto, meta_valor, meta_batida, total_bruto, total_liquido,
+                        status, data_pagamento, observacao, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            empresa_id_atual(),
+                            funcionario_id,
+                            mes_ref,
+                            salario,
+                            horas_extras,
+                            valor_hora_extra,
+                            comissao,
+                            bonus,
+                            premiacao,
+                            desconto,
+                            meta_valor,
+                            meta_batida,
+                            bruto,
+                            liquido,
+                            status_folha,
+                            str(data_pagamento),
+                            observacao,
+                            datetime.now().isoformat()
+                        )
+                    )
+
+                    if status_folha == "Pago":
+                        executar(
+                            """
+                            INSERT INTO lancamentos
+                            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+                            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+                            parcela_total, observacao, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                empresa_id_atual(),
+                                usuario_id_atual(),
+                                str(data_pagamento),
+                                str(data_pagamento),
+                                "Despesa fixa",
+                                "Folha de pagamento",
+                                f"Folha de pagamento - {funcionario_label}",
+                                funcionario_label,
+                                float(liquido),
+                                "Transferência",
+                                "Banco",
+                                "Pago",
+                                1,
+                                1,
+                                "Lançamento automático gerado pela folha de pagamento",
+                                datetime.now().isoformat()
+                            )
+                        )
+
+                    st.success("Folha salva com sucesso.")
+                    st.rerun()
+
+        if folha.empty:
+            st.info("Nenhuma folha cadastrada.")
+        else:
+            folha["salario_formatado"] = folha["salario_base"].apply(moeda)
+            folha["bruto_formatado"] = folha["total_bruto"].apply(moeda)
+            folha["liquido_formatado"] = folha["total_liquido"].apply(moeda)
+
+            total_mes = folha[folha["mes_referencia"] == mes_atual_str()]["total_liquido"].sum()
+            card("Total folha do mês", moeda(total_mes), mes_atual_str())
+
+            st.dataframe(folha, use_container_width=True, hide_index=True)
+
+    elif menu == "Metas e Premiações":
+        st.title("🎯 Metas e Premiações")
+
+        if funcionarios.empty:
+            st.warning("Cadastre funcionários antes de criar metas.")
+        else:
+            func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
+
+            with st.form("form_meta"):
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    funcionario_label = st.selectbox("Funcionário", list(func_dict.keys()), key="meta_func")
+                    funcionario_id = func_dict[funcionario_label]
+                    mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="meta_mes")
+                    descricao = st.text_input("Descrição da meta", key="meta_desc")
+
+                with col2:
+                    meta_valor = st.number_input("Valor da meta", min_value=0.0, step=100.0, key="meta_valor")
+                    realizado = st.number_input("Realizado", min_value=0.0, step=100.0, key="meta_realizado")
+                    premio = st.number_input("Prêmio / bônus", min_value=0.0, step=50.0, key="meta_premio")
+
+                with col3:
+                    status_meta = st.selectbox("Status", ["Em andamento", "Batida", "Não batida", "Paga"], key="meta_status")
+
+                if st.form_submit_button("Salvar meta"):
+                    executar(
+                        """
+                        INSERT INTO metas
+                        (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (empresa_id_atual(), funcionario_id, mes_ref, descricao, meta_valor, realizado, premio, status_meta, datetime.now().isoformat())
+                    )
+                    st.success("Meta salva.")
+                    st.rerun()
+
+        if metas.empty:
+            st.info("Nenhuma meta cadastrada.")
+        else:
+            metas["meta_formatada"] = metas["meta_valor"].apply(moeda)
+            metas["realizado_formatado"] = metas["realizado"].apply(moeda)
+            metas["premio_formatado"] = metas["premio"].apply(moeda)
+            metas["percentual"] = metas.apply(lambda x: percentual((x["realizado"] / x["meta_valor"] * 100) if x["meta_valor"] else 0), axis=1)
+            st.dataframe(metas, use_container_width=True, hide_index=True)
+
+    elif menu == "Parcelas":
+        st.title("📆 Controle de Parcelas")
+
+        if df.empty:
+            st.info("Nenhuma parcela cadastrada.")
+        else:
+            parcelas = df[df["parcela_total"] > 1].copy()
+
+            if parcelas.empty:
+                st.info("Nenhum lançamento parcelado.")
+            else:
+                parcelas["data"] = parcelas["data"].dt.strftime("%d/%m/%Y")
+                parcelas["vencimento"] = parcelas["vencimento"].dt.strftime("%d/%m/%Y")
+                parcelas["valor_formatado"] = parcelas["valor"].apply(moeda)
+
+                st.dataframe(
+                    parcelas[["id", "data", "vencimento", "descricao", "cliente_fornecedor", "valor_formatado", "parcela_atual", "parcela_total", "status_real"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+    elif menu == "Pix e WhatsApp":
+        st.title("📲 Pix e WhatsApp")
+
+        aba1, aba2 = st.tabs(["Cobrança WhatsApp", "Texto Pix"])
+
+        with aba1:
+            telefone = st.text_input("Telefone com DDD", placeholder="62999999999", key="zap_telefone")
+            nome = st.text_input("Nome do cliente", key="zap_nome")
+            valor_msg = st.number_input("Valor", min_value=0.0, step=1.0, key="zap_valor")
+            venc_msg = st.date_input("Vencimento", value=date.today(), key="zap_vencimento")
+
+            mensagem = st.text_area(
+                "Mensagem",
+                value="Olá {nome}, tudo bem? Passando para lembrar sobre o pagamento no valor de {valor}, com vencimento em {vencimento}.",
+                key="zap_mensagem"
+            )
+
+            if st.button("Gerar link WhatsApp", key="btn_zap"):
+                texto = mensagem.replace("{nome}", nome)
+                texto = texto.replace("{valor}", moeda(valor_msg))
+                texto = texto.replace("{vencimento}", venc_msg.strftime("%d/%m/%Y"))
+
+                link = f"https://wa.me/55{telefone}?text={quote(texto)}"
+                st.markdown(f"[Abrir WhatsApp]({link})")
+
+        with aba2:
+            chave = st.text_input("Chave Pix", key="pix_chave")
+            valor_pix = st.number_input("Valor Pix", min_value=0.0, step=1.0, key="pix_valor")
+            descricao_pix = st.text_input("Descrição", key="pix_descricao")
+
+            if st.button("Gerar texto Pix", key="btn_pix"):
+                texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
+                st.code(texto)
+
+    elif menu == "Relatórios":
+        st.title("📄 Relatórios e Exportações")
+
+        pdf = gerar_pdf_relatorio(df, ind)
+
+        if pdf is None:
+            st.warning("Biblioteca reportlab não instalada. Confira o requirements.txt.")
+        else:
+            st.download_button("Baixar relatório PDF", data=pdf, file_name="relatorio_financeiro.pdf", mime="application/pdf", key="download_pdf")
+
+        if not df.empty:
+            st.download_button("Baixar lançamentos CSV", data=df.to_csv(index=False).encode("utf-8"), file_name="lancamentos.csv", mime="text/csv", key="download_csv_lancamentos")
+
+        if not clientes.empty:
+            st.download_button("Baixar clientes CSV", data=clientes.to_csv(index=False).encode("utf-8"), file_name="clientes.csv", mime="text/csv", key="download_csv_clientes")
+
+        if not estoque.empty:
+            st.download_button("Baixar estoque CSV", data=estoque.to_csv(index=False).encode("utf-8"), file_name="estoque.csv", mime="text/csv", key="download_csv_estoque")
+
+        if not funcionarios.empty:
+            st.download_button("Baixar funcionários CSV", data=funcionarios.to_csv(index=False).encode("utf-8"), file_name="funcionarios.csv", mime="text/csv", key="download_csv_funcionarios")
+
+        if not folha.empty:
+            st.download_button("Baixar folha CSV", data=folha.to_csv(index=False).encode("utf-8"), file_name="folha_pagamento.csv", mime="text/csv", key="download_csv_folha")
+
+    elif menu == "IA Financeira":
+        st.title("🤖 IA Financeira")
+
+        if df.empty:
+            st.info("Cadastre lançamentos para receber uma análise.")
+        else:
+            if ind["lucro"] < 0:
+                html('<div class="danger-box">A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>')
+            elif ind["vencidas"] > 0:
+                html('<div class="warning-box">Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.</div>')
+            else:
+                html('<div class="success-box">O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.</div>')
+
+            st.write(f"**Receita:** {moeda(ind['receita'])}")
+            st.write(f"**Saídas:** {moeda(ind['saidas'])}")
+            st.write(f"**Lucro:** {moeda(ind['lucro'])}")
+            st.write(f"**Contas pagas no mês:** {moeda(ind['pagas_mes'])}")
+            st.write(f"**A receber:** {moeda(ind['receber'])}")
+            st.write(f"**Vencidas:** {moeda(ind['vencidas'])}")
+
+            pergunta = st.text_area("Pergunte algo sobre a situação financeira", key="ia_financeira_pergunta")
+
+            if st.button("Analisar", key="btn_ia_financeira"):
+                resposta = responder_ajuda(pergunta)
+                st.info(resposta)
+
+    elif menu == "Ajuda / Tutorial":
+        st.title("🆘 Ajuda / Tutorial do Sistema")
+
+        st.markdown("""
+### Como usar o sistema
+
+**1. Dashboard**  
+Mostra os principais indicadores da empresa.
+
+**2. Entradas e Saídas**  
+Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
+
+**3. Contas Pagas no Mês**  
+Veja tudo que foi pago ou recebido no mês selecionado.
+
+**4. Clientes / CRM**  
+Cadastre clientes, fornecedores, contatos e limite de crédito.
+
+**5. Clientes Inadimplentes**  
+Mostra clientes com receitas vencidas.
+
+**6. Estoque**  
+Controle produtos, quantidade, estoque mínimo, custo e preço de venda.
+
+**7. Funcionários**  
+Cadastre a equipe da empresa.
+
+**8. Folha de Pagamento**  
+Calcule salário, horas extras, comissão, bônus, premiação, descontos e total líquido.
+
+**9. Metas e Premiações**  
+Controle metas da equipe, realizado, prêmio e status.
+
+**10. Relatórios**  
+Baixe PDF e planilhas CSV.
+
+**11. Dados de exemplo**  
+Vá em **Configurações** e clique em **Carregar dados de exemplo** para apresentar o sistema bonito para clientes.
+""")
+
+        st.divider()
+        st.subheader("🤖 IA de Ajuda do Sistema")
+
+        pergunta = st.text_area(
+            "Digite sua dúvida",
+            placeholder="Exemplo: como cadastrar funcionário? como ver clientes inadimplentes? como lançar folha de pagamento?",
+            key="pergunta_ajuda_sistema"
+        )
+
+        if st.button("Perguntar para IA de ajuda", use_container_width=True, key="btn_ia_ajuda"):
+            if pergunta.strip():
+                st.success(responder_ajuda(pergunta))
+            else:
+                st.warning("Digite sua dúvida para a IA responder.")
+
+    elif menu == "Apresentação Comercial":
+        st.title("🚀 Apresentação Comercial")
+        tela_apresentacao_comercial()
+
+    elif menu == "Usuários":
+        st.title("👤 Usuários e Permissões")
+
+        if tipo_usuario_atual() != "Administrador":
+            st.warning("Somente administrador pode acessar esta área.")
+        else:
+            st.subheader("Criar novo usuário")
+
+            with st.form("form_usuario"):
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    nome = st.text_input("Nome do usuário", key="user_nome")
+                    email = st.text_input("E-mail", key="user_email")
+                    senha = st.text_input("Senha", type="password", key="user_senha")
+
+                with col2:
+                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO, key="user_tipo")
+                    ativo = st.checkbox("Usuário ativo", value=True, key="user_ativo")
+
+                if st.form_submit_button("Criar usuário", use_container_width=True):
+                    if not nome or not email or not senha:
+                        st.warning("Preencha nome, e-mail e senha.")
+                    else:
+                        try:
+                            executar(
+                                """
+                                INSERT INTO usuarios
+                                (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (empresa_id_atual(), nome, email, hash_senha(senha), tipo_user, int(ativo), datetime.now().isoformat())
+                            )
+                            st.success("Usuário criado com sucesso.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Erro ao criar usuário: {e}")
+
+            usuarios = consultar(
+                """
+                SELECT id, nome, email, tipo, ativo, criado_em
+                FROM usuarios
+                WHERE empresa_id = ?
+                ORDER BY id DESC
+                """,
+                (empresa_id_atual(),)
+            )
+
+            if usuarios.empty:
+                st.info("Nenhum usuário cadastrado.")
+            else:
+                st.dataframe(usuarios, use_container_width=True, hide_index=True)
+
+    elif menu == "Configurações":
+        st.title("⚙️ Configurações")
+
+        empresa = consultar("SELECT * FROM empresas WHERE id = ?", (empresa_id_atual(),))
+
+        if empresa.empty:
+            st.error("Empresa não encontrada.")
+        else:
+            emp = empresa.iloc[0]
+
+            nome = st.text_input("Nome da empresa", value=emp["nome"], key="conf_nome")
+            documento = st.text_input("Documento", value=emp["documento"] or "", key="conf_doc")
+            telefone = st.text_input("Telefone", value=emp["telefone"] or "", key="conf_tel")
+            cidade = st.text_input("Cidade", value=emp["cidade"] or "", key="conf_cidade")
+
+            if st.button("Salvar configurações", key="btn_conf"):
+                executar(
+                    """
+                    UPDATE empresas
+                    SET nome = ?, documento = ?, telefone = ?, cidade = ?
+                    WHERE id = ?
+                    """,
+                    (nome, documento, telefone, cidade, empresa_id_atual())
+                )
+                st.success("Configurações atualizadas.")
+                st.rerun()
+
+        st.divider()
+        st.subheader("📥 Dados de exemplo para demonstração")
+
+        if existe_dados_exemplo():
+            st.info("Os dados de exemplo já estão carregados. Agora o Dashboard, gráficos, clientes, estoque, folha e metas já aparecem preenchidos.")
+        else:
+            st.warning("Nenhum dado de exemplo carregado. Clique no botão abaixo para preencher o sistema automaticamente.")
+
+        col_demo1, col_demo2 = st.columns(2)
+
+        with col_demo1:
+            if st.button("📥 Carregar dados de exemplo", use_container_width=True, key="btn_carregar_demo"):
+                ok, msg = carregar_dados_exemplo()
+                if ok:
+                    st.success(msg)
+                else:
+                    st.warning(msg)
+                st.rerun()
+
+        with col_demo2:
+            if st.button("🧹 Limpar dados de exemplo", use_container_width=True, key="btn_limpar_demo"):
+                ok, msg = limpar_dados_exemplo()
+                if ok:
+                    st.success(msg)
+                else:
+                    st.warning(msg)
+                st.rerun()
+
+        st.caption("A limpeza remove somente os dados marcados como demonstração. Dados reais cadastrados sem a marca demo não serão apagados.")
+
+        st.divider()
+        st.subheader("Backup local")
+
+        backup = {
+            "empresa": usuario["empresa_nome"],
+            "lancamentos": df.to_dict(orient="records") if not df.empty else [],
+            "clientes": clientes.to_dict(orient="records") if not clientes.empty else [],
+            "estoque": estoque.to_dict(orient="records") if not estoque.empty else [],
+            "funcionarios": funcionarios.to_dict(orient="records") if not funcionarios.empty else [],
+            "folha": folha.to_dict(orient="records") if not folha.empty else [],
+            "metas": metas.to_dict(orient="records") if not metas.empty else [],
+            "gerado_em": datetime.now().isoformat()
+        }
+
+        st.download_button(
+            "Baixar backup JSON",
+            data=json.dumps(backup, ensure_ascii=False, indent=4, default=str),
+            file_name="backup_sistema_financeiro_completo.json",
+            mime="application/json",
+            key="download_backup_json"
+        )
+
+
+# =====================================================
+# INICIAR SISTEMA
+# =====================================================
+
+criar_tabelas()
+criar_admin_padrao()
+
+if "usuario" in st.session_state:
+    app()
+else:
+    if "tela_login_ativa" not in st.session_state:
+        st.session_state.tela_login_ativa = False
+
+    if st.session_state.tela_login_ativa:
+        tela_login()
+    else:
+        tela_publica_comercial()
