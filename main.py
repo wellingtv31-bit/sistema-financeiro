@@ -9,7 +9,6 @@ from datetime import date, datetime, timedelta
 from io import BytesIO
 from urllib.parse import quote
 
-
 # =====================================================
 # CONFIGURAÇÃO INICIAL
 # =====================================================
@@ -23,9 +22,8 @@ st.set_page_config(
 
 DB_PATH = "sistema_financeiro.db"
 
-
 # =====================================================
-# LOGO / IMAGEM
+# FUNÇÕES DE IMAGEM
 # =====================================================
 
 def imagem_base64(caminho):
@@ -35,12 +33,14 @@ def imagem_base64(caminho):
             return base64.b64encode(img.read()).decode()
     return ""
 
-
 logo_base64 = imagem_base64("logo.png")
+banner_base64 = imagem_base64("banner_login.png")
 
+if not banner_base64:
+    banner_base64 = logo_base64
 
 # =====================================================
-# ESTILO VISUAL PREMIUM - FUNDO ESCURO PADRONIZADO
+# ESTILO VISUAL
 # =====================================================
 
 st.markdown(
@@ -60,110 +60,178 @@ st.markdown(
 
     .stApp {{
         background:
-            radial-gradient(circle at top left, rgba(34,211,238,0.16), transparent 35%),
-            linear-gradient(135deg, #030712 0%, #071526 45%, #020617 100%);
+            radial-gradient(circle at top left, rgba(34,211,238,0.12), transparent 35%),
+            linear-gradient(135deg, #020617 0%, #071526 45%, #020617 100%);
         color: #f8fafc;
     }}
 
     .block-container {{
-        padding-top: 2.2rem;
-        padding-bottom: 3rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
-        max-width: 1180px;
-        margin: 25px auto 0 auto;
-        background: rgba(8, 20, 35, 0.88);
-        border: 1px solid rgba(34, 211, 238, 0.26);
-        border-radius: 30px;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.45);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
+        padding-top: 1.6rem;
+        padding-bottom: 2rem;
+        padding-left: 1.6rem;
+        padding-right: 1.6rem;
+        max-width: 1350px;
     }}
 
-    [data-testid="stSidebar"] {{
+    section[data-testid="stSidebar"] {{
         background: linear-gradient(180deg, #020617 0%, #071526 100%);
-        border-right: 1px solid rgba(34,211,238,0.25);
+        border-right: 1px solid rgba(34,211,238,0.20);
     }}
 
-    [data-testid="stSidebar"] * {{
+    section[data-testid="stSidebar"] * {{
         color: #ffffff !important;
     }}
 
-    h1, h2, h3 {{
+    h1, h2, h3, h4 {{
         color: #ffffff !important;
-        font-weight: 900;
-        letter-spacing: -0.5px;
+        font-weight: 900 !important;
+        letter-spacing: -0.4px;
     }}
 
-    label, p, span {{
-        color: #e5e7eb !important;
+    p, label, span, div {{
+        color: #e5e7eb;
     }}
 
-    .topo-login {{
+    .login-header {{
+        width: 100%;
         text-align: center;
         margin-bottom: 24px;
+        padding: 10px 0 4px 0;
     }}
 
     .login-title {{
-        font-size: 42px;
+        font-size: 44px;
         font-weight: 950;
         color: #ffffff;
-        line-height: 1.08;
-        margin-bottom: 12px;
-        text-shadow: 0 0 18px rgba(34, 211, 238, 0.28);
+        margin-bottom: 10px;
+        line-height: 1.05;
+        text-shadow: 0 0 18px rgba(34,211,238,0.12);
     }}
 
     .login-subtitle {{
-        font-size: 17px;
+        font-size: 16px;
+        max-width: 900px;
+        margin: 0 auto;
         color: #cbd5e1;
-        max-width: 820px;
-        margin: 0 auto 18px auto;
-        line-height: 1.5;
+        line-height: 1.6;
     }}
 
     .login-info {{
-        background: linear-gradient(90deg, rgba(8,145,178,0.22), rgba(34,211,238,0.18));
-        border: 1px solid rgba(34, 211, 238, 0.36);
-        color: #e0faff;
-        padding: 13px 18px;
+        margin: 18px auto 28px auto;
+        max-width: 980px;
+        background: linear-gradient(90deg, rgba(8,145,178,0.24), rgba(34,211,238,0.16));
+        border: 1px solid rgba(34,211,238,0.35);
         border-radius: 16px;
-        font-size: 15px;
-        margin: 0 auto 24px auto;
-        max-width: 760px;
-        box-shadow: 0 8px 26px rgba(34, 211, 238, 0.10);
+        padding: 14px 18px;
         text-align: center;
+        color: #ecfeff;
+        font-size: 15px;
+        box-shadow: 0 10px 24px rgba(34,211,238,0.10);
     }}
 
-    .premium-card {{
-        background: rgba(2, 6, 23, 0.38);
-        border: 1px solid rgba(34, 211, 238, 0.22);
-        border-radius: 24px;
+    .login-main-wrap {{
+        max-width: 1280px;
+        margin: 0 auto;
+    }}
+
+    .hero-box {{
+        min-height: 420px;
+        border-radius: 26px;
+        border: 1px solid rgba(34,211,238,0.28);
+        background:
+            linear-gradient(180deg, rgba(2,6,23,0.28), rgba(2,6,23,0.76)),
+            linear-gradient(135deg, rgba(14,165,233,0.10), rgba(6,182,212,0.04));
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+    }}
+
+    .hero-inner {{
+        width: 100%;
+        display: flex;
+        align-items: end;
+        justify-content: start;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        position: relative;
+    }}
+
+    .hero-overlay {{
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg, rgba(2,6,23,0.18), rgba(2,6,23,0.72)),
+            linear-gradient(90deg, rgba(2,6,23,0.52), rgba(2,6,23,0.15));
+    }}
+
+    .hero-content {{
+        position: relative;
+        z-index: 2;
         padding: 28px;
-        box-shadow: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        min-height: 470px;
+        max-width: 88%;
+    }}
+
+    .hero-content h3 {{
+        font-size: 30px;
+        margin-bottom: 8px;
+        color: #ffffff !important;
+    }}
+
+    .hero-content p {{
+        margin: 0;
+        color: #dbeafe !important;
+        font-size: 15px;
+        line-height: 1.6;
     }}
 
     .logo-box {{
-        background: rgba(2, 6, 23, 0.48);
-        border: 1px solid rgba(34, 211, 238, 0.36);
+        min-height: 420px;
         border-radius: 26px;
-        min-height: 470px;
+        border: 1px solid rgba(34,211,238,0.28);
+        background:
+            linear-gradient(180deg, rgba(2,6,23,0.38), rgba(2,6,23,0.78)),
+            linear-gradient(135deg, rgba(14,165,233,0.05), rgba(6,182,212,0.02));
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 18px 45px rgba(0,0,0,0.32);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        padding: 28px;
+        padding: 24px;
+        overflow: hidden;
     }}
 
     .logo-box img {{
-        width: 86%;
-        max-width: 390px;
-        opacity: 0.98;
-        filter: drop-shadow(0px 18px 32px rgba(34, 211, 238, 0.18));
+        width: 82%;
+        max-width: 380px;
+        display: block;
+        margin: 0 auto;
+        filter: drop-shadow(0 18px 30px rgba(0,0,0,0.28));
+    }}
+
+    .form-box {{
+        margin-top: 28px;
+        padding: 28px;
+        border-radius: 26px;
+        border: 1px solid rgba(34,211,238,0.24);
+        background:
+            linear-gradient(180deg, rgba(8,20,35,0.88), rgba(4,14,26,0.92));
+        box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+    }}
+
+    .section-title {{
+        font-size: 26px;
+        font-weight: 900;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }}
+
+    .section-subtitle {{
+        color: #cbd5e1;
+        font-size: 15px;
+        margin-bottom: 18px;
     }}
 
     .metric-card {{
@@ -174,8 +242,6 @@ st.markdown(
         border: 1px solid rgba(34, 211, 238, 0.24);
         border-left: 7px solid #22d3ee;
         min-height: 128px;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
     }}
 
     .metric-title {{
@@ -191,7 +257,6 @@ st.markdown(
         font-size: 30px;
         font-weight: 950;
         margin-top: 6px;
-        text-shadow: 0 0 14px rgba(34, 211, 238, 0.15);
     }}
 
     .metric-sub {{
@@ -206,7 +271,6 @@ st.markdown(
         padding: 14px 18px;
         border-radius: 16px;
         color: #d1fae5;
-        box-shadow: 0 8px 22px rgba(16,185,129,0.10);
     }}
 
     .warning-box {{
@@ -215,7 +279,6 @@ st.markdown(
         padding: 14px 18px;
         border-radius: 16px;
         color: #fef3c7;
-        box-shadow: 0 8px 22px rgba(245,158,11,0.10);
     }}
 
     .danger-box {{
@@ -224,7 +287,6 @@ st.markdown(
         padding: 14px 18px;
         border-radius: 16px;
         color: #fee2e2;
-        box-shadow: 0 8px 22px rgba(239,68,68,0.10);
     }}
 
     .stTextInput input,
@@ -232,10 +294,9 @@ st.markdown(
     .stDateInput input,
     .stTextArea textarea {{
         border-radius: 14px !important;
-        border: 1px solid rgba(34, 211, 238, 0.35) !important;
+        border: 1px solid rgba(34, 211, 238, 0.32) !important;
         background: rgba(15, 23, 42, 0.94) !important;
         color: #ffffff !important;
-        height: 44px;
     }}
 
     .stTextArea textarea {{
@@ -250,7 +311,7 @@ st.markdown(
     .stSelectbox div[data-baseweb="select"] > div {{
         border-radius: 14px !important;
         background: rgba(15, 23, 42, 0.94) !important;
-        border: 1px solid rgba(34, 211, 238, 0.35) !important;
+        border: 1px solid rgba(34, 211, 238, 0.32) !important;
         color: #ffffff !important;
         min-height: 44px;
     }}
@@ -259,19 +320,15 @@ st.markdown(
         color: #ffffff !important;
     }}
 
-    input {{
-        color-scheme: dark;
-    }}
-
     .stButton > button {{
         background: linear-gradient(90deg, #0891b2, #22d3ee);
         color: #02111f !important;
         border: none;
         border-radius: 14px;
-        padding: 0.70rem 1rem;
+        padding: 0.72rem 1rem;
         font-weight: 900;
-        box-shadow: 0 10px 24px rgba(34,211,238,0.26);
-        transition: all 0.2s ease-in-out;
+        box-shadow: 0 10px 24px rgba(34,211,238,0.18);
+        transition: all 0.18s ease-in-out;
     }}
 
     .stButton > button:hover {{
@@ -285,16 +342,14 @@ st.markdown(
         color: #02111f !important;
         border: none;
         border-radius: 14px;
-        padding: 0.70rem 1rem;
+        padding: 0.72rem 1rem;
         font-weight: 900;
-        box-shadow: 0 10px 22px rgba(16,185,129,0.26);
     }}
 
     div[data-testid="stDataFrame"] {{
         background: rgba(8, 20, 35, 0.90);
         border-radius: 18px;
         padding: 8px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.28);
         border: 1px solid rgba(34, 211, 238, 0.18);
     }}
 
@@ -321,34 +376,22 @@ st.markdown(
     }}
 
     @media (max-width: 900px) {{
-        .block-container {{
-            padding-left: 1rem;
-            padding-right: 1rem;
-            margin-top: 10px;
-        }}
-
         .login-title {{
-            font-size: 32px;
+            font-size: 34px;
         }}
 
-        .login-subtitle {{
-            font-size: 15px;
-        }}
-
-        .logo-box {{
+        .hero-box, .logo-box {{
             min-height: 260px;
         }}
 
-        .premium-card {{
-            padding: 22px;
-            min-height: auto;
+        .form-box {{
+            padding: 20px;
         }}
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 # =====================================================
 # FUNÇÕES BÁSICAS
@@ -357,7 +400,6 @@ st.markdown(
 def conectar():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
 
-
 def executar(sql, params=()):
     con = conectar()
     cur = con.cursor()
@@ -365,42 +407,34 @@ def executar(sql, params=()):
     con.commit()
     con.close()
 
-
 def consultar(sql, params=()):
     con = conectar()
     df = pd.read_sql_query(sql, con, params=params)
     con.close()
     return df
 
-
 def hash_senha(senha):
     return hashlib.sha256(senha.encode("utf-8")).hexdigest()
-
 
 def moeda(valor):
     try:
         valor = float(valor)
     except Exception:
         valor = 0
-
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
 
 def percentual(valor):
     try:
         valor = float(valor)
     except Exception:
         valor = 0
-
     return f"{valor:.1f}%".replace(".", ",")
-
 
 def data_br(valor):
     try:
         return pd.to_datetime(valor).strftime("%d/%m/%Y")
     except Exception:
         return ""
-
 
 def dias_para_vencimento(vencimento):
     try:
@@ -409,21 +443,15 @@ def dias_para_vencimento(vencimento):
     except Exception:
         return 0
 
-
 def status_automatico(status, vencimento):
     if status in ["Pago", "Recebido"]:
         return status
-
     dias = dias_para_vencimento(vencimento)
-
     if dias < 0:
         return "Vencido"
-
     if dias == 0:
         return "Vence hoje"
-
     return "Pendente"
-
 
 def card(titulo, valor, subtitulo=""):
     st.markdown(
@@ -436,7 +464,6 @@ def card(titulo, valor, subtitulo=""):
         """,
         unsafe_allow_html=True
     )
-
 
 # =====================================================
 # BANCO DE DADOS
@@ -524,7 +551,6 @@ def criar_tabelas():
     con.commit()
     con.close()
 
-
 def criar_admin_padrao():
     empresas = consultar("SELECT * FROM empresas")
 
@@ -561,7 +587,6 @@ def criar_admin_padrao():
                 datetime.now().isoformat()
             )
         )
-
 
 # =====================================================
 # DADOS FIXOS
@@ -657,7 +682,6 @@ STATUS_OPCOES = [
     "Recebido"
 ]
 
-
 # =====================================================
 # LOGIN
 # =====================================================
@@ -665,101 +689,45 @@ STATUS_OPCOES = [
 def tela_login():
     st.markdown(
         """
-        <div class="topo-login">
-            <div class="login-title">💼 Sistema Financeiro Premium</div>
-            <div class="login-subtitle">
-                Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes e permissões.
-            </div>
-            <div class="login-info">
-                <b>Login padrão para teste:</b> admin@empresa.com &nbsp; | &nbsp; <b>Senha:</b> 123456
+        <div class="login-main-wrap">
+            <div class="login-header">
+                <div class="login-title">💼 Sistema Financeiro Premium</div>
+                <div class="login-subtitle">
+                    Controle completo de finanças, empresas, usuários, parcelas, relatórios, clientes, estoque e permissões.
+                </div>
+                <div class="login-info">
+                    <b>Login padrão para teste:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
+                </div>
             </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    col1, col2 = st.columns([1, 1], gap="large")
+    col1, col2 = st.columns([1.15, 0.85], gap="large")
 
     with col1:
-        st.markdown('<div class="premium-card">', unsafe_allow_html=True)
+        hero_bg = ""
+        if banner_base64:
+            hero_bg = f"background-image: url('data:image/png;base64,{banner_base64}');"
 
-        aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
-
-        with aba1:
-            st.subheader("Acessar sistema")
-
-            email = st.text_input("E-mail", key="login_email")
-            senha = st.text_input("Senha", type="password", key="login_senha")
-
-            if st.button("Entrar", use_container_width=True, key="btn_login"):
-                usuario = consultar(
-                    """
-                    SELECT u.*, e.nome as empresa_nome
-                    FROM usuarios u
-                    LEFT JOIN empresas e ON e.id = u.empresa_id
-                    WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
-                    """,
-                    (email, hash_senha(senha))
-                )
-
-                if usuario.empty:
-                    st.error("E-mail ou senha inválidos.")
-                else:
-                    st.session_state.usuario = usuario.iloc[0].to_dict()
-                    st.rerun()
-
-        with aba2:
-            st.subheader("Cadastrar nova empresa")
-
-            nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
-            documento = st.text_input("CNPJ / CPF", key="cad_documento")
-            telefone = st.text_input("Telefone", key="cad_telefone")
-            cidade = st.text_input("Cidade", key="cad_cidade")
-
-            nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
-            email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
-            senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
-
-            if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
-                if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
-                    st.warning("Preencha todos os campos obrigatórios.")
-                else:
-                    try:
-                        executar(
-                            """
-                            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
-                            VALUES (?, ?, ?, ?, ?)
-                            """,
-                            (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
-                        )
-
-                        empresa_id = consultar(
-                            "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
-                            (nome_empresa,)
-                        ).iloc[0]["id"]
-
-                        executar(
-                            """
-                            INSERT INTO usuarios
-                            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
-                            """,
-                            (
-                                int(empresa_id),
-                                nome_usuario,
-                                email_usuario,
-                                hash_senha(senha_usuario),
-                                "Administrador",
-                                1,
-                                datetime.now().isoformat()
-                            )
-                        )
-
-                        st.success("Empresa criada com sucesso. Agora faça login.")
-                    except Exception as e:
-                        st.error(f"Erro ao criar empresa: {e}")
-
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="hero-box">
+                <div class="hero-inner" style="{hero_bg} background-size: cover; background-position: center;">
+                    <div class="hero-overlay"></div>
+                    <div class="hero-content">
+                        <h3>Gestão inteligente e profissional</h3>
+                        <p>
+                            Controle entradas, saídas, parcelas, clientes, usuários e relatórios
+                            em uma plataforma moderna, visual e eficiente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     with col2:
         if logo_base64:
@@ -771,7 +739,109 @@ def tela_login():
                 """,
                 unsafe_allow_html=True
             )
+        else:
+            st.markdown(
+                """
+                <div class="logo-box">
+                    <div style="text-align:center;">
+                        <h3>GLOBAL SOFTWARE</h3>
+                        <p>Sua logo aparecerá aqui quando o arquivo <b>logo.png</b> estiver na pasta do projeto.</p>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
+    st.markdown('<div class="form-box">', unsafe_allow_html=True)
+
+    aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
+
+    with aba1:
+        st.markdown('<div class="section-title">Acessar sistema</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-subtitle">Entre com seu e-mail e senha para acessar o painel.</div>', unsafe_allow_html=True)
+
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            email = st.text_input("E-mail", key="login_email")
+
+        with col_b:
+            senha = st.text_input("Senha", type="password", key="login_senha")
+
+        if st.button("Entrar", use_container_width=True, key="btn_login"):
+            usuario = consultar(
+                """
+                SELECT u.*, e.nome as empresa_nome
+                FROM usuarios u
+                LEFT JOIN empresas e ON e.id = u.empresa_id
+                WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
+                """,
+                (email, hash_senha(senha))
+            )
+
+            if usuario.empty:
+                st.error("E-mail ou senha inválidos.")
+            else:
+                st.session_state.usuario = usuario.iloc[0].to_dict()
+                st.rerun()
+
+    with aba2:
+        st.markdown('<div class="section-title">Cadastrar nova empresa</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-subtitle">Crie sua empresa e o usuário administrador principal.</div>', unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
+            documento = st.text_input("CNPJ / CPF", key="cad_documento")
+            telefone = st.text_input("Telefone", key="cad_telefone")
+            cidade = st.text_input("Cidade", key="cad_cidade")
+
+        with col2:
+            nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
+            email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
+            senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
+
+        if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
+            if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
+                st.warning("Preencha todos os campos obrigatórios.")
+            else:
+                try:
+                    executar(
+                        """
+                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
+                    )
+
+                    empresa_id = consultar(
+                        "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
+                        (nome_empresa,)
+                    ).iloc[0]["id"]
+
+                    executar(
+                        """
+                        INSERT INTO usuarios
+                        (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            int(empresa_id),
+                            nome_usuario,
+                            email_usuario,
+                            hash_senha(senha_usuario),
+                            "Administrador",
+                            1,
+                            datetime.now().isoformat()
+                        )
+                    )
+
+                    st.success("Empresa criada com sucesso. Agora faça login.")
+                except Exception as e:
+                    st.error(f"Erro ao criar empresa: {e}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =====================================================
 # USUÁRIO ATUAL E PERMISSÕES
@@ -780,14 +850,11 @@ def tela_login():
 def empresa_id_atual():
     return int(st.session_state.usuario["empresa_id"])
 
-
 def usuario_id_atual():
     return int(st.session_state.usuario["id"])
 
-
 def tipo_usuario_atual():
     return st.session_state.usuario["tipo"]
-
 
 def menus_por_tipo_usuario():
     tipo = tipo_usuario_atual()
@@ -810,7 +877,6 @@ def menus_por_tipo_usuario():
 
     permissoes = {
         "Administrador": todos_menus,
-
         "Gerente": [
             "Dashboard",
             "Entradas e Saídas",
@@ -825,7 +891,6 @@ def menus_por_tipo_usuario():
             "WhatsApp Manual",
             "Configurações"
         ],
-
         "Financeiro": [
             "Dashboard",
             "Entradas e Saídas",
@@ -837,7 +902,6 @@ def menus_por_tipo_usuario():
             "IA Financeira",
             "WhatsApp Manual"
         ],
-
         "Vendedor": [
             "Dashboard",
             "Contas a Receber",
@@ -847,7 +911,6 @@ def menus_por_tipo_usuario():
     }
 
     return permissoes.get(tipo, ["Dashboard"])
-
 
 # =====================================================
 # CARREGAMENTO
@@ -875,7 +938,6 @@ def carregar_lancamentos():
 
     return df
 
-
 def carregar_clientes():
     return consultar(
         """
@@ -887,7 +949,6 @@ def carregar_clientes():
         (empresa_id_atual(),)
     )
 
-
 def carregar_estoque():
     return consultar(
         """
@@ -898,7 +959,6 @@ def carregar_estoque():
         """,
         (empresa_id_atual(),)
     )
-
 
 # =====================================================
 # CÁLCULOS
@@ -945,7 +1005,6 @@ def calcular_indicadores(df):
     ponto_equilibrio = despesa_fixa / (margem_bruta / 100) if margem_bruta > 0 else 0
 
     pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
-
     contas_pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
     contas_receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
     vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
@@ -971,7 +1030,6 @@ def calcular_indicadores(df):
         "a_vencer": a_vencer,
         "ponto_equilibrio": ponto_equilibrio
     }
-
 
 # =====================================================
 # RELATÓRIO PDF
@@ -1046,12 +1104,10 @@ def gerar_pdf_relatorio(df, ind):
 
     pdf.save()
     buffer.seek(0)
-
     return buffer
 
-
 # =====================================================
-# APLICATIVO PRINCIPAL
+# APP PRINCIPAL
 # =====================================================
 
 def app():
@@ -1080,10 +1136,6 @@ def app():
     df = carregar_lancamentos()
     ind = calcular_indicadores(df)
 
-    # =================================================
-    # DASHBOARD PREMIUM
-    # =================================================
-
     if menu == "Dashboard":
         st.title("📊 Dashboard Financeiro Premium")
 
@@ -1098,25 +1150,13 @@ def app():
             data_max = df["data"].max().date()
 
             with col_f1:
-                data_inicio = st.date_input(
-                    "Data inicial",
-                    value=data_min,
-                    key="dash_data_inicio"
-                )
+                data_inicio = st.date_input("Data inicial", value=data_min, key="dash_data_inicio")
 
             with col_f2:
-                data_fim = st.date_input(
-                    "Data final",
-                    value=data_max,
-                    key="dash_data_fim"
-                )
+                data_fim = st.date_input("Data final", value=data_max, key="dash_data_fim")
 
             with col_f3:
-                tipo_filtro = st.selectbox(
-                    "Tipo",
-                    ["Todos"] + list(TIPOS_LANCAMENTO.keys()),
-                    key="dash_tipo_filtro"
-                )
+                tipo_filtro = st.selectbox("Tipo", ["Todos"] + list(TIPOS_LANCAMENTO.keys()), key="dash_tipo_filtro")
 
             df_periodo = df[
                 (df["data"].dt.date >= data_inicio) &
@@ -1131,32 +1171,24 @@ def app():
             st.divider()
 
             c1, c2, c3, c4 = st.columns(4)
-
             with c1:
                 card("Receita do período", moeda(ind["receita"]), "Entradas filtradas")
-
             with c2:
                 card("Despesas + custos", moeda(ind["custo"] + ind["despesa_fixa"] + ind["despesa_variavel"]), "Saídas operacionais")
-
             with c3:
                 card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
-
             with c4:
                 card("Saldo em caixa", moeda(ind["caixa"]), "Resultado final")
 
             st.write("")
 
             c5, c6, c7, c8 = st.columns(4)
-
             with c5:
                 card("Contas vencidas", moeda(ind["vencidas"]), "Atenção imediata")
-
             with c6:
                 card("A receber", moeda(ind["contas_receber"]), "Recebimentos pendentes")
-
             with c7:
                 card("A pagar", moeda(ind["contas_pagar"]), "Pagamentos pendentes")
-
             with c8:
                 card("Ponto de equilíbrio", moeda(ind["ponto_equilibrio"]), "Meta mínima de venda")
 
@@ -1169,18 +1201,14 @@ def app():
 
                 with col_g1:
                     st.subheader("📈 Receita x Saídas por mês")
-
                     graf_mensal = df_periodo.copy()
                     graf_mensal["mes"] = graf_mensal["data"].dt.strftime("%Y-%m")
-
                     resumo_mensal = graf_mensal.groupby(["mes", "tipo"])["valor"].sum().reset_index()
                     tabela_graf = resumo_mensal.pivot(index="mes", columns="tipo", values="valor").fillna(0)
-
                     st.line_chart(tabela_graf)
 
                 with col_g2:
                     st.subheader("🏷️ Gastos por categoria")
-
                     gastos = df_periodo[df_periodo["tipo"] != "Receita"]
 
                     if gastos.empty:
@@ -1195,10 +1223,8 @@ def app():
 
                 with col_r1:
                     st.subheader("🧾 Resumo por tipo")
-
                     resumo_tipo = df_periodo.groupby("tipo")["valor"].sum().reset_index()
                     resumo_tipo["valor_formatado"] = resumo_tipo["valor"].apply(moeda)
-
                     st.dataframe(
                         resumo_tipo[["tipo", "valor_formatado"]],
                         use_container_width=True,
@@ -1207,7 +1233,6 @@ def app():
 
                 with col_r2:
                     st.subheader("⚠️ Contas críticas")
-
                     criticas = df_periodo[df_periodo["status_real"].isin(["Vencido", "Vence hoje"])].copy()
 
                     if criticas.empty:
@@ -1217,16 +1242,7 @@ def app():
                         criticas["valor"] = criticas["valor"].apply(moeda)
 
                         st.dataframe(
-                            criticas[
-                                [
-                                    "vencimento",
-                                    "tipo",
-                                    "descricao",
-                                    "cliente_fornecedor",
-                                    "valor",
-                                    "status_real"
-                                ]
-                            ],
+                            criticas[["vencimento", "tipo", "descricao", "cliente_fornecedor", "valor", "status_real"]],
                             use_container_width=True,
                             hide_index=True
                         )
@@ -1234,25 +1250,13 @@ def app():
                 st.divider()
 
                 st.subheader("📋 Últimos lançamentos do período")
-
                 tabela = df_periodo.sort_values("data", ascending=False).head(20).copy()
                 tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
                 tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
                 tabela["valor"] = tabela["valor"].apply(moeda)
 
                 st.dataframe(
-                    tabela[
-                        [
-                            "data",
-                            "vencimento",
-                            "tipo",
-                            "categoria",
-                            "descricao",
-                            "cliente_fornecedor",
-                            "valor",
-                            "status_real"
-                        ]
-                    ],
+                    tabela[["data", "vencimento", "tipo", "categoria", "descricao", "cliente_fornecedor", "valor", "status_real"]],
                     use_container_width=True,
                     hide_index=True
                 )
@@ -1341,7 +1345,6 @@ def app():
             tabela = df.copy()
             tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
             tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
-
             st.dataframe(tabela, use_container_width=True)
 
             st.subheader("Editar / Excluir")
@@ -1377,7 +1380,6 @@ def app():
                     """,
                     (novo_status, novo_valor, nova_desc, int(id_edit), empresa_id_atual())
                 )
-
                 st.success("Atualizado.")
                 st.rerun()
 
@@ -1389,7 +1391,6 @@ def app():
                     """,
                     (int(id_edit), empresa_id_atual())
                 )
-
                 st.warning("Excluído.")
                 st.rerun()
 
@@ -1424,13 +1425,10 @@ def app():
 
             if filtro == "A pagar":
                 contas = contas[contas["tipo"] != "Receita"]
-
             elif filtro == "A receber":
                 contas = contas[contas["tipo"] == "Receita"]
-
             elif filtro == "Vencidas":
                 contas = contas[contas["status_real"] == "Vencido"]
-
             elif filtro == "Vence hoje":
                 contas = contas[contas["status_real"] == "Vence hoje"]
 
@@ -1514,7 +1512,6 @@ def app():
                     """,
                     unsafe_allow_html=True
                 )
-
             elif ind["margem_liquida"] < 10:
                 st.markdown(
                     """
@@ -1524,7 +1521,6 @@ def app():
                     """,
                     unsafe_allow_html=True
                 )
-
             else:
                 st.markdown(
                     """
@@ -1581,7 +1577,6 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
-
                 st.success("Cliente salvo.")
                 st.rerun()
 
@@ -1630,7 +1625,6 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
-
                 st.success("Produto salvo.")
                 st.rerun()
 
@@ -1682,17 +1676,8 @@ def app():
                     senha = st.text_input("Senha", type="password", key="user_senha")
 
                 with col2:
-                    tipo_user = st.selectbox(
-                        "Tipo de usuário",
-                        TIPOS_USUARIO,
-                        key="user_tipo"
-                    )
-
-                    ativo = st.checkbox(
-                        "Usuário ativo",
-                        value=True,
-                        key="user_ativo"
-                    )
+                    tipo_user = st.selectbox("Tipo de usuário", TIPOS_USUARIO, key="user_tipo")
+                    ativo = st.checkbox("Usuário ativo", value=True, key="user_ativo")
 
                 st.info(
                     """
@@ -1731,10 +1716,8 @@ def app():
                                     datetime.now().isoformat()
                                 )
                             )
-
                             st.success("Usuário criado com sucesso.")
                             st.rerun()
-
                         except Exception as e:
                             st.error(f"Erro ao criar usuário: {e}")
 
@@ -1787,11 +1770,7 @@ def app():
                     )
 
                 with colu3:
-                    nova_senha = st.text_input(
-                        "Nova senha",
-                        type="password",
-                        key="editar_usuario_senha"
-                    )
+                    nova_senha = st.text_input("Nova senha", type="password", key="editar_usuario_senha")
 
                 col_btn1, col_btn2 = st.columns(2)
 
@@ -1805,13 +1784,7 @@ def app():
                             SET tipo = ?, ativo = ?, senha_hash = ?
                             WHERE id = ? AND empresa_id = ?
                             """,
-                            (
-                                novo_tipo,
-                                ativo_int,
-                                hash_senha(nova_senha),
-                                int(id_usuario),
-                                empresa_id_atual()
-                            )
+                            (novo_tipo, ativo_int, hash_senha(nova_senha), int(id_usuario), empresa_id_atual())
                         )
                     else:
                         executar(
@@ -1820,12 +1793,7 @@ def app():
                             SET tipo = ?, ativo = ?
                             WHERE id = ? AND empresa_id = ?
                             """,
-                            (
-                                novo_tipo,
-                                ativo_int,
-                                int(id_usuario),
-                                empresa_id_atual()
-                            )
+                            (novo_tipo, ativo_int, int(id_usuario), empresa_id_atual())
                         )
 
                     st.success("Usuário atualizado com sucesso.")
@@ -1840,22 +1808,15 @@ def app():
                             DELETE FROM usuarios
                             WHERE id = ? AND empresa_id = ?
                             """,
-                            (
-                                int(id_usuario),
-                                empresa_id_atual()
-                            )
+                            (int(id_usuario), empresa_id_atual())
                         )
-
                         st.warning("Usuário excluído.")
                         st.rerun()
 
     elif menu == "Configurações":
         st.title("⚙️ Configurações")
 
-        empresa = consultar(
-            "SELECT * FROM empresas WHERE id = ?",
-            (empresa_id_atual(),)
-        )
+        empresa = consultar("SELECT * FROM empresas WHERE id = ?", (empresa_id_atual(),))
 
         if empresa.empty:
             st.error("Empresa não encontrada.")
@@ -1876,7 +1837,6 @@ def app():
                     """,
                     (nome, documento, telefone, cidade, empresa_id_atual())
                 )
-
                 st.success("Configurações atualizadas.")
                 st.rerun()
 
@@ -1896,9 +1856,8 @@ def app():
             key="download_backup_json"
         )
 
-
 # =====================================================
-# INICIAR SISTEMA
+# INICIAR
 # =====================================================
 
 criar_tabelas()
