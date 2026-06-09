@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 from io import BytesIO
 from urllib.parse import quote
 
+
 # =====================================================
 # CONFIGURAÇÃO INICIAL
 # =====================================================
@@ -22,22 +23,27 @@ st.set_page_config(
 
 DB_PATH = "sistema_financeiro.db"
 
+
 # =====================================================
 # FUNÇÕES DE IMAGEM
 # =====================================================
 
 def imagem_base64(caminho):
     arquivo = Path(caminho)
+
     if arquivo.exists():
         with open(arquivo, "rb") as img:
             return base64.b64encode(img.read()).decode()
+
     return ""
+
 
 logo_base64 = imagem_base64("logo.png")
 banner_base64 = imagem_base64("banner_login.png")
 
 if not banner_base64:
     banner_base64 = logo_base64
+
 
 # =====================================================
 # ESTILO VISUAL
@@ -135,7 +141,7 @@ st.markdown(
     }}
 
     .hero-box {{
-        min-height: 420px;
+        min-height: 440px;
         border-radius: 26px;
         border: 1px solid rgba(34,211,238,0.28);
         background:
@@ -154,9 +160,10 @@ st.markdown(
         display: flex;
         align-items: end;
         justify-content: start;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
+        background-size: contain !important;
+        background-repeat: no-repeat !important;
+        background-position: center center !important;
+        background-color: rgba(2, 6, 23, 0.72);
         position: relative;
     }}
 
@@ -164,8 +171,8 @@ st.markdown(
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(2,6,23,0.18), rgba(2,6,23,0.72)),
-            linear-gradient(90deg, rgba(2,6,23,0.52), rgba(2,6,23,0.15));
+            linear-gradient(180deg, rgba(2,6,23,0.04), rgba(2,6,23,0.50)),
+            linear-gradient(90deg, rgba(2,6,23,0.30), rgba(2,6,23,0.04));
     }}
 
     .hero-content {{
@@ -189,7 +196,7 @@ st.markdown(
     }}
 
     .logo-box {{
-        min-height: 420px;
+        min-height: 440px;
         border-radius: 26px;
         border: 1px solid rgba(34,211,238,0.28);
         background:
@@ -381,17 +388,22 @@ st.markdown(
         }}
 
         .hero-box, .logo-box {{
-            min-height: 260px;
+            min-height: 300px;
         }}
 
         .form-box {{
             padding: 20px;
+        }}
+
+        .hero-content h3 {{
+            font-size: 24px;
         }}
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # =====================================================
 # FUNÇÕES BÁSICAS
@@ -400,6 +412,7 @@ st.markdown(
 def conectar():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
 
+
 def executar(sql, params=()):
     con = conectar()
     cur = con.cursor()
@@ -407,34 +420,42 @@ def executar(sql, params=()):
     con.commit()
     con.close()
 
+
 def consultar(sql, params=()):
     con = conectar()
     df = pd.read_sql_query(sql, con, params=params)
     con.close()
     return df
 
+
 def hash_senha(senha):
     return hashlib.sha256(senha.encode("utf-8")).hexdigest()
+
 
 def moeda(valor):
     try:
         valor = float(valor)
     except Exception:
         valor = 0
+
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 
 def percentual(valor):
     try:
         valor = float(valor)
     except Exception:
         valor = 0
+
     return f"{valor:.1f}%".replace(".", ",")
+
 
 def data_br(valor):
     try:
         return pd.to_datetime(valor).strftime("%d/%m/%Y")
     except Exception:
         return ""
+
 
 def dias_para_vencimento(vencimento):
     try:
@@ -443,15 +464,21 @@ def dias_para_vencimento(vencimento):
     except Exception:
         return 0
 
+
 def status_automatico(status, vencimento):
     if status in ["Pago", "Recebido"]:
         return status
+
     dias = dias_para_vencimento(vencimento)
+
     if dias < 0:
         return "Vencido"
+
     if dias == 0:
         return "Vence hoje"
+
     return "Pendente"
+
 
 def card(titulo, valor, subtitulo=""):
     st.markdown(
@@ -464,6 +491,7 @@ def card(titulo, valor, subtitulo=""):
         """,
         unsafe_allow_html=True
     )
+
 
 # =====================================================
 # BANCO DE DADOS
@@ -551,6 +579,7 @@ def criar_tabelas():
     con.commit()
     con.close()
 
+
 def criar_admin_padrao():
     empresas = consultar("SELECT * FROM empresas")
 
@@ -587,6 +616,7 @@ def criar_admin_padrao():
                 datetime.now().isoformat()
             )
         )
+
 
 # =====================================================
 # DADOS FIXOS
@@ -682,6 +712,7 @@ STATUS_OPCOES = [
     "Recebido"
 ]
 
+
 # =====================================================
 # LOGIN
 # =====================================================
@@ -708,13 +739,14 @@ def tela_login():
 
     with col1:
         hero_bg = ""
+
         if banner_base64:
             hero_bg = f"background-image: url('data:image/png;base64,{banner_base64}');"
 
         st.markdown(
             f"""
             <div class="hero-box">
-                <div class="hero-inner" style="{hero_bg} background-size: cover; background-position: center;">
+                <div class="hero-inner" style="{hero_bg} background-size: contain; background-position: center center; background-repeat: no-repeat;">
                     <div class="hero-overlay"></div>
                     <div class="hero-content">
                         <h3>Gestão inteligente e profissional</h3>
@@ -843,6 +875,7 @@ def tela_login():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+
 # =====================================================
 # USUÁRIO ATUAL E PERMISSÕES
 # =====================================================
@@ -850,11 +883,14 @@ def tela_login():
 def empresa_id_atual():
     return int(st.session_state.usuario["empresa_id"])
 
+
 def usuario_id_atual():
     return int(st.session_state.usuario["id"])
 
+
 def tipo_usuario_atual():
     return st.session_state.usuario["tipo"]
+
 
 def menus_por_tipo_usuario():
     tipo = tipo_usuario_atual()
@@ -877,6 +913,7 @@ def menus_por_tipo_usuario():
 
     permissoes = {
         "Administrador": todos_menus,
+
         "Gerente": [
             "Dashboard",
             "Entradas e Saídas",
@@ -891,6 +928,7 @@ def menus_por_tipo_usuario():
             "WhatsApp Manual",
             "Configurações"
         ],
+
         "Financeiro": [
             "Dashboard",
             "Entradas e Saídas",
@@ -902,6 +940,7 @@ def menus_por_tipo_usuario():
             "IA Financeira",
             "WhatsApp Manual"
         ],
+
         "Vendedor": [
             "Dashboard",
             "Contas a Receber",
@@ -911,6 +950,7 @@ def menus_por_tipo_usuario():
     }
 
     return permissoes.get(tipo, ["Dashboard"])
+
 
 # =====================================================
 # CARREGAMENTO
@@ -938,6 +978,7 @@ def carregar_lancamentos():
 
     return df
 
+
 def carregar_clientes():
     return consultar(
         """
@@ -949,6 +990,7 @@ def carregar_clientes():
         (empresa_id_atual(),)
     )
 
+
 def carregar_estoque():
     return consultar(
         """
@@ -959,6 +1001,7 @@ def carregar_estoque():
         """,
         (empresa_id_atual(),)
     )
+
 
 # =====================================================
 # CÁLCULOS
@@ -1005,6 +1048,7 @@ def calcular_indicadores(df):
     ponto_equilibrio = despesa_fixa / (margem_bruta / 100) if margem_bruta > 0 else 0
 
     pendentes = df[df["status_real"].isin(["Pendente", "Vence hoje", "Vencido"])]
+
     contas_pagar = pendentes[pendentes["tipo"] != "Receita"]["valor"].sum()
     contas_receber = pendentes[pendentes["tipo"] == "Receita"]["valor"].sum()
     vencidas = pendentes[pendentes["status_real"] == "Vencido"]["valor"].sum()
@@ -1030,6 +1074,7 @@ def calcular_indicadores(df):
         "a_vencer": a_vencer,
         "ponto_equilibrio": ponto_equilibrio
     }
+
 
 # =====================================================
 # RELATÓRIO PDF
@@ -1104,7 +1149,9 @@ def gerar_pdf_relatorio(df, ind):
 
     pdf.save()
     buffer.seek(0)
+
     return buffer
+
 
 # =====================================================
 # APP PRINCIPAL
@@ -1171,24 +1218,32 @@ def app():
             st.divider()
 
             c1, c2, c3, c4 = st.columns(4)
+
             with c1:
                 card("Receita do período", moeda(ind["receita"]), "Entradas filtradas")
+
             with c2:
                 card("Despesas + custos", moeda(ind["custo"] + ind["despesa_fixa"] + ind["despesa_variavel"]), "Saídas operacionais")
+
             with c3:
                 card("Lucro líquido", moeda(ind["lucro_liquido"]), percentual(ind["margem_liquida"]))
+
             with c4:
                 card("Saldo em caixa", moeda(ind["caixa"]), "Resultado final")
 
             st.write("")
 
             c5, c6, c7, c8 = st.columns(4)
+
             with c5:
                 card("Contas vencidas", moeda(ind["vencidas"]), "Atenção imediata")
+
             with c6:
                 card("A receber", moeda(ind["contas_receber"]), "Recebimentos pendentes")
+
             with c7:
                 card("A pagar", moeda(ind["contas_pagar"]), "Pagamentos pendentes")
+
             with c8:
                 card("Ponto de equilíbrio", moeda(ind["ponto_equilibrio"]), "Meta mínima de venda")
 
@@ -1201,14 +1256,18 @@ def app():
 
                 with col_g1:
                     st.subheader("📈 Receita x Saídas por mês")
+
                     graf_mensal = df_periodo.copy()
                     graf_mensal["mes"] = graf_mensal["data"].dt.strftime("%Y-%m")
+
                     resumo_mensal = graf_mensal.groupby(["mes", "tipo"])["valor"].sum().reset_index()
                     tabela_graf = resumo_mensal.pivot(index="mes", columns="tipo", values="valor").fillna(0)
+
                     st.line_chart(tabela_graf)
 
                 with col_g2:
                     st.subheader("🏷️ Gastos por categoria")
+
                     gastos = df_periodo[df_periodo["tipo"] != "Receita"]
 
                     if gastos.empty:
@@ -1223,8 +1282,10 @@ def app():
 
                 with col_r1:
                     st.subheader("🧾 Resumo por tipo")
+
                     resumo_tipo = df_periodo.groupby("tipo")["valor"].sum().reset_index()
                     resumo_tipo["valor_formatado"] = resumo_tipo["valor"].apply(moeda)
+
                     st.dataframe(
                         resumo_tipo[["tipo", "valor_formatado"]],
                         use_container_width=True,
@@ -1233,6 +1294,7 @@ def app():
 
                 with col_r2:
                     st.subheader("⚠️ Contas críticas")
+
                     criticas = df_periodo[df_periodo["status_real"].isin(["Vencido", "Vence hoje"])].copy()
 
                     if criticas.empty:
@@ -1250,6 +1312,7 @@ def app():
                 st.divider()
 
                 st.subheader("📋 Últimos lançamentos do período")
+
                 tabela = df_periodo.sort_values("data", ascending=False).head(20).copy()
                 tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
                 tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
@@ -1345,6 +1408,7 @@ def app():
             tabela = df.copy()
             tabela["data"] = tabela["data"].dt.strftime("%d/%m/%Y")
             tabela["vencimento"] = tabela["vencimento"].dt.strftime("%d/%m/%Y")
+
             st.dataframe(tabela, use_container_width=True)
 
             st.subheader("Editar / Excluir")
@@ -1380,6 +1444,7 @@ def app():
                     """,
                     (novo_status, novo_valor, nova_desc, int(id_edit), empresa_id_atual())
                 )
+
                 st.success("Atualizado.")
                 st.rerun()
 
@@ -1391,6 +1456,7 @@ def app():
                     """,
                     (int(id_edit), empresa_id_atual())
                 )
+
                 st.warning("Excluído.")
                 st.rerun()
 
@@ -1425,10 +1491,13 @@ def app():
 
             if filtro == "A pagar":
                 contas = contas[contas["tipo"] != "Receita"]
+
             elif filtro == "A receber":
                 contas = contas[contas["tipo"] == "Receita"]
+
             elif filtro == "Vencidas":
                 contas = contas[contas["status_real"] == "Vencido"]
+
             elif filtro == "Vence hoje":
                 contas = contas[contas["status_real"] == "Vence hoje"]
 
@@ -1512,6 +1581,7 @@ def app():
                     """,
                     unsafe_allow_html=True
                 )
+
             elif ind["margem_liquida"] < 10:
                 st.markdown(
                     """
@@ -1521,6 +1591,7 @@ def app():
                     """,
                     unsafe_allow_html=True
                 )
+
             else:
                 st.markdown(
                     """
@@ -1577,6 +1648,7 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
+
                 st.success("Cliente salvo.")
                 st.rerun()
 
@@ -1625,6 +1697,7 @@ def app():
                         datetime.now().isoformat()
                     )
                 )
+
                 st.success("Produto salvo.")
                 st.rerun()
 
@@ -1716,8 +1789,10 @@ def app():
                                     datetime.now().isoformat()
                                 )
                             )
+
                             st.success("Usuário criado com sucesso.")
                             st.rerun()
+
                         except Exception as e:
                             st.error(f"Erro ao criar usuário: {e}")
 
@@ -1810,6 +1885,7 @@ def app():
                             """,
                             (int(id_usuario), empresa_id_atual())
                         )
+
                         st.warning("Usuário excluído.")
                         st.rerun()
 
@@ -1837,6 +1913,7 @@ def app():
                     """,
                     (nome, documento, telefone, cidade, empresa_id_atual())
                 )
+
                 st.success("Configurações atualizadas.")
                 st.rerun()
 
@@ -1855,6 +1932,7 @@ def app():
             mime="application/json",
             key="download_backup_json"
         )
+
 
 # =====================================================
 # INICIAR
