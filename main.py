@@ -948,6 +948,21 @@ def criar_tabelas():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS onboarding_cliente (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            etapa TEXT,
+            descricao TEXT,
+            menu_destino TEXT,
+            ordem INTEGER,
+            concluido INTEGER DEFAULT 0,
+            concluido_em TEXT,
+            criado_em TEXT
+        )
+    """)
+
     con.commit()
     con.close()
 
@@ -1544,6 +1559,55 @@ def carregar_planejamento():
     )
 
 
+ETAPAS_ONBOARDING = [
+    (1, "Configurar perfil", "Complete os dados da empresa ou pessoa física em Configurações.", "Configurações"),
+    (2, "Cadastrar primeira entrada", "Registre uma receita, salário, venda ou recebimento em Entradas e Saídas.", "Entradas e Saídas"),
+    (3, "Cadastrar primeira despesa", "Registre uma despesa fixa, variável, custo, dívida ou investimento.", "Entradas e Saídas"),
+    (4, "Cadastrar cliente ou fornecedor", "Cadastre um cliente, fornecedor ou contato financeiro no CRM.", "Clientes / CRM"),
+    (5, "Montar planejamento", "Crie uma previsão de receita, despesa, dívida, investimento ou reserva.", "Planejamento Financeiro"),
+    (6, "Ver dashboard funcionando", "Confira os indicadores, gráficos e contas críticas no Dashboard.", "Dashboard"),
+]
+
+
+def garantir_onboarding_empresa():
+    empresa_id = empresa_id_atual()
+    usuario_id = usuario_id_atual()
+    existente = consultar("SELECT COUNT(*) as total FROM onboarding_cliente WHERE empresa_id = ?", (empresa_id,))
+
+    if int(existente.iloc[0]["total"]) == 0:
+        criado = datetime.now().isoformat()
+        for ordem, etapa, descricao, menu_destino in ETAPAS_ONBOARDING:
+            executar(
+                """
+                INSERT INTO onboarding_cliente
+                (empresa_id, usuario_id, etapa, descricao, menu_destino, ordem, concluido, concluido_em, criado_em)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (empresa_id, usuario_id, etapa, descricao, menu_destino, ordem, 0, None, criado)
+            )
+
+
+def carregar_onboarding():
+    garantir_onboarding_empresa()
+    return consultar(
+        """
+        SELECT *
+        FROM onboarding_cliente
+        WHERE empresa_id = ?
+        ORDER BY ordem ASC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def percentual_onboarding(onboarding):
+    if onboarding.empty:
+        return 0
+    total = len(onboarding)
+    concluidas = int(onboarding["concluido"].sum())
+    return int(round((concluidas / total) * 100, 0)) if total else 0
+
+
 # =====================================================
 # CÁLCULOS
 # =====================================================
@@ -1717,6 +1781,9 @@ def responder_ajuda(pergunta):
     if "relatório" in p or "relatorio" in p or "pdf" in p:
         return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
 
+    if "onboarding" in p or "começar" in p or "comecar" in p or "primeiros passos" in p or "implantação" in p or "implantacao" in p:
+        return "Para começar a usar o sistema, acesse **Onboarding do Cliente**. Lá existe um checklist com perfil, primeira entrada, primeira despesa, cliente/fornecedor, planejamento e dashboard."
+
     if "planejamento" in p or "orçamento" in p or "orcamento" in p or "previsto" in p:
         return "Para planejar o mês, acesse **Planejamento Financeiro**. Cadastre valores previstos, valores realizados, metas, dívidas, investimentos e compare o planejado com o realizado."
 
@@ -1732,7 +1799,7 @@ def responder_ajuda(pergunta):
     if "dashboard" in p or "painel" in p:
         return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
 
-    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, planejamento, assinatura, relatórios, WhatsApp e dashboard."
+    return "Posso te ajudar com onboarding, lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, planejamento, assinatura, relatórios, WhatsApp e dashboard."
 
 
 # =====================================================
@@ -1929,8 +1996,7 @@ def tela_login():
         Gestão completa para Pessoa Jurídica PJ e Pessoa Física PF.
     </div>
     <div class="login-info">
-        <b>Acesso do cliente PJ:</b> use seu e-mail cadastrado e sua senha.<br>
-        <span style="color:rgba(223,255,107,0.82);">O acesso administrativo da Global Software é reservado e não fica visível na tela.</span>
+        <b>Acesso do cliente PJ:</b> use seu e-mail cadastrado e sua senha.
     </div>
 </div>
 """)
@@ -2142,6 +2208,7 @@ def menus_por_tipo_usuario():
 
     menus_administrador = [
         "Dashboard",
+        "Onboarding do Cliente",
         "Entradas e Saídas",
         "Contas Pagas no Mês",
         "Clientes / CRM",
@@ -2165,18 +2232,18 @@ def menus_por_tipo_usuario():
     permissoes = {
         "Administrador": menus_administrador,
         "Gerente": [
-            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
+            "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
             "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
             "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial", "Configurações"
         ],
         "Financeiro": [
-            "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
+            "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
             "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial"
         ],
         "Vendedor": [
-            "Dashboard", "Clientes / CRM", "Clientes Inadimplentes", "Pix e WhatsApp", "Ajuda / Tutorial"
+            "Dashboard", "Onboarding do Cliente", "Clientes / CRM", "Clientes Inadimplentes", "Pix e WhatsApp", "Ajuda / Tutorial"
         ]
     }
 
@@ -2287,6 +2354,7 @@ def app():
     metas = carregar_metas()
     planejamento = carregar_planejamento()
     assinatura = carregar_assinatura()
+    onboarding = carregar_onboarding()
     status_assinatura = status_assinatura_real(assinatura)
     dias_assinatura = dias_restantes_assinatura(assinatura)
 
@@ -2559,6 +2627,10 @@ def app():
     elif menu == "Dashboard":
         st.title("📊 Dashboard Executivo Premium")
 
+        progresso_onboarding = percentual_onboarding(onboarding)
+        if progresso_onboarding < 100:
+            st.info(f"🚀 Onboarding do cliente: {progresso_onboarding}% concluído. Acesse **Onboarding do Cliente** para finalizar a configuração inicial.")
+
         if status_assinatura in ["Vencido", "Bloqueado", "Cancelado"]:
             st.error(f"Assinatura {status_assinatura}. Acesse **Assinaturas / Planos** para regularizar e renovar pelo WhatsApp.")
         elif dias_assinatura <= 3:
@@ -2655,6 +2727,74 @@ def app():
                     use_container_width=True,
                     hide_index=True
                 )
+
+
+    elif menu == "Onboarding do Cliente":
+        st.title("🚀 Onboarding do Cliente")
+        st.caption("Passo a passo para a nova PF/PJ começar a usar o sistema sem ficar perdida.")
+
+        onboarding = carregar_onboarding()
+        progresso = percentual_onboarding(onboarding)
+        concluidas = int(onboarding["concluido"].sum()) if not onboarding.empty else 0
+        total_etapas = len(onboarding)
+
+        col_onb1, col_onb2, col_onb3 = st.columns(3)
+        with col_onb1:
+            card("Progresso inicial", f"{progresso}%", f"{concluidas} de {total_etapas} etapas")
+        with col_onb2:
+            proxima = onboarding[onboarding["concluido"] == 0].head(1)
+            proxima_texto = proxima.iloc[0]["etapa"] if not proxima.empty else "Tudo concluído"
+            card("Próxima etapa", proxima_texto, "Ação recomendada")
+        with col_onb3:
+            status_texto = "Concluído" if progresso == 100 else "Em implantação"
+            card("Status do cliente", status_texto, "Primeiros passos")
+
+        st.progress(progresso / 100 if progresso else 0)
+        st.divider()
+
+        for _, etapa in onboarding.iterrows():
+            etapa_id = int(etapa["id"])
+            concluido = int(etapa["concluido"]) == 1
+            icone = "✅" if concluido else "⬜"
+            with st.container():
+                col_a, col_b, col_c = st.columns([3, 2, 1.2])
+                with col_a:
+                    st.markdown(f"### {icone} {int(etapa['ordem'])}. {etapa['etapa']}")
+                    st.write(etapa["descricao"])
+                    if concluido and etapa.get("concluido_em"):
+                        st.caption(f"Concluído em: {data_br(etapa['concluido_em'])}")
+                with col_b:
+                    st.info(f"Abrir menu: **{etapa['menu_destino']}**")
+                    if st.button("Ir para esta etapa", key=f"ir_onboarding_{etapa_id}", use_container_width=True):
+                        st.session_state.menu_atual = etapa["menu_destino"]
+                        st.rerun()
+                with col_c:
+                    if not concluido:
+                        if st.button("Marcar feito", key=f"concluir_onboarding_{etapa_id}", use_container_width=True):
+                            executar(
+                                "UPDATE onboarding_cliente SET concluido = 1, concluido_em = ? WHERE id = ? AND empresa_id = ?",
+                                (datetime.now().isoformat(), etapa_id, empresa_id_atual())
+                            )
+                            st.success("Etapa marcada como concluída.")
+                            st.rerun()
+                    else:
+                        if st.button("Desmarcar", key=f"desmarcar_onboarding_{etapa_id}", use_container_width=True):
+                            executar(
+                                "UPDATE onboarding_cliente SET concluido = 0, concluido_em = NULL WHERE id = ? AND empresa_id = ?",
+                                (etapa_id, empresa_id_atual())
+                            )
+                            st.rerun()
+            st.divider()
+
+        col_reset1, col_reset2 = st.columns([1, 2])
+        with col_reset1:
+            if st.button("Reiniciar checklist", key="btn_reset_onboarding", use_container_width=True):
+                executar("UPDATE onboarding_cliente SET concluido = 0, concluido_em = NULL WHERE empresa_id = ?", (empresa_id_atual(),))
+                st.warning("Checklist reiniciado.")
+                st.rerun()
+
+        with col_reset2:
+            st.success("Dica: use esse checklist na implantação com o cliente. Ele deixa o sistema mais fácil de vender e mais simples de começar.")
 
     elif menu == "Entradas e Saídas":
         st.title("💸 Entradas e Saídas")
@@ -3539,7 +3679,10 @@ def app():
 **1. Dashboard**  
 Mostra os principais indicadores da conta.
 
-**2. Entradas e Saídas**  
+**2. Onboarding do Cliente**  
+Checklist inicial para a nova PF/PJ configurar a conta, lançar dados e ver o painel funcionando.
+
+**3. Entradas e Saídas**  
 Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
 
 **3. Contas Pagas no Mês**  
@@ -3723,6 +3866,7 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
             "metas": metas.to_dict(orient="records") if not metas.empty else [],
             "planejamento": planejamento.to_dict(orient="records") if not planejamento.empty else [],
             "assinatura": assinatura.to_dict(orient="records") if not assinatura.empty else [],
+            "onboarding": onboarding.to_dict(orient="records") if not onboarding.empty else [],
             "gerado_em": datetime.now().isoformat()
         }
 
