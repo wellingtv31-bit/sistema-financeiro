@@ -734,6 +734,8 @@ def preco_card(titulo, valor, texto):
 
 def cabecalho_interno(menu_atual):
     usuario = st.session_state.usuario
+    tipo_pessoa = usuario.get("tipo_pessoa", "PJ")
+    texto_tipo_pessoa = "Pessoa Física PF" if tipo_pessoa == "PF" else "Pessoa Jurídica PJ"
 
     html(f"""
 <div class="app-header">
@@ -745,9 +747,10 @@ def cabecalho_interno(menu_atual):
             </div>
         </div>
         <div class="app-badges">
-            <div class="app-badge">Empresa: {usuario['empresa_nome']}</div>
+            <div class="app-badge">Perfil: {texto_tipo_pessoa}</div>
+            <div class="app-badge">Conta: {usuario['empresa_nome']}</div>
             <div class="app-badge">Usuário: {usuario['nome']}</div>
-            <div class="app-badge">Perfil: {usuario['tipo']}</div>
+            <div class="app-badge">Permissão: {usuario['tipo']}</div>
         </div>
     </div>
 </div>
@@ -783,7 +786,8 @@ def criar_tabelas():
             documento TEXT,
             telefone TEXT,
             cidade TEXT,
-            criado_em TEXT
+            criado_em TEXT,
+            tipo_pessoa TEXT DEFAULT 'PJ'
         )
     """)
 
@@ -907,6 +911,24 @@ def criar_tabelas():
         )
     """)
 
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS planejamento_financeiro (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            mes_referencia TEXT,
+            tipo_planejamento TEXT,
+            categoria TEXT,
+            descricao TEXT,
+            valor_previsto REAL,
+            valor_realizado REAL DEFAULT 0,
+            status TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
     con.commit()
     con.close()
 
@@ -914,6 +936,7 @@ def criar_tabelas():
     adicionar_coluna("estoque", "codigo", "TEXT")
     adicionar_coluna("clientes", "limite_credito", "REAL DEFAULT 0")
     adicionar_coluna("clientes", "status_cliente", "TEXT DEFAULT 'Ativo'")
+    adicionar_coluna("empresas", "tipo_pessoa", "TEXT DEFAULT 'PJ'")
 
 
 def criar_admin_padrao():
@@ -922,10 +945,10 @@ def criar_admin_padrao():
     if empresas.empty:
         executar(
             """
-            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO empresas (nome, documento, telefone, cidade, criado_em, tipo_pessoa)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            ("Global Software", "", "", "", datetime.now().isoformat())
+            ("Global Software", "", "", "", datetime.now().isoformat(), "PJ")
         )
 
     empresa = consultar("SELECT id FROM empresas ORDER BY id ASC LIMIT 1").iloc[0]["id"]
@@ -970,6 +993,26 @@ TIPOS_LANCAMENTO = {
 FORMAS_PAGAMENTO = ["Dinheiro", "Pix", "Cartão de débito", "Cartão de crédito", "Boleto", "Transferência", "Promissória", "Outro"]
 CONTAS = ["Caixa", "Banco", "Conta digital", "Carteira", "Cartão", "Outro"]
 STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
+
+
+# =====================================================
+# FUNÇÕES DE CONTEXTO
+# =====================================================
+
+def empresa_id_atual():
+    return int(st.session_state.usuario["empresa_id"])
+
+
+def usuario_id_atual():
+    return int(st.session_state.usuario["id"])
+
+
+def tipo_usuario_atual():
+    return st.session_state.usuario["tipo"]
+
+
+def tipo_pessoa_atual():
+    return st.session_state.usuario.get("tipo_pessoa", "PJ")
 
 
 # =====================================================
@@ -1066,18 +1109,15 @@ def carregar_dados_exemplo():
         (hoje - timedelta(days=25), hoje - timedelta(days=25), "Receita", "Serviço", "Treinamento equipe - Loja Estilo", "Loja Estilo", 2500, "Pix", "Banco", "Recebido", 1, 1),
         (hoje - timedelta(days=20), hoje - timedelta(days=20), "Receita", "Venda", "Automação financeira - Restaurante Sabor", "Restaurante Sabor", 6900, "Boleto", "Banco", "Recebido", 1, 1),
         (hoje - timedelta(days=12), hoje - timedelta(days=12), "Receita", "Comissão", "Comissão implantação - Transportes Forte", "Transportes Forte", 1800, "Pix", "Banco", "Recebido", 1, 1),
-
         (hoje - timedelta(days=15), hoje - timedelta(days=15), "Despesa fixa", "Aluguel", "Aluguel escritório", "Imobiliária Goiás", 2800, "Boleto", "Banco", "Pago", 1, 1),
         (hoje - timedelta(days=14), hoje - timedelta(days=14), "Despesa fixa", "Internet", "Internet fibra empresarial", "Operadora", 220, "Pix", "Banco", "Pago", 1, 1),
         (hoje - timedelta(days=10), hoje - timedelta(days=10), "Despesa variável", "Marketing", "Campanha tráfego pago", "Meta Ads", 1600, "Cartão de crédito", "Cartão", "Pago", 1, 1),
         (hoje - timedelta(days=8), hoje - timedelta(days=8), "Despesa fixa", "Sistema", "Ferramentas e hospedagem", "Serviços Cloud", 690, "Cartão de crédito", "Cartão", "Pago", 1, 1),
         (hoje - timedelta(days=5), hoje - timedelta(days=5), "Custo", "Fornecedor", "Custos de implantação e API", "Parceiro API", 1350, "Pix", "Banco", "Pago", 1, 1),
-
         (hoje - timedelta(days=35), hoje - timedelta(days=12), "Receita", "Recebimento de parcela", "Parcela vencida - Oficina Central", "Oficina Central", 2700, "Boleto", "Banco", "Pendente", 1, 3),
         (hoje - timedelta(days=30), hoje - timedelta(days=7), "Receita", "Recebimento de parcela", "Mensalidade vencida - Loja Estilo", "Loja Estilo", 1490, "Boleto", "Banco", "Pendente", 1, 1),
         (hoje - timedelta(days=24), hoje - timedelta(days=3), "Receita", "Serviço", "Suporte premium vencido - Restaurante Sabor", "Restaurante Sabor", 297, "Boleto", "Banco", "Pendente", 1, 1),
         (hoje - timedelta(days=18), hoje - timedelta(days=1), "Receita", "Venda", "Licença pendente - Transportes Forte", "Transportes Forte", 3900, "Boleto", "Banco", "Pendente", 1, 1),
-
         (hoje, hoje + timedelta(days=3), "Receita", "Venda", "Nova proposta - Clínica Vida", "Clínica Vida", 7800, "Pix", "Banco", "Pendente", 1, 1),
         (hoje, hoje + timedelta(days=7), "Despesa fixa", "Contador", "Honorários contábeis", "Contabilidade Prime", 650, "Boleto", "Banco", "Pendente", 1, 1),
         (hoje, hoje + timedelta(days=10), "Despesa variável", "Manutenção", "Manutenção equipamentos", "Técnico Local", 480, "Pix", "Caixa", "Pendente", 1, 1),
@@ -1175,35 +1215,12 @@ def carregar_dados_exemplo():
 def limpar_dados_exemplo():
     empresa_id = empresa_id_atual()
 
-    executar(
-        "DELETE FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
-
-    executar(
-        "DELETE FROM clientes WHERE empresa_id = ? AND observacao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
-
-    executar(
-        "DELETE FROM estoque WHERE empresa_id = ? AND observacao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
-
-    executar(
-        "DELETE FROM folha_pagamento WHERE empresa_id = ? AND observacao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
-
-    executar(
-        "DELETE FROM metas WHERE empresa_id = ? AND descricao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
-
-    executar(
-        "DELETE FROM funcionarios WHERE empresa_id = ? AND observacao LIKE ?",
-        (empresa_id, f"%{TAG_DEMO}%")
-    )
+    executar("DELETE FROM lancamentos WHERE empresa_id = ? AND observacao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
+    executar("DELETE FROM clientes WHERE empresa_id = ? AND observacao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
+    executar("DELETE FROM estoque WHERE empresa_id = ? AND observacao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
+    executar("DELETE FROM folha_pagamento WHERE empresa_id = ? AND observacao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
+    executar("DELETE FROM metas WHERE empresa_id = ? AND descricao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
+    executar("DELETE FROM funcionarios WHERE empresa_id = ? AND observacao LIKE ?", (empresa_id, f"%{TAG_DEMO}%"))
 
     return True, "Dados de exemplo removidos com sucesso."
 
@@ -1211,18 +1228,6 @@ def limpar_dados_exemplo():
 # =====================================================
 # CARREGAMENTO
 # =====================================================
-
-def empresa_id_atual():
-    return int(st.session_state.usuario["empresa_id"])
-
-
-def usuario_id_atual():
-    return int(st.session_state.usuario["id"])
-
-
-def tipo_usuario_atual():
-    return st.session_state.usuario["tipo"]
-
 
 def carregar_lancamentos():
     df = consultar(
@@ -1286,6 +1291,24 @@ def carregar_metas():
 # CÁLCULOS
 # =====================================================
 
+
+
+def carregar_planejamento():
+    return consultar(
+        """
+        SELECT *
+        FROM planejamento_financeiro
+        WHERE empresa_id = ?
+        ORDER BY mes_referencia DESC, tipo_planejamento ASC, categoria ASC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+# =====================================================
+# CÁLCULOS
+# =====================================================
+
 def calcular_indicadores(df):
     if df.empty:
         return {
@@ -1337,7 +1360,7 @@ def calcular_folha_total(salario, horas, valor_hora, comissao, bonus, premiacao,
 
 
 # =====================================================
-# PDF
+# PDF SEGURO
 # =====================================================
 
 def gerar_pdf_relatorio(df, ind):
@@ -1353,54 +1376,71 @@ def gerar_pdf_relatorio(df, ind):
     largura, altura = A4
     y = altura - 2 * cm
 
-    pdf.setFont("Helvetica-Bold", 16)
+    pdf.setFont("Helvetica-Bold", 18)
     pdf.drawString(2 * cm, y, "Relatório Financeiro - Global Software")
     y -= 1 * cm
 
     pdf.setFont("Helvetica", 10)
-    pdf.drawString(2 * cm, y, f"Empresa: {st.session_state.usuario['empresa_nome']}")
+    pdf.drawString(2 * cm, y, f"Conta: {st.session_state.usuario['empresa_nome']}")
+    y -= 0.5 * cm
+    tipo_pessoa = st.session_state.usuario.get("tipo_pessoa", "PJ")
+    pdf.drawString(2 * cm, y, f"Perfil: {'Pessoa Física PF' if tipo_pessoa == 'PF' else 'Pessoa Jurídica PJ'}")
     y -= 0.5 * cm
     pdf.drawString(2 * cm, y, f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     y -= 1 * cm
 
+    pdf.setFont("Helvetica-Bold", 13)
+    pdf.drawString(2 * cm, y, "Resumo Financeiro")
+    y -= 0.8 * cm
+
+    pdf.setFont("Helvetica", 10)
+
     linhas = [
-        ("Receita", moeda(ind["receita"])),
-        ("Saídas", moeda(ind["saidas"])),
-        ("Lucro", moeda(ind["lucro"])),
-        ("Caixa", moeda(ind["caixa"])),
+        ("Receita total", moeda(ind["receita"])),
+        ("Saídas totais", moeda(ind["saidas"])),
+        ("Lucro / Resultado", moeda(ind["lucro"])),
+        ("Caixa estimado", moeda(ind["caixa"])),
         ("Contas pagas no mês", moeda(ind["pagas_mes"])),
         ("A receber", moeda(ind["receber"])),
         ("A pagar", moeda(ind["pagar"])),
         ("Vencidas", moeda(ind["vencidas"])),
     ]
 
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(2 * cm, y, "Resumo")
-    y -= 0.7 * cm
-    pdf.setFont("Helvetica", 10)
-
     for nome, valor in linhas:
         pdf.drawString(2 * cm, y, f"{nome}: {valor}")
-        y -= 0.45 * cm
+        y -= 0.5 * cm
 
     y -= 0.5 * cm
-    pdf.setFont("Helvetica-Bold", 12)
+    pdf.setFont("Helvetica-Bold", 13)
     pdf.drawString(2 * cm, y, "Últimos lançamentos")
-    y -= 0.7 * cm
+    y -= 0.8 * cm
+
     pdf.setFont("Helvetica", 8)
 
-    if not df.empty:
-        ultimos = df.sort_values("data", ascending=False).head(18)
+    if df.empty:
+        pdf.drawString(2 * cm, y, "Nenhum lançamento cadastrado.")
+    else:
+        ultimos = df.sort_values("data", ascending=False).head(25)
 
         for _, row in ultimos.iterrows():
-            linha = f"{data_br(row['data'])} | {row['tipo']} | {row['descricao']} | {moeda(row['valor'])} | {row['status_real']}"
-            pdf.drawString(2 * cm, y, linha[:110])
-            y -= 0.35 * cm
-
             if y < 2 * cm:
                 pdf.showPage()
                 y = altura - 2 * cm
                 pdf.setFont("Helvetica", 8)
+
+            linha = (
+                f"{data_br(row['data'])} | "
+                f"{row['tipo']} | "
+                f"{str(row['descricao'])[:45]} | "
+                f"{moeda(row['valor'])} | "
+                f"{row.get('status_real', row['status'])}"
+            )
+
+            pdf.drawString(2 * cm, y, linha[:115])
+            y -= 0.4 * cm
+
+    pdf.setFont("Helvetica", 8)
+    pdf.drawString(2 * cm, 1 * cm, "Global Software | Sistema Financeiro Premium")
 
     pdf.save()
     buffer.seek(0)
@@ -1438,6 +1478,9 @@ def responder_ajuda(pergunta):
     if "relatório" in p or "relatorio" in p or "pdf" in p:
         return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
 
+    if "planejamento" in p or "orçamento" in p or "orcamento" in p or "previsto" in p:
+        return "Para planejar o mês, acesse **Planejamento Financeiro**. Cadastre valores previstos, valores realizados, metas, dívidas, investimentos e compare o planejado com o realizado."
+
     if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
         return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
 
@@ -1468,11 +1511,11 @@ def tela_publica_comercial():
             </div>
             <div>
                 <div style="color:white;font-size:24px;letter-spacing:4px;font-weight:850;">GLOBAL SOFTWARE</div>
-                <div style="color:rgba(255,255,255,0.60);font-size:13px;margin-top:2px;">Sistema financeiro completo para empresas</div>
+                <div style="color:rgba(255,255,255,0.60);font-size:13px;margin-top:2px;">Sistema financeiro completo para empresas e pessoas físicas</div>
             </div>
         </div>
         <div style="color:#dfff6b;border:1px solid rgba(223,255,107,0.32);background:rgba(223,255,107,0.08);padding:10px 16px;border-radius:999px;font-weight:900;font-size:13px;">
-            Gestão • Financeiro • Estoque • Folha
+            PJ • PF • Financeiro • IA WhatsApp
         </div>
     </div>
 </div>
@@ -1486,12 +1529,12 @@ def tela_publica_comercial():
     <div>
         <div class="gs-kicker">PLATAFORMA DE GESTÃO FINANCEIRA</div>
         <div class="gs-title-big">
-            Software financeiro completo que sua empresa <span>precisa</span>.
+            Controle financeiro para <span>PJ e PF</span>.
         </div>
         <br>
         <div class="gs-subtitle">
-            Controle contas a pagar, receber, clientes inadimplentes, estoque, funcionários,
-            folha de pagamento, metas, comissões, bônus e relatórios em uma única plataforma.
+            Pessoa Jurídica controla empresa, clientes, estoque, funcionários, folha, metas e relatórios.
+            Pessoa Física controla entradas, gastos pessoais, dívidas, contas e metas.
         </div>
         <br><br>
         <span class="gs-btn-fake">Agendar Demonstração →</span>
@@ -1521,7 +1564,7 @@ def tela_publica_comercial():
         })
 
         st.line_chart(dados_demo.set_index("Mês"))
-        st.info("Painel demonstrativo com indicadores financeiros, inadimplentes, estoque e folha.")
+        st.info("Painel demonstrativo com indicadores financeiros para PJ e PF.")
 
     col_acesso, col_vazio = st.columns([1, 1])
 
@@ -1533,7 +1576,7 @@ def tela_publica_comercial():
     html("""
 <div class="gs-section-dark">
     <div style="text-align:center;font-size:42px;line-height:1.18;font-weight:950;color:white;">
-        A plataforma para empresas que querem sair do <span style="color:#dfff6b;">improviso</span>.
+        A plataforma para empresas e pessoas que querem sair do <span style="color:#dfff6b;">improviso</span>.
     </div>
 </div>
 """)
@@ -1554,63 +1597,34 @@ def tela_publica_comercial():
     with f1:
         html("""
 <div class="gs-card-white">
-    <div style="font-size:42px;color:#002b3d;">▣</div>
-    <h3 style="color:#052c3d;">Contas a pagar e receber</h3>
-    <p class="gs-muted">Visualize vencimentos, status, formas de pagamento, valores pendentes e contas pagas no mês.</p>
+    <div style="font-size:42px;color:#002b3d;">PJ</div>
+    <h3 style="color:#052c3d;">Pessoa Jurídica</h3>
+    <p class="gs-muted">Empresas controlam contas, clientes, estoque, funcionários, folha de pagamento, metas e relatórios.</p>
 </div>
 """)
 
     with f2:
         html("""
 <div class="gs-card-white">
-    <div style="font-size:42px;color:#002b3d;">↻</div>
-    <h3 style="color:#052c3d;">Clientes inadimplentes</h3>
-    <p class="gs-muted">Identifique quem deve, quanto deve e gere cobranças pelo WhatsApp com poucos cliques.</p>
+    <div style="font-size:42px;color:#002b3d;">PF</div>
+    <h3 style="color:#052c3d;">Pessoa Física</h3>
+    <p class="gs-muted">Pessoas controlam salário, gastos pessoais, cartão, dívidas, metas e organização financeira.</p>
 </div>
 """)
 
     with f3:
         html("""
 <div class="gs-card-white">
-    <div style="font-size:42px;color:#002b3d;">▥</div>
-    <h3 style="color:#052c3d;">Estoque completo</h3>
-    <p class="gs-muted">Controle produtos, quantidade, custo, preço de venda, estoque mínimo e lucro previsto.</p>
-</div>
-""")
-
-    f4, f5, f6 = st.columns(3)
-
-    with f4:
-        html("""
-<div class="gs-card-white">
-    <div style="font-size:42px;color:#002b3d;">👥</div>
-    <h3 style="color:#052c3d;">Clientes e CRM</h3>
-    <p class="gs-muted">Cadastre clientes, fornecedores, contatos, limite de crédito, documentos e observações.</p>
-</div>
-""")
-
-    with f5:
-        html("""
-<div class="gs-card-white">
-    <div style="font-size:42px;color:#002b3d;">🧾</div>
-    <h3 style="color:#052c3d;">Folha de pagamento</h3>
-    <p class="gs-muted">Salário, horas extras, comissão, bônus, premiação, metas, descontos e total líquido.</p>
-</div>
-""")
-
-    with f6:
-        html("""
-<div class="gs-card-white">
     <div style="font-size:42px;color:#002b3d;">🤖</div>
-    <h3 style="color:#052c3d;">IA de ajuda</h3>
-    <p class="gs-muted">O usuário pergunta como usar o sistema e recebe orientação dentro da própria plataforma.</p>
+    <h3 style="color:#052c3d;">IA WhatsApp</h3>
+    <p class="gs-muted">Próxima etapa: registrar receitas e despesas por mensagem no WhatsApp, separado em PF e PJ.</p>
 </div>
 """)
 
     html("""
 <div id="demo" class="gs-section-dark">
     <div class="gs-section-title-dark">
-        Pronto para profissionalizar o financeiro da sua empresa?
+        Pronto para profissionalizar o financeiro?
     </div>
     <p class="gs-muted-light" style="text-align:center;font-size:20px;">
         Agende uma demonstração gratuita e veja a Global Software na prática.
@@ -1625,19 +1639,19 @@ def tela_publica_comercial():
 
     with col1:
         nome = st.text_input("Seu nome", placeholder="Ex: Fabrício Santos", key="demo_nome")
-        empresa = st.text_input("Nome da empresa", placeholder="Ex: Global Software", key="demo_empresa")
+        empresa = st.text_input("Nome da empresa ou pessoa", placeholder="Ex: Global Software", key="demo_empresa")
         segmento = st.selectbox(
-            "Segmento da empresa",
-            ["Selecionar", "Comércio", "Serviços", "Veículos", "Oficina", "Igreja / Instituição", "Indústria", "Outro"],
+            "Perfil",
+            ["Selecionar", "Pessoa Jurídica PJ", "Pessoa Física PF", "Comércio", "Serviços", "Veículos", "Oficina", "Igreja / Instituição", "Indústria", "Outro"],
             key="demo_segmento"
         )
 
     with col2:
         telefone = st.text_input("Telefone / WhatsApp do cliente", placeholder="Ex: 64999999999", key="demo_telefone")
-        email = st.text_input("E-mail profissional", placeholder="contato@empresa.com", key="demo_email")
+        email = st.text_input("E-mail", placeholder="contato@empresa.com", key="demo_email")
         necessidade = st.selectbox(
             "Principal necessidade",
-            ["Controle financeiro", "Estoque", "Clientes inadimplentes", "Folha de pagamento", "Relatórios", "Sistema completo"],
+            ["Controle financeiro", "PF - gastos pessoais", "PJ - empresa completa", "Estoque", "Clientes inadimplentes", "Folha de pagamento", "Relatórios", "Sistema completo"],
             key="demo_necessidade"
         )
 
@@ -1645,12 +1659,12 @@ def tela_publica_comercial():
         texto = (
             f"Olá! Quero agendar uma demonstração da Global Software.\n\n"
             f"Nome: {nome}\n"
-            f"Empresa: {empresa}\n"
-            f"Segmento: {segmento}\n"
+            f"Empresa/Pessoa: {empresa}\n"
+            f"Perfil: {segmento}\n"
             f"WhatsApp do cliente: {telefone}\n"
             f"E-mail: {email}\n"
             f"Necessidade principal: {necessidade}\n\n"
-            f"Quero ver como o sistema pode ajudar minha empresa."
+            f"Quero ver como o sistema pode ajudar."
         )
         link = f"https://wa.me/{WHATSAPP_COMERCIAL}?text={quote(texto)}"
         st.markdown(f"[Abrir WhatsApp para agendar demonstração]({link})")
@@ -1667,10 +1681,10 @@ def tela_login():
 <div class="login-header">
     <div class="login-title">💼 Sistema Financeiro Premium</div>
     <div class="login-subtitle">
-        Gestão completa de financeiro, clientes, estoque, funcionários, folha de pagamento, metas e relatórios.
+        Gestão completa para Pessoa Jurídica PJ e Pessoa Física PF.
     </div>
     <div class="login-info">
-        <b>Login padrão:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
+        <b>Login padrão PJ:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
     </div>
 </div>
 """)
@@ -1694,10 +1708,10 @@ def tela_login():
     <div class="hero-inner" style="{hero_bg}">
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h3>Gestão inteligente e profissional</h3>
+            <h3>Gestão inteligente para PJ e PF</h3>
             <p>
-                Controle financeiro completo, clientes, estoque, funcionários, folha de pagamento,
-                metas, relatórios e IA de ajuda.
+                Pessoa Jurídica controla empresa, clientes, estoque, funcionários, folha e metas.
+                Pessoa Física controla salário, gastos, contas pessoais, dívidas e metas.
             </p>
         </div>
     </div>
@@ -1723,7 +1737,7 @@ def tela_login():
 
     html('<div class="form-box">')
 
-    aba1, aba2 = st.tabs(["Entrar", "Criar empresa"])
+    aba1, aba2, aba3 = st.tabs(["Entrar", "Criar empresa PJ", "Criar pessoa física PF"])
 
     with aba1:
         st.markdown("### Acessar sistema")
@@ -1739,7 +1753,7 @@ def tela_login():
         if st.button("Entrar", use_container_width=True, key="btn_login"):
             usuario = consultar(
                 """
-                SELECT u.*, e.nome as empresa_nome
+                SELECT u.*, e.nome as empresa_nome, e.tipo_pessoa as tipo_pessoa
                 FROM usuarios u
                 LEFT JOIN empresas e ON e.id = u.empresa_id
                 WHERE u.email = ? AND u.senha_hash = ? AND u.ativo = 1
@@ -1755,32 +1769,33 @@ def tela_login():
                 st.rerun()
 
     with aba2:
-        st.markdown("### Cadastrar nova empresa")
+        st.markdown("### Criar empresa PJ — Pessoa Jurídica")
+        st.info("Use esta opção para empresas que vão controlar financeiro empresarial, clientes, estoque, funcionários, folha, metas e relatórios.")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            nome_empresa = st.text_input("Nome da empresa", key="cad_nome_empresa")
-            documento = st.text_input("CNPJ / CPF", key="cad_documento")
-            telefone = st.text_input("Telefone", key="cad_telefone")
-            cidade = st.text_input("Cidade", key="cad_cidade")
+            nome_empresa = st.text_input("Nome da empresa", key="cad_pj_nome_empresa")
+            documento = st.text_input("CNPJ", key="cad_pj_documento")
+            telefone = st.text_input("Telefone / WhatsApp da empresa", key="cad_pj_telefone")
+            cidade = st.text_input("Cidade", key="cad_pj_cidade")
 
         with col2:
-            nome_usuario = st.text_input("Nome do administrador", key="cad_nome_usuario")
-            email_usuario = st.text_input("E-mail do administrador", key="cad_email_usuario")
-            senha_usuario = st.text_input("Senha", type="password", key="cad_senha_usuario")
+            nome_usuario = st.text_input("Nome do administrador", key="cad_pj_nome_usuario")
+            email_usuario = st.text_input("E-mail do administrador", key="cad_pj_email_usuario")
+            senha_usuario = st.text_input("Senha", type="password", key="cad_pj_senha_usuario")
 
-        if st.button("Criar empresa", use_container_width=True, key="btn_criar_empresa"):
+        if st.button("Criar empresa PJ", use_container_width=True, key="btn_criar_empresa_pj"):
             if not nome_empresa or not nome_usuario or not email_usuario or not senha_usuario:
                 st.warning("Preencha todos os campos obrigatórios.")
             else:
                 try:
                     executar(
                         """
-                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em, tipo_pessoa)
+                        VALUES (?, ?, ?, ?, ?, ?)
                         """,
-                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat())
+                        (nome_empresa, documento, telefone, cidade, datetime.now().isoformat(), "PJ")
                     )
 
                     empresa_id = consultar(
@@ -1805,9 +1820,69 @@ def tela_login():
                         )
                     )
 
-                    st.success("Empresa criada com sucesso. Agora faça login.")
+                    st.success("Empresa PJ criada com sucesso. Agora faça login.")
                 except Exception as e:
-                    st.error(f"Erro ao criar empresa: {e}")
+                    st.error(f"Erro ao criar empresa PJ: {e}")
+
+    with aba3:
+        st.markdown("### Criar pessoa física PF")
+        st.info("Use esta opção para controle financeiro pessoal: salário, gastos, cartão, contas da casa, dívidas, metas pessoais e futuramente IA no WhatsApp PF.")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            nome_pessoa = st.text_input("Nome completo", key="cad_pf_nome")
+            cpf = st.text_input("CPF", key="cad_pf_cpf")
+            telefone_pf = st.text_input("Telefone / WhatsApp", key="cad_pf_telefone")
+            cidade_pf = st.text_input("Cidade", key="cad_pf_cidade")
+
+        with col2:
+            email_pf = st.text_input("E-mail de acesso", key="cad_pf_email")
+            senha_pf = st.text_input("Senha", type="password", key="cad_pf_senha")
+            confirmar_senha_pf = st.text_input("Confirmar senha", type="password", key="cad_pf_confirmar_senha")
+
+        if st.button("Criar conta PF", use_container_width=True, key="btn_criar_pf"):
+            if not nome_pessoa or not email_pf or not senha_pf:
+                st.warning("Preencha nome, e-mail e senha.")
+            elif senha_pf != confirmar_senha_pf:
+                st.error("As senhas não conferem.")
+            else:
+                try:
+                    nome_perfil_pf = f"PF - {nome_pessoa}"
+
+                    executar(
+                        """
+                        INSERT INTO empresas (nome, documento, telefone, cidade, criado_em, tipo_pessoa)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """,
+                        (nome_perfil_pf, cpf, telefone_pf, cidade_pf, datetime.now().isoformat(), "PF")
+                    )
+
+                    empresa_id = consultar(
+                        "SELECT id FROM empresas WHERE nome = ? ORDER BY id DESC LIMIT 1",
+                        (nome_perfil_pf,)
+                    ).iloc[0]["id"]
+
+                    executar(
+                        """
+                        INSERT INTO usuarios
+                        (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            int(empresa_id),
+                            nome_pessoa,
+                            email_pf,
+                            hash_senha(senha_pf),
+                            "Administrador",
+                            1,
+                            datetime.now().isoformat()
+                        )
+                    )
+
+                    st.success("Conta PF criada com sucesso. Agora faça login.")
+                except Exception as e:
+                    st.error(f"Erro ao criar conta PF: {e}")
 
     html("</div>")
 
@@ -1830,6 +1905,7 @@ def menus_por_tipo_usuario():
         "Folha de Pagamento",
         "Metas e Premiações",
         "Parcelas",
+        "Planejamento Financeiro",
         "Pix e WhatsApp",
         "Relatórios",
         "IA Financeira",
@@ -1844,12 +1920,12 @@ def menus_por_tipo_usuario():
         "Gerente": [
             "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
             "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
-            "Metas e Premiações", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial", "Configurações"
         ],
         "Financeiro": [
             "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
-            "Folha de Pagamento", "Parcelas", "Pix e WhatsApp", "Relatórios",
+            "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial"
         ],
         "Vendedor": [
@@ -1873,8 +1949,7 @@ def tela_apresentacao_comercial():
 <div class="commercial-panel">
     <h1 style="color:white;">🚀 Apresentação Comercial Global Software</h1>
     <p style="font-size:18px;color:rgba(255,255,255,0.70);line-height:1.6;">
-    Use esta página como roteiro para vender o sistema. Mostre que a Global Software não é apenas
-    um financeiro, mas uma central de controle para a empresa.
+    Use esta página como roteiro para vender o sistema. Mostre que a Global Software atende PJ e PF.
     </p>
 </div>
 """)
@@ -1882,29 +1957,27 @@ def tela_apresentacao_comercial():
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        comercial_card("Dor principal", "A empresa vende, mas não sabe exatamente quanto lucra, quem deve, o que venceu e para onde o dinheiro vai.")
+        comercial_card("PJ", "Empresas controlam financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios.")
 
     with c2:
-        comercial_card("Solução", "Financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios em uma plataforma.")
+        comercial_card("PF", "Pessoas físicas controlam salário, gastos pessoais, contas, dívidas, cartão e metas.")
 
     with c3:
-        comercial_card("Resultado", "Mais clareza, menos prejuízo, decisões com dados e uma empresa preparada para crescer.")
+        comercial_card("WhatsApp IA", "Próxima etapa: registrar lançamentos pelo WhatsApp, separado por PF e PJ.")
 
     html('<div class="commercial-panel">')
     st.markdown("## Roteiro de venda")
 
     roteiro = """
-Olá, tudo bem? Deixa eu te fazer uma pergunta: sua empresa sabe exatamente quanto lucra, quanto tem para receber, quanto pagou no mês, quais clientes estão inadimplentes e quanto custa sua equipe?
+Olá, tudo bem? Deixa eu te fazer uma pergunta: você sabe exatamente quanto entra, quanto sai, quanto sobra e onde seu dinheiro está indo?
 
-A maioria das empresas não quebra por falta de venda. Quebra por falta de controle.
+Para empresas, a Global Software controla financeiro, clientes, inadimplência, estoque, funcionários, folha, metas e relatórios.
 
-A Global Software resolve isso em um só lugar:
-controle financeiro, clientes, inadimplentes, estoque, funcionários, folha de pagamento, bônus, comissão, horas extras, metas, premiações, relatórios e IA de ajuda.
+Para pessoa física, ajuda a controlar salário, gastos pessoais, cartão, dívidas, contas da casa e metas.
 
-Na prática, o empresário passa a enxergar a empresa de verdade:
-o que entrou, o que saiu, quem deve, o que está vencido, o que está parado no estoque e quanto custa a operação.
+A maioria das pessoas e empresas não quebra por falta de dinheiro. Quebra por falta de controle.
 
-Não é apenas um sistema. É uma central de controle para a empresa crescer com organização.
+A Global Software transforma bagunça financeira em visão clara para tomar decisão.
 """
     st.text_area("Roteiro de apresentação", value=roteiro, height=260, key="roteiro_venda_completo")
     html("</div>")
@@ -1915,13 +1988,13 @@ Não é apenas um sistema. É uma central de controle para a empresa crescer com
     p1, p2, p3 = st.columns(3)
 
     with p1:
-        preco_card("Plano Gestão Inicial", "R$ 147/mês", "Financeiro, clientes, contas a pagar, contas a receber, inadimplentes e relatórios básicos.")
+        preco_card("Plano PF", "R$ 29/mês", "Controle financeiro pessoal, gastos, entradas, dívidas, metas e relatórios simples.")
 
     with p2:
-        preco_card("Plano Gestão Completa", "R$ 297/mês", "Inclui financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios.")
+        preco_card("Plano PJ Gestão Completa", "R$ 297/mês", "Financeiro, CRM, estoque, funcionários, folha, metas, premiações e relatórios.")
 
     with p3:
-        preco_card("Plano Premium Personalizado", "Sob consulta", "Identidade visual, treinamento, implantação, suporte, IA avançada e integrações futuras.")
+        preco_card("Plano Premium IA WhatsApp", "Sob consulta", "Integração WhatsApp, automações, IA, treinamento, implantação e suporte.")
 
     html("</div>")
 
@@ -1936,10 +2009,14 @@ def app():
     if Path("logo.png").exists():
         st.sidebar.image("logo.png", use_container_width=True)
 
+    tipo_pessoa = usuario.get("tipo_pessoa", "PJ")
+    texto_tipo_pessoa = "Pessoa Física PF" if tipo_pessoa == "PF" else "Pessoa Jurídica PJ"
+
     st.sidebar.title("💼 Global Software")
-    st.sidebar.write(f"**Empresa:** {usuario['empresa_nome']}")
+    st.sidebar.write(f"**Conta:** {usuario['empresa_nome']}")
+    st.sidebar.write(f"**Perfil:** {texto_tipo_pessoa}")
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
-    st.sidebar.write(f"**Tipo:** {usuario['tipo']}")
+    st.sidebar.write(f"**Permissão:** {usuario['tipo']}")
 
     df = carregar_lancamentos()
     clientes = carregar_clientes()
@@ -1947,6 +2024,7 @@ def app():
     funcionarios = carregar_funcionarios()
     folha = carregar_folha()
     metas = carregar_metas()
+    planejamento = carregar_planejamento()
 
     ind = calcular_indicadores(df)
     menus_liberados = menus_por_tipo_usuario()
@@ -2244,6 +2322,9 @@ def app():
     elif menu == "Clientes / CRM":
         st.title("👥 Clientes / CRM")
 
+        if tipo_pessoa_atual() == "PF":
+            st.info("No perfil PF, esta aba pode ser usada para contatos pessoais, pessoas que devem, pessoas que você paga ou fornecedores pessoais.")
+
         with st.form("form_cliente"):
             col1, col2 = st.columns(2)
 
@@ -2254,7 +2335,7 @@ def app():
                 documento = st.text_input("CPF / CNPJ", key="cliente_documento")
 
             with col2:
-                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro"], key="cliente_tipo")
+                tipo_cliente = st.selectbox("Tipo", ["Cliente", "Fornecedor", "Parceiro", "Contato pessoal", "Pessoa que devo", "Pessoa que me deve"], key="cliente_tipo")
                 limite_credito = st.number_input("Limite de crédito", min_value=0.0, step=100.0, key="cliente_limite")
                 status_cliente = st.selectbox("Status do cliente", ["Ativo", "Inativo", "Bloqueado"], key="cliente_status")
                 obs = st.text_area("Observação", key="cliente_obs")
@@ -2279,13 +2360,16 @@ def app():
     elif menu == "Clientes Inadimplentes":
         st.title("🚨 Clientes Inadimplentes")
 
+        if tipo_pessoa_atual() == "PF":
+            st.info("No perfil PF, esta aba mostra pessoas ou recebimentos pessoais vencidos.")
+
         if df.empty:
             st.info("Nenhum lançamento cadastrado.")
         else:
             inad = df[(df["tipo"] == "Receita") & (df["status_real"] == "Vencido")].copy()
 
             if inad.empty:
-                st.success("Nenhum cliente inadimplente encontrado.")
+                st.success("Nenhum inadimplente encontrado.")
             else:
                 total_inad = inad["valor"].sum()
                 qtd_clientes = inad["cliente_fornecedor"].nunique()
@@ -2293,7 +2377,7 @@ def app():
                 c1, c2 = st.columns(2)
 
                 with c1:
-                    card("Clientes inadimplentes", str(qtd_clientes), "Clientes com receita vencida")
+                    card("Inadimplentes", str(qtd_clientes), "Receitas vencidas")
 
                 with c2:
                     card("Valor inadimplente", moeda(total_inad), "Total vencido")
@@ -2301,7 +2385,7 @@ def app():
                 resumo = inad.groupby("cliente_fornecedor")["valor"].sum().reset_index()
                 resumo["valor_formatado"] = resumo["valor"].apply(moeda)
 
-                st.subheader("Resumo por cliente")
+                st.subheader("Resumo")
                 st.dataframe(resumo[["cliente_fornecedor", "valor_formatado"]], use_container_width=True, hide_index=True)
 
                 st.subheader("Detalhamento")
@@ -2317,11 +2401,14 @@ def app():
     elif menu == "Estoque":
         st.title("📦 Controle de Estoque Completo")
 
+        if tipo_pessoa_atual() == "PF":
+            st.info("Perfil PF: esta aba pode ser usada para controle de bens pessoais, itens de casa, equipamentos ou objetos de valor.")
+
         with st.form("form_estoque"):
             col1, col2, col3 = st.columns(3)
 
             with col1:
-                produto = st.text_input("Produto", key="est_produto")
+                produto = st.text_input("Produto / Item", key="est_produto")
                 codigo = st.text_input("Código / Referência", key="est_codigo")
                 categoria = st.text_input("Categoria", key="est_categoria")
 
@@ -2358,7 +2445,7 @@ def app():
             c1, c2, c3 = st.columns(3)
 
             with c1:
-                card("Valor em custo", moeda(estoque["valor_custo_total"].sum()), "Valor investido no estoque")
+                card("Valor em custo", moeda(estoque["valor_custo_total"].sum()), "Valor investido")
 
             with c2:
                 card("Valor em venda", moeda(estoque["valor_venda_total"].sum()), "Potencial de venda")
@@ -2370,6 +2457,9 @@ def app():
 
     elif menu == "Funcionários":
         st.title("👨‍💼 Cadastro de Funcionários")
+
+        if tipo_pessoa_atual() == "PF":
+            st.info("No perfil PF, esta aba não é essencial. Ela continua disponível para uso avançado ou controle de equipe doméstica/prestadores.")
 
         with st.form("form_funcionario"):
             col1, col2, col3 = st.columns(3)
@@ -2409,6 +2499,9 @@ def app():
 
     elif menu == "Folha de Pagamento":
         st.title("🧾 Folha de Pagamento Completa")
+
+        if tipo_pessoa_atual() == "PF":
+            st.info("No perfil PF, esta aba pode ser ignorada ou usada para controle de prestadores/serviços mensais.")
 
         if funcionarios.empty:
             st.warning("Cadastre funcionários antes de lançar folha de pagamento.")
@@ -2532,39 +2625,45 @@ def app():
     elif menu == "Metas e Premiações":
         st.title("🎯 Metas e Premiações")
 
-        if funcionarios.empty:
+        if tipo_pessoa_atual() == "PF":
+            st.info("Perfil PF: use esta aba para metas pessoais, reserva de emergência, quitar dívidas, juntar entrada ou controlar objetivos financeiros.")
+
+        if funcionarios.empty and tipo_pessoa_atual() == "PJ":
             st.warning("Cadastre funcionários antes de criar metas.")
         else:
-            func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
+            if funcionarios.empty:
+                st.info("Para PF, você pode cadastrar uma meta pela aba Entradas e Saídas usando categoria Investimento ou Dívida. Em breve criaremos metas PF próprias.")
+            else:
+                func_dict = {f"{row['nome']} - {row['cargo']}": int(row["id"]) for _, row in funcionarios.iterrows()}
 
-            with st.form("form_meta"):
-                col1, col2, col3 = st.columns(3)
+                with st.form("form_meta"):
+                    col1, col2, col3 = st.columns(3)
 
-                with col1:
-                    funcionario_label = st.selectbox("Funcionário", list(func_dict.keys()), key="meta_func")
-                    funcionario_id = func_dict[funcionario_label]
-                    mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="meta_mes")
-                    descricao = st.text_input("Descrição da meta", key="meta_desc")
+                    with col1:
+                        funcionario_label = st.selectbox("Funcionário", list(func_dict.keys()), key="meta_func")
+                        funcionario_id = func_dict[funcionario_label]
+                        mes_ref = st.text_input("Mês referência", value=mes_atual_str(), key="meta_mes")
+                        descricao = st.text_input("Descrição da meta", key="meta_desc")
 
-                with col2:
-                    meta_valor = st.number_input("Valor da meta", min_value=0.0, step=100.0, key="meta_valor")
-                    realizado = st.number_input("Realizado", min_value=0.0, step=100.0, key="meta_realizado")
-                    premio = st.number_input("Prêmio / bônus", min_value=0.0, step=50.0, key="meta_premio")
+                    with col2:
+                        meta_valor = st.number_input("Valor da meta", min_value=0.0, step=100.0, key="meta_valor")
+                        realizado = st.number_input("Realizado", min_value=0.0, step=100.0, key="meta_realizado")
+                        premio = st.number_input("Prêmio / bônus", min_value=0.0, step=50.0, key="meta_premio")
 
-                with col3:
-                    status_meta = st.selectbox("Status", ["Em andamento", "Batida", "Não batida", "Paga"], key="meta_status")
+                    with col3:
+                        status_meta = st.selectbox("Status", ["Em andamento", "Batida", "Não batida", "Paga"], key="meta_status")
 
-                if st.form_submit_button("Salvar meta"):
-                    executar(
-                        """
-                        INSERT INTO metas
-                        (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (empresa_id_atual(), funcionario_id, mes_ref, descricao, meta_valor, realizado, premio, status_meta, datetime.now().isoformat())
-                    )
-                    st.success("Meta salva.")
-                    st.rerun()
+                    if st.form_submit_button("Salvar meta"):
+                        executar(
+                            """
+                            INSERT INTO metas
+                            (empresa_id, funcionario_id, mes_referencia, descricao, meta_valor, realizado, premio, status, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (empresa_id_atual(), funcionario_id, mes_ref, descricao, meta_valor, realizado, premio, status_meta, datetime.now().isoformat())
+                        )
+                        st.success("Meta salva.")
+                        st.rerun()
 
         if metas.empty:
             st.info("Nenhuma meta cadastrada.")
@@ -2596,10 +2695,143 @@ def app():
                     hide_index=True
                 )
 
+
+    elif menu == "Planejamento Financeiro":
+        st.title("🧭 Planejamento Financeiro")
+
+        st.info(
+            "Use esta área para planejar receitas, despesas, investimentos, dívidas, metas pessoais ou metas da empresa. "
+            "Depois compare o previsto com o realizado."
+        )
+
+        mes_ref_padrao = mes_atual_str()
+
+        with st.form("form_planejamento_financeiro"):
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                mes_ref = st.text_input("Mês referência", value=mes_ref_padrao, key="plan_mes")
+                tipo_plan = st.selectbox(
+                    "Tipo",
+                    ["Receita prevista", "Despesa prevista", "Investimento", "Dívida", "Meta de economia", "Reserva de emergência", "Outro"],
+                    key="plan_tipo"
+                )
+                categoria_plan = st.text_input("Categoria", placeholder="Ex: Vendas, aluguel, cartão, combustível", key="plan_categoria")
+
+            with col2:
+                descricao_plan = st.text_input("Descrição", placeholder="Ex: Meta de vendas do mês", key="plan_descricao")
+                valor_previsto = st.number_input("Valor previsto", min_value=0.0, step=100.0, key="plan_previsto")
+                valor_realizado = st.number_input("Valor realizado", min_value=0.0, step=100.0, key="plan_realizado")
+
+            with col3:
+                status_plan = st.selectbox(
+                    "Status",
+                    ["Planejado", "Em andamento", "Concluído", "Atrasado", "Cancelado"],
+                    key="plan_status"
+                )
+                observacao_plan = st.text_area("Observação", key="plan_obs")
+
+            if st.form_submit_button("Salvar planejamento", use_container_width=True):
+                if not mes_ref or not tipo_plan or not categoria_plan:
+                    st.warning("Preencha mês, tipo e categoria.")
+                else:
+                    executar(
+                        """
+                        INSERT INTO planejamento_financeiro
+                        (empresa_id, usuario_id, mes_referencia, tipo_planejamento, categoria, descricao,
+                        valor_previsto, valor_realizado, status, observacao, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            empresa_id_atual(),
+                            usuario_id_atual(),
+                            mes_ref,
+                            tipo_plan,
+                            categoria_plan,
+                            descricao_plan,
+                            float(valor_previsto),
+                            float(valor_realizado),
+                            status_plan,
+                            observacao_plan,
+                            datetime.now().isoformat()
+                        )
+                    )
+                    st.success("Planejamento salvo com sucesso.")
+                    st.rerun()
+
+        planejamento = carregar_planejamento()
+
+        if planejamento.empty:
+            st.info("Nenhum planejamento cadastrado ainda.")
+        else:
+            planejamento["valor_previsto"] = pd.to_numeric(planejamento["valor_previsto"], errors="coerce").fillna(0)
+            planejamento["valor_realizado"] = pd.to_numeric(planejamento["valor_realizado"], errors="coerce").fillna(0)
+            planejamento["diferenca"] = planejamento["valor_realizado"] - planejamento["valor_previsto"]
+
+            total_previsto = planejamento["valor_previsto"].sum()
+            total_realizado = planejamento["valor_realizado"].sum()
+            diferenca_total = total_realizado - total_previsto
+
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                card("Total previsto", moeda(total_previsto), "Somatório dos planejamentos")
+            with c2:
+                card("Total realizado", moeda(total_realizado), "Valor já realizado")
+            with c3:
+                card("Diferença", moeda(diferenca_total), "Realizado menos previsto")
+
+            filtro_mes = st.selectbox(
+                "Filtrar por mês",
+                ["Todos"] + sorted(planejamento["mes_referencia"].dropna().unique().tolist(), reverse=True),
+                key="plan_filtro_mes"
+            )
+
+            planejamento_filtrado = planejamento.copy()
+            if filtro_mes != "Todos":
+                planejamento_filtrado = planejamento_filtrado[planejamento_filtrado["mes_referencia"] == filtro_mes]
+
+            if not planejamento_filtrado.empty:
+                resumo = planejamento_filtrado.groupby("tipo_planejamento")[["valor_previsto", "valor_realizado"]].sum().reset_index()
+                resumo["diferença"] = resumo["valor_realizado"] - resumo["valor_previsto"]
+                st.subheader("Resumo por tipo")
+                st.dataframe(resumo, use_container_width=True, hide_index=True)
+
+                chart_df = resumo.set_index("tipo_planejamento")[["valor_previsto", "valor_realizado"]]
+                st.bar_chart(chart_df)
+
+                planejamento_filtrado["valor_previsto_formatado"] = planejamento_filtrado["valor_previsto"].apply(moeda)
+                planejamento_filtrado["valor_realizado_formatado"] = planejamento_filtrado["valor_realizado"].apply(moeda)
+                planejamento_filtrado["diferenca_formatada"] = planejamento_filtrado["diferenca"].apply(moeda)
+
+                st.subheader("Planejamentos cadastrados")
+                st.dataframe(planejamento_filtrado, use_container_width=True, hide_index=True)
+
+                csv_plan = planejamento_filtrado.to_csv(index=False).encode("utf-8-sig")
+                st.download_button(
+                    "Baixar planejamento em CSV",
+                    data=csv_plan,
+                    file_name="planejamento_financeiro_global_software.csv",
+                    mime="text/csv",
+                    use_container_width=True,
+                    key="download_planejamento_csv"
+                )
+
+                st.subheader("Excluir planejamento")
+                ids_plan = planejamento_filtrado["id"].astype(int).tolist()
+                id_excluir = st.selectbox("Selecione o ID para excluir", ids_plan, key="plan_excluir_id")
+                if st.button("Excluir planejamento selecionado", use_container_width=True, key="btn_excluir_planejamento"):
+                    executar(
+                        "DELETE FROM planejamento_financeiro WHERE id = ? AND empresa_id = ?",
+                        (int(id_excluir), empresa_id_atual())
+                    )
+                    st.success("Planejamento excluído com sucesso.")
+                    st.rerun()
+
+
     elif menu == "Pix e WhatsApp":
         st.title("📲 Pix e WhatsApp")
 
-        aba1, aba2 = st.tabs(["Cobrança WhatsApp", "Texto Pix"])
+        aba1, aba2, aba3 = st.tabs(["Cobrança WhatsApp", "Texto Pix", "IA WhatsApp PF/PJ"])
 
         with aba1:
             telefone = st.text_input("Telefone com DDD", placeholder="62999999999", key="zap_telefone")
@@ -2629,6 +2861,42 @@ def app():
             if st.button("Gerar texto Pix", key="btn_pix"):
                 texto = f"Olá! Segue cobrança via Pix: Chave: {chave} | Valor: {moeda(valor_pix)} | {descricao_pix}"
                 st.code(texto)
+
+        with aba3:
+            st.subheader("🤖 IA WhatsApp PF/PJ")
+            st.info("Estrutura preparada. Na próxima etapa vamos integrar com n8n e WhatsApp Business Cloud.")
+
+            perfil_ia = st.radio("Perfil da IA", ["Pessoa Física PF", "Pessoa Jurídica PJ"], horizontal=True, key="perfil_ia_whatsapp")
+
+            exemplo = st.text_area(
+                "Simule uma mensagem recebida no WhatsApp",
+                value="Gastei 85 reais no mercado hoje" if perfil_ia == "Pessoa Física PF" else "Recebi 1500 do cliente João pelo pix",
+                key="simulador_ia_whatsapp"
+            )
+
+            if st.button("Simular interpretação da IA", key="btn_simular_ia"):
+                texto = exemplo.lower()
+                valor_detectado = "não identificado"
+
+                import re
+                numeros = re.findall(r"\\d+[\\.,]?\\d*", texto)
+                if numeros:
+                    valor_detectado = numeros[0].replace(".", "").replace(",", ".")
+
+                if perfil_ia == "Pessoa Física PF":
+                    if any(palavra in texto for palavra in ["gastei", "paguei", "comprei", "mercado", "lanche", "gasolina"]):
+                        tipo_sim = "Despesa"
+                    else:
+                        tipo_sim = "Receita"
+
+                    st.success(f"PF interpretado: {tipo_sim} pessoal no valor aproximado de R$ {valor_detectado}.")
+                else:
+                    if any(palavra in texto for palavra in ["recebi", "venda", "cliente", "entrada"]):
+                        tipo_sim = "Receita"
+                    else:
+                        tipo_sim = "Despesa"
+
+                    st.success(f"PJ interpretado: {tipo_sim} empresarial no valor aproximado de R$ {valor_detectado}.")
 
     elif menu == "Relatórios":
         st.title("📄 Relatórios e Exportações")
@@ -2662,9 +2930,9 @@ def app():
             st.info("Cadastre lançamentos para receber uma análise.")
         else:
             if ind["lucro"] < 0:
-                html('<div class="danger-box">A empresa está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>')
+                html('<div class="danger-box">A conta está com resultado negativo. Revise despesas, custos, folha de pagamento e inadimplência.</div>')
             elif ind["vencidas"] > 0:
-                html('<div class="warning-box">Existem contas vencidas ou clientes inadimplentes. Priorize cobrança e renegociação.</div>')
+                html('<div class="warning-box">Existem contas vencidas ou recebimentos atrasados. Priorize cobrança e renegociação.</div>')
             else:
                 html('<div class="success-box">O controle está saudável. Continue acompanhando caixa, estoque, folha e metas.</div>')
 
@@ -2688,7 +2956,7 @@ def app():
 ### Como usar o sistema
 
 **1. Dashboard**  
-Mostra os principais indicadores da empresa.
+Mostra os principais indicadores da conta.
 
 **2. Entradas e Saídas**  
 Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
@@ -2697,27 +2965,30 @@ Cadastre receitas, despesas, custos, dívidas, investimentos e retiradas.
 Veja tudo que foi pago ou recebido no mês selecionado.
 
 **4. Clientes / CRM**  
-Cadastre clientes, fornecedores, contatos e limite de crédito.
+No PJ, use para clientes e fornecedores. No PF, use para contatos financeiros pessoais.
 
 **5. Clientes Inadimplentes**  
-Mostra clientes com receitas vencidas.
+Mostra receitas vencidas.
 
 **6. Estoque**  
-Controle produtos, quantidade, estoque mínimo, custo e preço de venda.
+No PJ, controle produtos. No PF, pode usar para bens pessoais.
 
-**7. Funcionários**  
-Cadastre a equipe da empresa.
+**7. Funcionários / Folha**  
+Mais indicado para PJ.
 
-**8. Folha de Pagamento**  
-Calcule salário, horas extras, comissão, bônus, premiação, descontos e total líquido.
+**8. Metas e Premiações**  
+No PJ, metas de equipe. No PF, futuramente metas pessoais.
 
-**9. Metas e Premiações**  
-Controle metas da equipe, realizado, prêmio e status.
+**9. Pix e WhatsApp**  
+Gere mensagens e simule IA WhatsApp PF/PJ.
 
-**10. Relatórios**  
+**10. Planejamento Financeiro**  
+Cadastre previsto x realizado, metas, dívidas, investimentos e reserva.
+
+**11. Relatórios**  
 Baixe PDF e planilhas CSV.
 
-**11. Dados de exemplo**  
+**12. Dados de exemplo**  
 Vá em **Configurações** e clique em **Carregar dados de exemplo** para apresentar o sistema bonito para clientes.
 """)
 
@@ -2726,7 +2997,7 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
 
         pergunta = st.text_area(
             "Digite sua dúvida",
-            placeholder="Exemplo: como cadastrar funcionário? como ver clientes inadimplentes? como lançar folha de pagamento?",
+            placeholder="Exemplo: como cadastrar lançamento? como ver inadimplentes? como lançar folha de pagamento?",
             key="pergunta_ajuda_sistema"
         )
 
@@ -2799,12 +3070,16 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
         empresa = consultar("SELECT * FROM empresas WHERE id = ?", (empresa_id_atual(),))
 
         if empresa.empty:
-            st.error("Empresa não encontrada.")
+            st.error("Conta não encontrada.")
         else:
             emp = empresa.iloc[0]
+            tipo_conta = emp["tipo_pessoa"] if "tipo_pessoa" in emp.index and emp["tipo_pessoa"] else "PJ"
 
-            nome = st.text_input("Nome da empresa", value=emp["nome"], key="conf_nome")
-            documento = st.text_input("Documento", value=emp["documento"] or "", key="conf_doc")
+            st.info(f"Tipo da conta: {'Pessoa Física PF' if tipo_conta == 'PF' else 'Pessoa Jurídica PJ'}")
+
+            nome = st.text_input("Nome da conta", value=emp["nome"], key="conf_nome")
+            documento_label = "CPF" if tipo_conta == "PF" else "CNPJ / CPF"
+            documento = st.text_input(documento_label, value=emp["documento"] or "", key="conf_doc")
             telefone = st.text_input("Telefone", value=emp["telefone"] or "", key="conf_tel")
             cidade = st.text_input("Cidade", value=emp["cidade"] or "", key="conf_cidade")
 
@@ -2854,7 +3129,8 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
         st.subheader("Backup local")
 
         backup = {
-            "empresa": usuario["empresa_nome"],
+            "conta": usuario["empresa_nome"],
+            "tipo_pessoa": usuario.get("tipo_pessoa", "PJ"),
             "lancamentos": df.to_dict(orient="records") if not df.empty else [],
             "clientes": clientes.to_dict(orient="records") if not clientes.empty else [],
             "estoque": estoque.to_dict(orient="records") if not estoque.empty else [],
