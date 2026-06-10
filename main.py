@@ -1929,7 +1929,8 @@ def tela_login():
         Gestão completa para Pessoa Jurídica PJ e Pessoa Física PF.
     </div>
     <div class="login-info">
-        <b>Login cliente PJ:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456<br><b>Super Admin Global:</b> Globalfinanças &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> GLSBENÇAO
+        <b>Acesso do cliente PJ:</b> use seu e-mail cadastrado e sua senha.<br>
+        <span style="color:rgba(223,255,107,0.82);">O acesso administrativo da Global Software é reservado e não fica visível na tela.</span>
     </div>
 </div>
 """)
