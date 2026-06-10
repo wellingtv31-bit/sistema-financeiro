@@ -24,6 +24,9 @@ st.set_page_config(
 DB_PATH = "sistema_financeiro.db"
 WHATSAPP_COMERCIAL = "5564992774409"
 TAG_DEMO = "__DEMO_GLOBAL_SOFTWARE__"
+SUPER_ADMIN_USUARIO = "Globalfinanças"
+SUPER_ADMIN_SENHA = "GLSBENÇAO"
+SUPER_ADMIN_NOME = "Super Admin Global Software"
 
 
 # =====================================================
@@ -989,6 +992,41 @@ def criar_admin_padrao():
             )
         )
 
+    super_admin = consultar("SELECT * FROM usuarios WHERE email = ?", (SUPER_ADMIN_USUARIO,))
+
+    if super_admin.empty:
+        executar(
+            """
+            INSERT INTO usuarios
+            (empresa_id, nome, email, senha_hash, tipo, ativo, criado_em)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(empresa),
+                SUPER_ADMIN_NOME,
+                SUPER_ADMIN_USUARIO,
+                hash_senha(SUPER_ADMIN_SENHA),
+                "Administrador",
+                1,
+                datetime.now().isoformat()
+            )
+        )
+    else:
+        executar(
+            """
+            UPDATE usuarios
+            SET nome = ?, senha_hash = ?, tipo = ?, ativo = 1, empresa_id = ?
+            WHERE email = ?
+            """,
+            (
+                SUPER_ADMIN_NOME,
+                hash_senha(SUPER_ADMIN_SENHA),
+                "Administrador",
+                int(empresa),
+                SUPER_ADMIN_USUARIO
+            )
+        )
+
 
 # =====================================================
 # DADOS FIXOS
@@ -1039,6 +1077,56 @@ def tipo_usuario_atual():
 
 def tipo_pessoa_atual():
     return st.session_state.usuario.get("tipo_pessoa", "PJ")
+
+
+def is_super_admin_global():
+    usuario = st.session_state.get("usuario", {})
+    login = str(usuario.get("email", "")).strip()
+    tipo = str(usuario.get("tipo", ""))
+
+    return tipo == "Administrador" and login == SUPER_ADMIN_USUARIO
+
+
+def carregar_clientes_saas():
+    empresas = consultar(
+        """
+        SELECT
+            e.id,
+            e.nome,
+            e.documento,
+            e.telefone,
+            e.cidade,
+            e.tipo_pessoa,
+            e.criado_em,
+            COALESCE(a.plano, 'Sem plano') as plano,
+            COALESCE(a.status, 'Sem assinatura') as status,
+            a.data_inicio,
+            a.data_vencimento,
+            COALESCE(a.valor_mensal, 0) as valor_mensal,
+            COALESCE(a.limite_usuarios, 0) as limite_usuarios,
+            COALESCE(u.total_usuarios, 0) as total_usuarios
+        FROM empresas e
+        LEFT JOIN assinaturas a ON a.empresa_id = e.id
+        LEFT JOIN (
+            SELECT empresa_id, COUNT(*) as total_usuarios
+            FROM usuarios
+            GROUP BY empresa_id
+        ) u ON u.empresa_id = e.id
+        ORDER BY e.id DESC
+        """
+    )
+
+    if not empresas.empty:
+        empresas["status_real"] = empresas.apply(
+            lambda row: status_assinatura_real(pd.DataFrame([row.to_dict()])),
+            axis=1
+        )
+        empresas["dias_restantes"] = empresas.apply(
+            lambda row: dias_restantes_assinatura(pd.DataFrame([row.to_dict()])),
+            axis=1
+        )
+
+    return empresas
 
 
 # =====================================================
@@ -1632,6 +1720,9 @@ def responder_ajuda(pergunta):
     if "planejamento" in p or "orçamento" in p or "orcamento" in p or "previsto" in p:
         return "Para planejar o mês, acesse **Planejamento Financeiro**. Cadastre valores previstos, valores realizados, metas, dívidas, investimentos e compare o planejado com o realizado."
 
+    if "super admin" in p or "saas" in p or "clientes do sistema" in p or "clientes global" in p:
+        return "O **Super Admin Global** é a área do administrador principal da Global Software. Lá você vê todos os clientes PF/PJ, planos vendidos, status, vencimentos, usuários, receita mensal prevista e pode renovar, bloquear ou liberar contas."
+
     if "assinatura" in p or "mensalidade" in p or "plano" in p or "renovar" in p or "vencimento" in p:
         return "Para controlar assinatura e mensalidade, acesse **Assinaturas / Planos**. Lá você vê plano atual, status, vencimento, dias restantes, limite de usuários e pode gerar link de renovação pelo WhatsApp."
 
@@ -1838,7 +1929,7 @@ def tela_login():
         Gestão completa para Pessoa Jurídica PJ e Pessoa Física PF.
     </div>
     <div class="login-info">
-        <b>Login padrão PJ:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456
+        <b>Login cliente PJ:</b> admin@empresa.com &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> 123456<br><b>Super Admin Global:</b> Globalfinanças &nbsp;&nbsp;|&nbsp;&nbsp; <b>Senha:</b> GLSBENÇAO
     </div>
 </div>
 """)
@@ -1899,7 +1990,7 @@ def tela_login():
         col_a, col_b = st.columns(2)
 
         with col_a:
-            email = st.text_input("E-mail", key="login_email")
+            email = st.text_input("E-mail ou usuário", key="login_email")
 
         with col_b:
             senha = st.text_input("Senha", type="password", key="login_senha")
@@ -2088,7 +2179,12 @@ def menus_por_tipo_usuario():
         ]
     }
 
-    return permissoes.get(tipo, ["Dashboard"])
+    menus = permissoes.get(tipo, ["Dashboard"])
+
+    if is_super_admin_global() and "Super Admin Global" not in menus:
+        menus = ["Super Admin Global"] + menus
+
+    return menus
 
 
 # =====================================================
@@ -2179,6 +2275,8 @@ def app():
     dias_sidebar = dias_restantes_assinatura(assinatura_sidebar)
     st.sidebar.write(f"**Plano:** {assinatura_sidebar.iloc[0]['plano'] if not assinatura_sidebar.empty else 'Sem plano'}")
     st.sidebar.write(f"**Assinatura:** {status_sidebar} ({dias_sidebar} dias)")
+    if is_super_admin_global():
+        st.sidebar.success("Modo Super Admin Global ativo")
 
     df = carregar_lancamentos()
     clientes = carregar_clientes()
@@ -2230,7 +2328,234 @@ def app():
 
     menu = st.session_state.menu_atual
 
-    if menu == "Dashboard":
+    if menu == "Super Admin Global":
+        st.title("👑 Super Admin Global Software")
+
+        if not is_super_admin_global():
+            st.error("Acesso exclusivo do administrador principal da Global Software.")
+            return
+
+        clientes_saas = carregar_clientes_saas()
+
+        if clientes_saas.empty:
+            st.info("Nenhuma conta PF/PJ cadastrada ainda.")
+        else:
+            total_contas = len(clientes_saas)
+            contas_pj = clientes_saas[clientes_saas["tipo_pessoa"] == "PJ"].shape[0]
+            contas_pf = clientes_saas[clientes_saas["tipo_pessoa"] == "PF"].shape[0]
+            contas_ativas = clientes_saas[clientes_saas["status_real"].isin(["Ativo", "Teste grátis"])].shape[0]
+            contas_vencidas = clientes_saas[clientes_saas["status_real"] == "Vencido"].shape[0]
+            contas_bloqueadas = clientes_saas[clientes_saas["status_real"].isin(["Bloqueado", "Cancelado"])].shape[0]
+            receita_prevista = clientes_saas[clientes_saas["status_real"].isin(["Ativo", "Teste grátis"])] ["valor_mensal"].sum()
+            usuarios_total = clientes_saas["total_usuarios"].sum()
+
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                card("Contas cadastradas", total_contas, f"PJ: {contas_pj} | PF: {contas_pf}")
+            with c2:
+                card("Ativas / teste", contas_ativas, "Clientes liberados")
+            with c3:
+                card("Vencidas / bloqueadas", contas_vencidas + contas_bloqueadas, f"Vencidas: {contas_vencidas} | Bloq.: {contas_bloqueadas}")
+            with c4:
+                card("Receita mensal prevista", moeda(receita_prevista), f"Usuários totais: {int(usuarios_total)}")
+
+            st.divider()
+
+            aba_visao, aba_cliente, aba_planos, aba_exportar = st.tabs([
+                "Visão geral",
+                "Gerenciar cliente",
+                "Planos vendidos",
+                "Exportações"
+            ])
+
+            with aba_visao:
+                st.subheader("Todas as contas PF/PJ")
+
+                filtro_status = st.multiselect(
+                    "Filtrar por status",
+                    STATUS_ASSINATURA + ["Sem assinatura"],
+                    default=[],
+                    key="super_filtro_status"
+                )
+                filtro_tipo = st.multiselect(
+                    "Filtrar por perfil",
+                    ["PJ", "PF"],
+                    default=[],
+                    key="super_filtro_tipo"
+                )
+                busca = st.text_input("Buscar por nome, documento, cidade ou telefone", key="super_busca")
+
+                tabela = clientes_saas.copy()
+                if filtro_status:
+                    tabela = tabela[tabela["status_real"].isin(filtro_status)]
+                if filtro_tipo:
+                    tabela = tabela[tabela["tipo_pessoa"].isin(filtro_tipo)]
+                if busca:
+                    busca_lower = busca.lower()
+                    tabela = tabela[
+                        tabela.apply(
+                            lambda row: busca_lower in " ".join([str(row.get(col, "")) for col in ["nome", "documento", "telefone", "cidade", "plano", "status_real"]]).lower(),
+                            axis=1
+                        )
+                    ]
+
+                colunas_tabela = [
+                    "id", "nome", "tipo_pessoa", "plano", "status_real", "data_vencimento",
+                    "dias_restantes", "valor_mensal", "limite_usuarios", "total_usuarios", "telefone", "cidade"
+                ]
+                st.dataframe(tabela[colunas_tabela], use_container_width=True, hide_index=True)
+
+                if not tabela.empty:
+                    st.bar_chart(tabela.groupby("status_real")["id"].count())
+
+            with aba_cliente:
+                st.subheader("Renovar, bloquear ou liberar cliente")
+
+                opcoes_clientes = clientes_saas.apply(
+                    lambda row: f"#{int(row['id'])} - {row['nome']} | {row['tipo_pessoa']} | {row['plano']} | {row['status_real']}",
+                    axis=1
+                ).tolist()
+
+                cliente_selecionado = st.selectbox("Selecionar conta", opcoes_clientes, key="super_cliente_select")
+                cliente_id = int(cliente_selecionado.split(" - ")[0].replace("#", ""))
+                cliente_row = clientes_saas[clientes_saas["id"] == cliente_id].iloc[0]
+
+                col_info1, col_info2, col_info3 = st.columns(3)
+                with col_info1:
+                    st.metric("Cliente", cliente_row["nome"])
+                    st.caption(f"Documento: {cliente_row.get('documento', '')}")
+                with col_info2:
+                    st.metric("Plano", cliente_row["plano"])
+                    st.caption(f"Status: {cliente_row['status_real']}")
+                with col_info3:
+                    st.metric("Mensalidade", moeda(cliente_row["valor_mensal"]))
+                    st.caption(f"Vencimento: {data_br(cliente_row.get('data_vencimento'))}")
+
+                with st.form("form_super_admin_cliente"):
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        novo_plano = st.selectbox(
+                            "Plano",
+                            list(PLANOS_ASSINATURA.keys()),
+                            index=list(PLANOS_ASSINATURA.keys()).index(cliente_row["plano"]) if cliente_row["plano"] in PLANOS_ASSINATURA else 0,
+                            key="super_novo_plano"
+                        )
+                    with col_b:
+                        novo_status = st.selectbox(
+                            "Status",
+                            STATUS_ASSINATURA,
+                            index=STATUS_ASSINATURA.index(cliente_row["status_real"]) if cliente_row["status_real"] in STATUS_ASSINATURA else 0,
+                            key="super_novo_status"
+                        )
+                    with col_c:
+                        meses = st.number_input("Renovar por quantos meses", min_value=1, max_value=36, value=1, step=1, key="super_meses")
+
+                    observacao_super = st.text_area("Observação interna", value="", key="super_obs")
+                    salvar_super = st.form_submit_button("Salvar alteração do cliente", use_container_width=True)
+
+                if salvar_super:
+                    dados_plano = PLANOS_ASSINATURA.get(novo_plano, PLANOS_ASSINATURA["Gratuito"])
+                    hoje = date.today()
+                    data_base = hoje
+                    try:
+                        venc_atual = pd.to_datetime(cliente_row.get("data_vencimento")).date()
+                        if venc_atual > hoje and novo_status not in ["Bloqueado", "Cancelado"]:
+                            data_base = venc_atual
+                    except Exception:
+                        data_base = hoje
+
+                    novo_vencimento = data_base + timedelta(days=30 * int(meses))
+
+                    existe_ass = consultar("SELECT id FROM assinaturas WHERE empresa_id = ?", (cliente_id,))
+                    if existe_ass.empty:
+                        executar(
+                            """
+                            INSERT INTO assinaturas
+                            (empresa_id, plano, status, data_inicio, data_vencimento, valor_mensal, limite_usuarios, observacao, criado_em, atualizado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                cliente_id, novo_plano, novo_status, str(hoje), str(novo_vencimento),
+                                float(dados_plano["valor"]), int(dados_plano["limite"]),
+                                observacao_super, datetime.now().isoformat(), datetime.now().isoformat()
+                            )
+                        )
+                    else:
+                        executar(
+                            """
+                            UPDATE assinaturas
+                            SET plano = ?, status = ?, data_vencimento = ?, valor_mensal = ?, limite_usuarios = ?, observacao = ?, atualizado_em = ?
+                            WHERE empresa_id = ?
+                            """,
+                            (
+                                novo_plano, novo_status, str(novo_vencimento), float(dados_plano["valor"]),
+                                int(dados_plano["limite"]), observacao_super, datetime.now().isoformat(), cliente_id
+                            )
+                        )
+
+                    st.success("Cliente atualizado com sucesso no Super Admin.")
+                    st.rerun()
+
+                st.divider()
+                texto_cliente = (
+                    "Olá! Aqui é da Global Software.\n\n"
+                    f"Sua conta: {cliente_row['nome']}\n"
+                    f"Plano atual: {cliente_row['plano']}\n"
+                    f"Status: {cliente_row['status_real']}\n"
+                    f"Vencimento: {data_br(cliente_row.get('data_vencimento'))}\n\n"
+                    "Vamos regularizar/renovar sua assinatura?"
+                )
+                telefone_cliente = str(cliente_row.get("telefone", "")).replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                if telefone_cliente:
+                    if not telefone_cliente.startswith("55"):
+                        telefone_cliente = "55" + telefone_cliente
+                    st.markdown(f"[📲 Chamar cliente no WhatsApp](https://wa.me/{telefone_cliente}?text={quote(texto_cliente)})")
+                else:
+                    st.info("Cliente sem telefone cadastrado. Atualize o telefone em Configurações ou no cadastro da conta.")
+
+            with aba_planos:
+                st.subheader("Resumo por plano")
+                resumo_planos = clientes_saas.groupby("plano").agg(
+                    contas=("id", "count"),
+                    receita_prevista=("valor_mensal", "sum"),
+                    usuarios=("total_usuarios", "sum")
+                ).reset_index()
+                st.dataframe(resumo_planos, use_container_width=True, hide_index=True)
+                if not resumo_planos.empty:
+                    st.bar_chart(resumo_planos.set_index("plano")["receita_prevista"])
+
+                st.subheader("Resumo por status")
+                resumo_status = clientes_saas.groupby("status_real").agg(
+                    contas=("id", "count"),
+                    receita_prevista=("valor_mensal", "sum")
+                ).reset_index()
+                st.dataframe(resumo_status, use_container_width=True, hide_index=True)
+
+            with aba_exportar:
+                st.subheader("Exportar base SaaS")
+                st.download_button(
+                    "Baixar clientes SaaS CSV",
+                    data=clientes_saas.to_csv(index=False).encode("utf-8"),
+                    file_name="clientes_saas_global_software.csv",
+                    mime="text/csv",
+                    key="download_clientes_saas"
+                )
+
+                backup_saas = {
+                    "gerado_em": datetime.now().isoformat(),
+                    "total_contas": int(total_contas),
+                    "receita_prevista": float(receita_prevista),
+                    "clientes": clientes_saas.to_dict(orient="records"),
+                }
+                st.download_button(
+                    "Baixar backup SaaS JSON",
+                    data=json.dumps(backup_saas, ensure_ascii=False, indent=4, default=str),
+                    file_name="backup_saas_global_software.json",
+                    mime="application/json",
+                    key="download_backup_saas"
+                )
+
+    elif menu == "Dashboard":
         st.title("📊 Dashboard Executivo Premium")
 
         if status_assinatura in ["Vencido", "Bloqueado", "Cancelado"]:
