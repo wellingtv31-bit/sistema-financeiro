@@ -1980,6 +1980,22 @@ def calcular_simulacao_veicular(
         60: float(parcela_manual_60 or 0),
     }
 
+    # Modo simplificado para PF / loja de veículos:
+    # o usuário informa apenas marca, modelo, ano, valor e entrada.
+    # A IA gera a tabela automaticamente usando como referência a regra comercial informada:
+    # exemplo base: Celta 2010 de R$ 28.000 com R$ 10.000 de entrada = saldo R$ 18.000
+    # 24x 1.650 | 36x 1.100 | 48x 950 | 60x 750.
+    if str(modo_calculo).startswith("Tabela automática PF"):
+        fatores_pf = {
+            24: 1650 / 18000,
+            36: 1100 / 18000,
+            48: 950 / 18000,
+            60: 750 / 18000,
+        }
+        for prazo, fator in fatores_pf.items():
+            parcelas_manuais[prazo] = round(saldo_apos_entrada * fator / 10) * 10 if saldo_apos_entrada > 0 else 0
+        seguro_mecanico_incluso = True
+
     usar_tabela_manual = str(modo_calculo).startswith("Tabela")
     opcoes = []
 
@@ -4631,44 +4647,78 @@ def app():
         st.info("A IA trabalha com dois modos: tabela comercial da loja ou cálculo automático. No modo tabela, digite as parcelas reais que você quer oferecer, como 24x, 36x, 48x e 60x.")
         aba_nova, aba_historico = st.tabs(["Nova simulação IA", "Histórico veicular"])
         with aba_nova:
+            perfil_pf = tipo_pessoa_atual() == "PF"
+
             with st.form("form_ia_simulacao_veicular"):
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    data_sim_veic = st.date_input("Data", value=date.today(), key="veic_data")
-                    cliente_veic = st.text_input("Cliente", key="veic_cliente")
-                    telefone_veic = st.text_input("WhatsApp do cliente", key="veic_telefone")
-                with col2:
-                    veiculo = st.text_input("Veículo / marca", value="Chevrolet", placeholder="Ex: Chevrolet", key="veic_veiculo")
-                    modelo = st.text_input("Modelo", value="Celta", placeholder="Ex: Celta LT", key="veic_modelo")
-                    ano = st.text_input("Ano", value="2010", placeholder="Ex: 2010", key="veic_ano")
-                with col3:
-                    valor_avista = st.number_input("Valor à vista", min_value=0.0, value=28000.0, step=500.0, key="veic_valor_avista")
-                    entrada = st.number_input("Entrada entre 30% e 50%", min_value=0.0, value=10000.0, step=500.0, key="veic_entrada")
-                    modo_calculo_veic = st.selectbox("Modo da IA", ["Tabela comercial da loja", "Cálculo automático com juros"], key="veic_modo_calculo")
+                if perfil_pf:
+                    st.markdown("### Simulação rápida PF")
+                    st.caption("Na área PF, o cliente informa somente marca, modelo, ano, valor de venda e entrada. A IA calcula automaticamente 24x, 36x, 48x e 60x usando a tabela comercial da loja.")
 
-                st.markdown("### Tabela comercial da loja")
-                st.caption("Digite aqui as parcelas que você quer testar. Se o seguro mecânico não estiver incluso, o sistema soma R$100 automaticamente em cada parcela.")
-                p1, p2, p3, p4 = st.columns(4)
-                with p1:
-                    parcela_manual_24 = st.number_input("24x", min_value=0.0, value=1650.0, step=50.0, key="veic_parcela_24")
-                with p2:
-                    parcela_manual_36 = st.number_input("36x", min_value=0.0, value=1100.0, step=50.0, key="veic_parcela_36")
-                with p3:
-                    parcela_manual_48 = st.number_input("48x", min_value=0.0, value=950.0, step=50.0, key="veic_parcela_48")
-                with p4:
-                    parcela_manual_60 = st.number_input("60x", min_value=0.0, value=750.0, step=50.0, key="veic_parcela_60")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        data_sim_veic = st.date_input("Data", value=date.today(), key="veic_data")
+                        cliente_veic = st.text_input("Cliente", key="veic_cliente")
+                        telefone_veic = st.text_input("WhatsApp do cliente", key="veic_telefone")
+                    with col2:
+                        veiculo = st.text_input("Marca", value="Chevrolet", placeholder="Ex: Chevrolet", key="veic_veiculo")
+                        modelo = st.text_input("Modelo", value="Celta", placeholder="Ex: Celta", key="veic_modelo")
+                        ano = st.text_input("Ano", value="2010", placeholder="Ex: 2010", key="veic_ano")
+                    with col3:
+                        valor_avista = st.number_input("Valor de venda", min_value=0.0, value=28000.0, step=500.0, key="veic_valor_avista")
+                        entrada = st.number_input("Entrada", min_value=0.0, value=10000.0, step=500.0, key="veic_entrada")
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        st.info("A IA gera automaticamente 24x, 36x, 48x e 60x.")
 
-                col_seg1, col_seg2, col_seg3 = st.columns(3)
-                with col_seg1:
-                    taxa_mensal_veic = st.number_input("Juros referência ao mês %", min_value=0.0, value=3.0, step=0.1, key="veic_taxa")
-                with col_seg2:
-                    seguro_mecanico = st.number_input("Seguro mecânico por parcela", min_value=0.0, value=100.0, step=10.0, key="veic_seguro_mecanico")
-                with col_seg3:
-                    seguro_veiculo_percentual = st.number_input("Seguro do veículo estimado %", min_value=0.0, value=4.0, step=0.5, key="veic_seguro_percentual")
+                    modo_calculo_veic = "Tabela automática PF / Veículos"
+                    taxa_mensal_veic = 3.0
+                    seguro_mecanico = 100.0
+                    seguro_veiculo_percentual = 4.0
+                    seguro_mecanico_incluso = True
+                    parcela_manual_24 = 0.0
+                    parcela_manual_36 = 0.0
+                    parcela_manual_48 = 0.0
+                    parcela_manual_60 = 0.0
+                    observacao_veic = st.text_area("Observação", placeholder="Ex: condição sujeita à análise, contrato e disponibilidade do veículo", key="veic_obs")
+                    salvar_veic = st.form_submit_button("Gerar e salvar simulação automática", use_container_width=True)
 
-                seguro_mecanico_incluso = st.checkbox("As parcelas digitadas já incluem o seguro mecânico", value=False, key="veic_seguro_incluso")
-                observacao_veic = st.text_area("Observação", placeholder="Ex: condição sujeita à análise, contrato e disponibilidade do veículo", key="veic_obs")
-                salvar_veic = st.form_submit_button("Salvar simulação veicular", use_container_width=True)
+                else:
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        data_sim_veic = st.date_input("Data", value=date.today(), key="veic_data")
+                        cliente_veic = st.text_input("Cliente", key="veic_cliente")
+                        telefone_veic = st.text_input("WhatsApp do cliente", key="veic_telefone")
+                    with col2:
+                        veiculo = st.text_input("Veículo / marca", value="Chevrolet", placeholder="Ex: Chevrolet", key="veic_veiculo")
+                        modelo = st.text_input("Modelo", value="Celta", placeholder="Ex: Celta LT", key="veic_modelo")
+                        ano = st.text_input("Ano", value="2010", placeholder="Ex: 2010", key="veic_ano")
+                    with col3:
+                        valor_avista = st.number_input("Valor à vista", min_value=0.0, value=28000.0, step=500.0, key="veic_valor_avista")
+                        entrada = st.number_input("Entrada entre 30% e 50%", min_value=0.0, value=10000.0, step=500.0, key="veic_entrada")
+                        modo_calculo_veic = st.selectbox("Modo da IA", ["Tabela comercial da loja", "Cálculo automático com juros"], key="veic_modo_calculo")
+
+                    st.markdown("### Tabela comercial da loja")
+                    st.caption("Digite aqui as parcelas que você quer testar. Se o seguro mecânico não estiver incluso, o sistema soma R$100 automaticamente em cada parcela.")
+                    p1, p2, p3, p4 = st.columns(4)
+                    with p1:
+                        parcela_manual_24 = st.number_input("24x", min_value=0.0, value=1650.0, step=50.0, key="veic_parcela_24")
+                    with p2:
+                        parcela_manual_36 = st.number_input("36x", min_value=0.0, value=1100.0, step=50.0, key="veic_parcela_36")
+                    with p3:
+                        parcela_manual_48 = st.number_input("48x", min_value=0.0, value=950.0, step=50.0, key="veic_parcela_48")
+                    with p4:
+                        parcela_manual_60 = st.number_input("60x", min_value=0.0, value=750.0, step=50.0, key="veic_parcela_60")
+
+                    col_seg1, col_seg2, col_seg3 = st.columns(3)
+                    with col_seg1:
+                        taxa_mensal_veic = st.number_input("Juros referência ao mês %", min_value=0.0, value=3.0, step=0.1, key="veic_taxa")
+                    with col_seg2:
+                        seguro_mecanico = st.number_input("Seguro mecânico por parcela", min_value=0.0, value=100.0, step=10.0, key="veic_seguro_mecanico")
+                    with col_seg3:
+                        seguro_veiculo_percentual = st.number_input("Seguro do veículo estimado %", min_value=0.0, value=4.0, step=0.5, key="veic_seguro_percentual")
+
+                    seguro_mecanico_incluso = st.checkbox("As parcelas digitadas já incluem o seguro mecânico", value=False, key="veic_seguro_incluso")
+                    observacao_veic = st.text_area("Observação", placeholder="Ex: condição sujeita à análise, contrato e disponibilidade do veículo", key="veic_obs")
+                    salvar_veic = st.form_submit_button("Salvar simulação veicular", use_container_width=True)
 
             calc_veic = calcular_simulacao_veicular(
                 valor_avista,
