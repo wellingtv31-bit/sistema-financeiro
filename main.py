@@ -1019,6 +1019,40 @@ def criar_tabelas():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS simulacoes_veiculares (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            data_simulacao TEXT,
+            cliente_nome TEXT,
+            cliente_telefone TEXT,
+            veiculo TEXT,
+            modelo TEXT,
+            ano TEXT,
+            valor_avista REAL,
+            entrada REAL,
+            percentual_entrada REAL,
+            saldo_apos_entrada REAL,
+            saldo_dobrado REAL,
+            taxa_mensal REAL,
+            seguro_mecanico_mensal REAL,
+            seguro_veiculo_percentual REAL,
+            seguro_veiculo_valor REAL,
+            parcela_24 REAL,
+            parcela_36 REAL,
+            parcela_48 REAL,
+            parcela_60 REAL,
+            total_24 REAL,
+            total_36 REAL,
+            total_48 REAL,
+            total_60 REAL,
+            melhor_opcao TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
     con.commit()
     con.close()
 
@@ -1677,6 +1711,142 @@ def carregar_simulacoes_vendas():
         """,
         (empresa_id_atual(),)
     )
+
+
+def carregar_simulacoes_veiculares():
+    return consultar(
+        """
+        SELECT *
+        FROM simulacoes_veiculares
+        WHERE empresa_id = ?
+        ORDER BY data_simulacao DESC, id DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def calcular_parcela_price(principal, taxa_mensal_percentual, parcelas):
+    principal = float(principal or 0)
+    taxa = float(taxa_mensal_percentual or 0) / 100
+    parcelas = max(int(parcelas or 1), 1)
+    if principal <= 0:
+        return 0
+    if taxa > 0:
+        return principal * (taxa * (1 + taxa) ** parcelas) / (((1 + taxa) ** parcelas) - 1)
+    return principal / parcelas
+
+
+def calcular_simulacao_veicular(valor_avista, entrada, taxa_mensal=3.0, seguro_mecanico=100.0, seguro_veiculo_percentual=4.0):
+    valor_avista = float(valor_avista or 0)
+    entrada = float(entrada or 0)
+    taxa_mensal = float(taxa_mensal or 0)
+    seguro_mecanico = float(seguro_mecanico or 0)
+    seguro_veiculo_percentual = float(seguro_veiculo_percentual or 0)
+    percentual_entrada = (entrada / valor_avista * 100) if valor_avista > 0 else 0
+    saldo_apos_entrada = max(valor_avista - entrada, 0)
+    saldo_dobrado = saldo_apos_entrada * 2
+    seguro_veiculo_valor = valor_avista * (seguro_veiculo_percentual / 100)
+    opcoes = []
+    for prazo in [24, 36, 48, 60]:
+        parcela_financiada = calcular_parcela_price(saldo_dobrado, taxa_mensal, prazo)
+        parcela_final = parcela_financiada + seguro_mecanico
+        total_parcelas = parcela_final * prazo
+        total_geral = entrada + total_parcelas + seguro_veiculo_valor
+        opcoes.append({
+            "prazo": prazo,
+            "parcela_financiada": parcela_financiada,
+            "seguro_mecanico": seguro_mecanico,
+            "parcela_final": parcela_final,
+            "total_parcelas": total_parcelas,
+            "total_geral": total_geral,
+        })
+    return {
+        "percentual_entrada": percentual_entrada,
+        "entrada_minima": valor_avista * 0.30,
+        "entrada_maxima": valor_avista * 0.50,
+        "entrada_valida": 30 <= percentual_entrada <= 50,
+        "saldo_apos_entrada": saldo_apos_entrada,
+        "saldo_dobrado": saldo_dobrado,
+        "seguro_veiculo_valor": seguro_veiculo_valor,
+        "opcoes": opcoes,
+        "melhor_opcao": "60x com menor parcela" if opcoes else "",
+    }
+
+
+def gerar_texto_proposta_veicular(cliente, telefone, veiculo, modelo, ano, valor_avista, entrada, calc, taxa_mensal, seguro_mecanico, seguro_veiculo_percentual):
+    linhas = [
+        "🚗 *SIMULAÇÃO DE VENDA - GLOBAL SOFTWARE*", "",
+        f"Cliente: {cliente or 'Cliente'}",
+        f"Veículo: {veiculo} {modelo} {ano}",
+        f"Valor à vista: {moeda(valor_avista)}",
+        f"Entrada: {moeda(entrada)} ({percentual(calc['percentual_entrada'])})",
+        f"Saldo após entrada: {moeda(calc['saldo_apos_entrada'])}",
+        f"Saldo para parcelamento após regra comercial: {moeda(calc['saldo_dobrado'])}",
+        f"Juros simulado: {str(taxa_mensal).replace('.', ',')}% ao mês",
+        f"Seguro mecânico: {moeda(seguro_mecanico)} por parcela",
+        f"Seguro estimado do veículo: {moeda(calc['seguro_veiculo_valor'])} ({str(seguro_veiculo_percentual).replace('.', ',')}% do valor à vista)",
+        "", "*Opções de parcelamento:*",
+    ]
+    for item in calc["opcoes"]:
+        linhas.append(f"{item['prazo']}x de {moeda(item['parcela_final'])} | Total geral estimado: {moeda(item['total_geral'])}")
+    linhas += ["", "Simulação sujeita à análise, confirmação do veículo, contrato e condições da loja."]
+    return "\n".join(linhas)
+
+
+def gerar_relatorio_inteligente(df, clientes, estoque, folha, planejamento, notas_fiscais, simulacoes_vendas, ind):
+    alertas, pontos_fortes, sugestoes = [], [], []
+    receita = float(ind.get("receita", 0) or 0)
+    saidas = float(ind.get("saidas", 0) or 0)
+    lucro = float(ind.get("lucro", 0) or 0)
+    receber = float(ind.get("receber", 0) or 0)
+    pagar = float(ind.get("pagar", 0) or 0)
+    vencidas = float(ind.get("vencidas", 0) or 0)
+    margem = (lucro / receita * 100) if receita > 0 else 0
+    if receita > 0:
+        pontos_fortes.append(f"A conta já possui receita registrada de {moeda(receita)}.")
+    if lucro > 0:
+        pontos_fortes.append(f"O resultado está positivo em {moeda(lucro)}, com margem aproximada de {percentual(margem)}.")
+    if receber > 0:
+        pontos_fortes.append(f"Existe potencial de caixa em contas a receber: {moeda(receber)}.")
+    if lucro < 0:
+        alertas.append(f"Resultado negativo de {moeda(lucro)}. As saídas estão maiores que as receitas.")
+    if vencidas > 0:
+        alertas.append(f"Existem valores vencidos somando {moeda(vencidas)}. Priorize cobrança e renegociação.")
+    if pagar > receber and pagar > 0:
+        alertas.append(f"O valor a pagar ({moeda(pagar)}) está maior que o valor a receber ({moeda(receber)}).")
+    if receita > 0 and saidas / receita > 0.75:
+        alertas.append("As saídas estão consumindo mais de 75% da receita. Revise custos fixos e variáveis.")
+    if not estoque.empty and "quantidade" in estoque.columns and "estoque_minimo" in estoque.columns:
+        est = estoque.copy()
+        est["quantidade"] = pd.to_numeric(est["quantidade"], errors="coerce").fillna(0)
+        est["estoque_minimo"] = pd.to_numeric(est["estoque_minimo"], errors="coerce").fillna(0)
+        baixos = est[est["quantidade"] <= est["estoque_minimo"]]
+        if not baixos.empty:
+            alertas.append(f"{len(baixos)} item(ns) estão no estoque mínimo ou abaixo dele.")
+    if not folha.empty and "total_liquido" in folha.columns:
+        total_folha = pd.to_numeric(folha["total_liquido"], errors="coerce").fillna(0).sum()
+        if total_folha > 0:
+            sugestoes.append(f"Acompanhe a folha de pagamento, hoje estimada em {moeda(total_folha)}, para proteger o caixa.")
+    sugestoes += [
+        "Cobrar primeiro os recebimentos vencidos e depois os que vencem nos próximos 7 dias.",
+        "Separar despesas fixas, variáveis, custos e retirada do dono para enxergar o lucro real.",
+        "Usar a simulação de vendas antes de fechar proposta para garantir margem e fluxo de caixa.",
+        "Atualizar o planejamento financeiro todo mês comparando previsto x realizado.",
+    ]
+    if not pontos_fortes:
+        pontos_fortes.append("O sistema já está preparado para organizar os dados; cadastre receitas, despesas e planejamento para melhorar a análise.")
+    if not alertas:
+        alertas.append("Nenhum alerta crítico encontrado com os dados atuais.")
+    mensagem_whatsapp = (
+        "📊 *Relatório Inteligente Global Software*\n\n"
+        f"Receita: {moeda(receita)}\n"
+        f"Saídas: {moeda(saidas)}\n"
+        f"Resultado: {moeda(lucro)}\n"
+        f"A receber: {moeda(receber)}\n"
+        f"Vencidos: {moeda(vencidas)}\n\n"
+        "Prioridade: cobrar vencidos, controlar despesas e acompanhar planejamento mensal."
+    )
+    return {"margem": margem, "pontos_fortes": pontos_fortes, "alertas": alertas, "sugestoes": sugestoes, "mensagem_whatsapp": mensagem_whatsapp}
 
 
 def calcular_simulacao_venda(quantidade, custo_unitario, preco_unitario, desconto, entrada, parcelas, taxa_mensal, comissao_percentual, impostos_percentual):
@@ -2422,6 +2592,8 @@ def menus_por_tipo_usuario():
         "Pix e WhatsApp",
         "Relatórios",
         "IA Financeira",
+        "IA Relatório Inteligente",
+        "IA Simulação Veicular",
         "Ajuda / Tutorial",
         "Apresentação Comercial",
         "Usuários",
@@ -2434,15 +2606,15 @@ def menus_por_tipo_usuario():
             "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
             "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
             "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Nota Fiscal / Pré-nota", "Simulação de Vendas", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
-            "IA Financeira", "Ajuda / Tutorial", "Configurações"
+            "IA Financeira", "IA Relatório Inteligente", "IA Simulação Veicular", "Ajuda / Tutorial", "Configurações"
         ],
         "Financeiro": [
             "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
             "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Nota Fiscal / Pré-nota", "Simulação de Vendas", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
-            "IA Financeira", "Ajuda / Tutorial"
+            "IA Financeira", "IA Relatório Inteligente", "IA Simulação Veicular", "Ajuda / Tutorial"
         ],
         "Vendedor": [
-            "Dashboard", "Onboarding do Cliente", "Clientes / CRM", "Clientes Inadimplentes", "Simulação de Vendas", "Pix e WhatsApp", "Ajuda / Tutorial"
+            "Dashboard", "Onboarding do Cliente", "Clientes / CRM", "Clientes Inadimplentes", "Simulação de Vendas", "Pix e WhatsApp", "IA Simulação Veicular", "Ajuda / Tutorial"
         ]
     }
 
@@ -2554,6 +2726,7 @@ def app():
     planejamento = carregar_planejamento()
     notas_fiscais = carregar_notas_fiscais()
     simulacoes_vendas = carregar_simulacoes_vendas()
+    simulacoes_veiculares = carregar_simulacoes_veiculares()
     assinatura = carregar_assinatura()
     onboarding = carregar_onboarding()
     status_assinatura = status_assinatura_real(assinatura)
@@ -4096,6 +4269,138 @@ def app():
 
         if not simulacoes_vendas.empty:
             st.download_button("Baixar simulações de vendas CSV", data=simulacoes_vendas.to_csv(index=False).encode("utf-8"), file_name="simulacoes_vendas.csv", mime="text/csv", key="download_csv_simulacoes")
+
+        if not simulacoes_veiculares.empty:
+            st.download_button("Baixar simulações veiculares CSV", data=simulacoes_veiculares.to_csv(index=False).encode("utf-8-sig"), file_name="simulacoes_veiculares.csv", mime="text/csv", key="download_csv_simulacoes_veiculares")
+
+    elif menu == "IA Relatório Inteligente":
+        st.title("📊 IA Relatório Inteligente")
+        st.info("Análise automática do financeiro: pontos fortes, alertas, sugestões e mensagem pronta para WhatsApp.")
+        relatorio_ia = gerar_relatorio_inteligente(df, clientes, estoque, folha, planejamento, notas_fiscais, simulacoes_vendas, ind)
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            card("Receita", moeda(ind["receita"]), "Total registrado")
+        with c2:
+            card("Saídas", moeda(ind["saidas"]), "Custos e despesas")
+        with c3:
+            card("Resultado", moeda(ind["lucro"]), f"Margem: {percentual(relatorio_ia['margem'])}")
+        with c4:
+            card("Vencidos", moeda(ind["vencidas"]), "Prioridade de cobrança")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.subheader("✅ Pontos fortes")
+            for item in relatorio_ia["pontos_fortes"]:
+                st.success(item)
+            st.subheader("⚠️ Pontos de alerta")
+            for item in relatorio_ia["alertas"]:
+                st.warning(item)
+        with col_b:
+            st.subheader("💡 Sugestões da IA")
+            for item in relatorio_ia["sugestoes"]:
+                st.info(item)
+        st.subheader("📲 Mensagem pronta para WhatsApp")
+        st.text_area("Copie e envie para o cliente ou gestor", value=relatorio_ia["mensagem_whatsapp"], height=210, key="ia_relatorio_whatsapp")
+        texto_relatorio = "RELATÓRIO INTELIGENTE GLOBAL SOFTWARE\n\n"
+        texto_relatorio += f"Receita: {moeda(ind['receita'])}\nSaídas: {moeda(ind['saidas'])}\nResultado: {moeda(ind['lucro'])}\nA receber: {moeda(ind['receber'])}\nVencidos: {moeda(ind['vencidas'])}\n\n"
+        texto_relatorio += "PONTOS FORTES\n" + "\n".join([f"- {x}" for x in relatorio_ia["pontos_fortes"]]) + "\n\n"
+        texto_relatorio += "ALERTAS\n" + "\n".join([f"- {x}" for x in relatorio_ia["alertas"]]) + "\n\n"
+        texto_relatorio += "SUGESTÕES\n" + "\n".join([f"- {x}" for x in relatorio_ia["sugestoes"]])
+        st.download_button("Baixar relatório inteligente TXT", data=texto_relatorio.encode("utf-8"), file_name="relatorio_inteligente_global_software.txt", mime="text/plain", use_container_width=True, key="download_ia_relatorio_txt")
+
+    elif menu == "IA Simulação Veicular":
+        st.title("🚗 IA Simulação Veicular")
+        st.info("Informe veículo, modelo, ano, valor à vista e entrada. A IA valida entrada de 30% a 50%, dobra o saldo após entrada, calcula 24x, 36x, 48x e 60x com 3% ao mês e soma R$100 de seguro mecânico em cada parcela.")
+        aba_nova, aba_historico = st.tabs(["Nova simulação IA", "Histórico veicular"])
+        with aba_nova:
+            with st.form("form_ia_simulacao_veicular"):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    data_sim_veic = st.date_input("Data", value=date.today(), key="veic_data")
+                    cliente_veic = st.text_input("Cliente", key="veic_cliente")
+                    telefone_veic = st.text_input("WhatsApp do cliente", key="veic_telefone")
+                with col2:
+                    veiculo = st.text_input("Veículo", placeholder="Ex: Chevrolet", key="veic_veiculo")
+                    modelo = st.text_input("Modelo", placeholder="Ex: Celta LT", key="veic_modelo")
+                    ano = st.text_input("Ano", placeholder="Ex: 2012", key="veic_ano")
+                with col3:
+                    valor_avista = st.number_input("Valor à vista", min_value=0.0, value=20000.0, step=500.0, key="veic_valor_avista")
+                    entrada = st.number_input("Entrada entre 30% e 50%", min_value=0.0, value=10000.0, step=500.0, key="veic_entrada")
+                    taxa_mensal_veic = st.number_input("Juros ao mês %", min_value=0.0, value=3.0, step=0.1, key="veic_taxa")
+                    seguro_mecanico = st.number_input("Seguro mecânico por parcela", min_value=0.0, value=100.0, step=10.0, key="veic_seguro_mecanico")
+                    seguro_veiculo_percentual = st.number_input("Seguro do veículo estimado %", min_value=0.0, value=4.0, step=0.5, key="veic_seguro_percentual")
+                observacao_veic = st.text_area("Observação", placeholder="Ex: condição sujeita à análise, contrato e disponibilidade do veículo", key="veic_obs")
+                salvar_veic = st.form_submit_button("Salvar simulação veicular", use_container_width=True)
+            calc_veic = calcular_simulacao_veicular(valor_avista, entrada, taxa_mensal_veic, seguro_mecanico, seguro_veiculo_percentual)
+            if calc_veic["entrada_valida"]:
+                st.success(f"Entrada válida: {percentual(calc_veic['percentual_entrada'])}. Está dentro da regra de 30% a 50%.")
+            else:
+                st.warning(f"Entrada fora da regra: {percentual(calc_veic['percentual_entrada'])}. Entrada mínima: {moeda(calc_veic['entrada_minima'])}. Entrada máxima: {moeda(calc_veic['entrada_maxima'])}.")
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                card("Valor à vista", moeda(valor_avista), f"Entrada: {moeda(entrada)}")
+            with c2:
+                card("Saldo após entrada", moeda(calc_veic["saldo_apos_entrada"]), "Valor restante original")
+            with c3:
+                card("Saldo dobrado", moeda(calc_veic["saldo_dobrado"]), "Base para parcelamento")
+            with c4:
+                card("Seguro do veículo", moeda(calc_veic["seguro_veiculo_valor"]), f"{seguro_veiculo_percentual}% estimado")
+            tabela_opcoes = pd.DataFrame(calc_veic["opcoes"])
+            if not tabela_opcoes.empty:
+                tabela_opcoes["parcela_financiada"] = tabela_opcoes["parcela_financiada"].apply(moeda)
+                tabela_opcoes["seguro_mecanico"] = tabela_opcoes["seguro_mecanico"].apply(moeda)
+                tabela_opcoes["parcela_final"] = tabela_opcoes["parcela_final"].apply(moeda)
+                tabela_opcoes["total_parcelas"] = tabela_opcoes["total_parcelas"].apply(moeda)
+                tabela_opcoes["total_geral"] = tabela_opcoes["total_geral"].apply(moeda)
+                tabela_opcoes = tabela_opcoes.rename(columns={"prazo": "Prazo", "parcela_financiada": "Parcela com juros", "seguro_mecanico": "Seguro mecânico", "parcela_final": "Parcela final", "total_parcelas": "Total parcelas", "total_geral": "Total geral estimado"})
+                st.subheader("Opções calculadas pela IA")
+                st.dataframe(tabela_opcoes, use_container_width=True, hide_index=True)
+            texto_proposta_veic = gerar_texto_proposta_veicular(cliente_veic, telefone_veic, veiculo, modelo, ano, valor_avista, entrada, calc_veic, taxa_mensal_veic, seguro_mecanico, seguro_veiculo_percentual)
+            st.subheader("Mensagem pronta para WhatsApp")
+            st.text_area("Proposta automática", value=texto_proposta_veic, height=300, key="veic_texto_whatsapp")
+            if telefone_veic:
+                telefone_limpo = "".join([c for c in telefone_veic if c.isdigit()])
+                link_whats = f"https://wa.me/55{telefone_limpo}?text={quote(texto_proposta_veic)}" if not telefone_limpo.startswith("55") else f"https://wa.me/{telefone_limpo}?text={quote(texto_proposta_veic)}"
+                st.markdown(f"[Enviar proposta no WhatsApp]({link_whats})")
+            st.download_button("Baixar proposta veicular TXT", data=texto_proposta_veic.encode("utf-8"), file_name="simulacao_veicular_global_software.txt", mime="text/plain", use_container_width=True, key="download_sim_veic_txt")
+            if salvar_veic:
+                if not veiculo or not modelo or valor_avista <= 0:
+                    st.warning("Preencha veículo, modelo e valor à vista.")
+                else:
+                    opcoes_calc = {int(x["prazo"]): x for x in calc_veic["opcoes"]}
+                    executar(
+                        """
+                        INSERT INTO simulacoes_veiculares
+                        (empresa_id, usuario_id, data_simulacao, cliente_nome, cliente_telefone, veiculo, modelo, ano,
+                        valor_avista, entrada, percentual_entrada, saldo_apos_entrada, saldo_dobrado, taxa_mensal,
+                        seguro_mecanico_mensal, seguro_veiculo_percentual, seguro_veiculo_valor, parcela_24, parcela_36,
+                        parcela_48, parcela_60, total_24, total_36, total_48, total_60, melhor_opcao, observacao, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (empresa_id_atual(), usuario_id_atual(), str(data_sim_veic), cliente_veic, telefone_veic, veiculo, modelo, ano,
+                         float(valor_avista), float(entrada), float(calc_veic["percentual_entrada"]), float(calc_veic["saldo_apos_entrada"]), float(calc_veic["saldo_dobrado"]),
+                         float(taxa_mensal_veic), float(seguro_mecanico), float(seguro_veiculo_percentual), float(calc_veic["seguro_veiculo_valor"]),
+                         float(opcoes_calc[24]["parcela_final"]), float(opcoes_calc[36]["parcela_final"]), float(opcoes_calc[48]["parcela_final"]), float(opcoes_calc[60]["parcela_final"]),
+                         float(opcoes_calc[24]["total_geral"]), float(opcoes_calc[36]["total_geral"]), float(opcoes_calc[48]["total_geral"]), float(opcoes_calc[60]["total_geral"]),
+                         calc_veic["melhor_opcao"], observacao_veic, datetime.now().isoformat())
+                    )
+                    st.success("Simulação veicular salva com sucesso.")
+                    st.rerun()
+        with aba_historico:
+            if simulacoes_veiculares.empty:
+                st.info("Nenhuma simulação veicular salva ainda.")
+            else:
+                tabela_veic = simulacoes_veiculares.copy()
+                for col in ["valor_avista", "entrada", "saldo_dobrado", "parcela_24", "parcela_36", "parcela_48", "parcela_60"]:
+                    tabela_veic[col + "_fmt"] = tabela_veic[col].apply(moeda)
+                tabela_veic["data_br"] = tabela_veic["data_simulacao"].apply(data_br)
+                st.dataframe(tabela_veic[["id", "data_br", "cliente_nome", "veiculo", "modelo", "ano", "valor_avista_fmt", "entrada_fmt", "saldo_dobrado_fmt", "parcela_24_fmt", "parcela_36_fmt", "parcela_48_fmt", "parcela_60_fmt"]], use_container_width=True, hide_index=True)
+                st.download_button("Baixar simulações veiculares CSV", data=simulacoes_veiculares.to_csv(index=False).encode("utf-8-sig"), file_name="simulacoes_veiculares.csv", mime="text/csv", use_container_width=True, key="download_historico_veicular")
+                ids_veic = tabela_veic["id"].astype(int).tolist()
+                id_veic_excluir = st.selectbox("Selecionar ID para excluir", ids_veic, key="veic_excluir_id")
+                if st.button("Excluir simulação veicular selecionada", key="btn_excluir_sim_veic"):
+                    executar("DELETE FROM simulacoes_veiculares WHERE id = ? AND empresa_id = ?", (int(id_veic_excluir), empresa_id_atual()))
+                    st.success("Simulação veicular excluída.")
+                    st.rerun()
 
     elif menu == "IA Financeira":
         st.title("🤖 IA Financeira")
