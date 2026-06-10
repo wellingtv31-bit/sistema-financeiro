@@ -963,6 +963,62 @@ def criar_tabelas():
         )
     """)
 
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS notas_fiscais (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            data_emissao TEXT,
+            segmento TEXT,
+            modelo_nota TEXT,
+            natureza_operacao TEXT,
+            cliente_nome TEXT,
+            cliente_documento TEXT,
+            cliente_telefone TEXT,
+            cliente_email TEXT,
+            descricao TEXT,
+            valor_servico_produto REAL,
+            desconto REAL DEFAULT 0,
+            impostos_estimados REAL DEFAULT 0,
+            valor_total REAL,
+            status TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS simulacoes_vendas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER,
+            usuario_id INTEGER,
+            data_simulacao TEXT,
+            segmento TEXT,
+            cliente_nome TEXT,
+            produto_servico TEXT,
+            quantidade REAL,
+            custo_unitario REAL,
+            preco_unitario REAL,
+            desconto REAL DEFAULT 0,
+            entrada REAL DEFAULT 0,
+            parcelas INTEGER DEFAULT 1,
+            taxa_mensal REAL DEFAULT 0,
+            comissao_percentual REAL DEFAULT 0,
+            impostos_percentual REAL DEFAULT 0,
+            custo_total REAL,
+            venda_bruta REAL,
+            valor_total REAL,
+            valor_financiado REAL,
+            valor_parcela REAL,
+            lucro_estimado REAL,
+            margem_percentual REAL,
+            status TEXT,
+            observacao TEXT,
+            criado_em TEXT
+        )
+    """)
+
     con.commit()
     con.close()
 
@@ -1072,6 +1128,46 @@ PLANOS_ASSINATURA = {
 }
 
 STATUS_ASSINATURA = ["Teste grátis", "Ativo", "Vencido", "Bloqueado", "Cancelado"]
+
+
+SEGMENTOS_NEGOCIO = [
+    "Veículos / Revenda automotiva",
+    "Motos / Revenda de motocicletas",
+    "Oficina mecânica",
+    "Autopeças",
+    "Comércio varejista",
+    "Comércio atacadista",
+    "Mercado / Mercearia",
+    "Restaurante / Lanchonete",
+    "Beleza / Salão / Barbearia",
+    "Clínica / Saúde",
+    "Serviços profissionais",
+    "Tecnologia / Software",
+    "Marketing / Agência",
+    "Construção civil",
+    "Imobiliária",
+    "Transporte / Logística",
+    "Educação / Cursos",
+    "Igreja / Instituição",
+    "Indústria",
+    "Agro / Rural",
+    "MEI",
+    "Profissional liberal",
+    "Pessoa Física",
+    "Outro segmento",
+]
+
+MODELOS_NOTA = [
+    "Pré-nota / Rascunho fiscal",
+    "NFS-e - Serviço",
+    "NF-e - Produto",
+    "NFC-e - Consumidor",
+    "Recibo simples",
+    "Fatura comercial",
+]
+
+STATUS_NOTA_FISCAL = ["Pré-nota", "Aguardando emissão oficial", "Emitida fora do sistema", "Cancelada"]
+STATUS_SIMULACAO_VENDA = ["Simulação", "Proposta enviada", "Venda aprovada", "Venda perdida"]
 
 
 # =====================================================
@@ -1559,6 +1655,100 @@ def carregar_planejamento():
     )
 
 
+def carregar_notas_fiscais():
+    return consultar(
+        """
+        SELECT *
+        FROM notas_fiscais
+        WHERE empresa_id = ?
+        ORDER BY data_emissao DESC, id DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def carregar_simulacoes_vendas():
+    return consultar(
+        """
+        SELECT *
+        FROM simulacoes_vendas
+        WHERE empresa_id = ?
+        ORDER BY data_simulacao DESC, id DESC
+        """,
+        (empresa_id_atual(),)
+    )
+
+
+def calcular_simulacao_venda(quantidade, custo_unitario, preco_unitario, desconto, entrada, parcelas, taxa_mensal, comissao_percentual, impostos_percentual):
+    quantidade = float(quantidade or 0)
+    custo_unitario = float(custo_unitario or 0)
+    preco_unitario = float(preco_unitario or 0)
+    desconto = float(desconto or 0)
+    entrada = float(entrada or 0)
+    parcelas = max(int(parcelas or 1), 1)
+    taxa_mensal = float(taxa_mensal or 0) / 100
+    comissao_percentual = float(comissao_percentual or 0) / 100
+    impostos_percentual = float(impostos_percentual or 0) / 100
+
+    custo_total = quantidade * custo_unitario
+    venda_bruta = quantidade * preco_unitario
+    valor_total = max(venda_bruta - desconto, 0)
+    valor_financiado = max(valor_total - entrada, 0)
+
+    if taxa_mensal > 0 and parcelas > 0:
+        valor_parcela = valor_financiado * (taxa_mensal * (1 + taxa_mensal) ** parcelas) / (((1 + taxa_mensal) ** parcelas) - 1)
+    else:
+        valor_parcela = valor_financiado / parcelas if parcelas else valor_financiado
+
+    comissao = valor_total * comissao_percentual
+    impostos = valor_total * impostos_percentual
+    lucro_estimado = valor_total - custo_total - comissao - impostos
+    margem_percentual = (lucro_estimado / valor_total * 100) if valor_total > 0 else 0
+
+    return {
+        "custo_total": custo_total,
+        "venda_bruta": venda_bruta,
+        "valor_total": valor_total,
+        "valor_financiado": valor_financiado,
+        "valor_parcela": valor_parcela,
+        "lucro_estimado": lucro_estimado,
+        "margem_percentual": margem_percentual,
+        "comissao": comissao,
+        "impostos": impostos,
+    }
+
+
+def texto_pre_nota(row):
+    return f"""
+GLOBAL SOFTWARE | PRÉ-NOTA / RASCUNHO FISCAL
+
+Data: {data_br(row.get('data_emissao'))}
+Modelo: {row.get('modelo_nota', '')}
+Segmento: {row.get('segmento', '')}
+Natureza da operação: {row.get('natureza_operacao', '')}
+
+CLIENTE / TOMADOR
+Nome: {row.get('cliente_nome', '')}
+Documento: {row.get('cliente_documento', '')}
+Telefone: {row.get('cliente_telefone', '')}
+E-mail: {row.get('cliente_email', '')}
+
+DESCRIÇÃO
+{row.get('descricao', '')}
+
+VALORES
+Valor do produto/serviço: {moeda(row.get('valor_servico_produto', 0))}
+Desconto: {moeda(row.get('desconto', 0))}
+Impostos estimados: {moeda(row.get('impostos_estimados', 0))}
+Total: {moeda(row.get('valor_total', 0))}
+
+Status: {row.get('status', '')}
+Observação: {row.get('observacao', '')}
+
+IMPORTANTE: este documento é uma prévia operacional. Para emissão fiscal oficial, integre o sistema à prefeitura/SEFAZ e use certificado digital quando exigido.
+""".strip()
+
+
 ETAPAS_ONBOARDING = [
     (1, "Configurar perfil", "Complete os dados da empresa ou pessoa física em Configurações.", "Configurações"),
     (2, "Cadastrar primeira entrada", "Registre uma receita, salário, venda ou recebimento em Entradas e Saídas.", "Entradas e Saídas"),
@@ -1780,6 +1970,13 @@ def responder_ajuda(pergunta):
 
     if "relatório" in p or "relatorio" in p or "pdf" in p:
         return "Para gerar relatório, acesse **Relatórios**. Você pode baixar PDF financeiro e arquivos CSV."
+
+
+    if "nota" in p or "fiscal" in p or "nf-e" in p or "nfs-e" in p or "nfse" in p:
+        return "Acesse **Nota Fiscal / Pré-nota** para montar uma pré-nota, recibo, fatura ou rascunho fiscal por segmento. Para emissão oficial de NF-e/NFS-e, é necessário integrar com prefeitura/SEFAZ e certificado digital quando exigido."
+
+    if "simulação" in p or "simulacao" in p or "venda" in p or "proposta" in p or "margem" in p:
+        return "Acesse **Simulação de Vendas** para calcular preço, entrada, parcelas, desconto, comissão, impostos estimados, lucro e margem por segmento."
 
     if "onboarding" in p or "começar" in p or "comecar" in p or "primeiros passos" in p or "implantação" in p or "implantacao" in p:
         return "Para começar a usar o sistema, acesse **Onboarding do Cliente**. Lá existe um checklist com perfil, primeira entrada, primeira despesa, cliente/fornecedor, planejamento e dashboard."
@@ -2219,6 +2416,8 @@ def menus_por_tipo_usuario():
         "Metas e Premiações",
         "Parcelas",
         "Planejamento Financeiro",
+        "Nota Fiscal / Pré-nota",
+        "Simulação de Vendas",
         "Assinaturas / Planos",
         "Pix e WhatsApp",
         "Relatórios",
@@ -2234,16 +2433,16 @@ def menus_por_tipo_usuario():
         "Gerente": [
             "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
             "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
-            "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
+            "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Nota Fiscal / Pré-nota", "Simulação de Vendas", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial", "Configurações"
         ],
         "Financeiro": [
             "Dashboard", "Onboarding do Cliente", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
-            "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
+            "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Nota Fiscal / Pré-nota", "Simulação de Vendas", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial"
         ],
         "Vendedor": [
-            "Dashboard", "Onboarding do Cliente", "Clientes / CRM", "Clientes Inadimplentes", "Pix e WhatsApp", "Ajuda / Tutorial"
+            "Dashboard", "Onboarding do Cliente", "Clientes / CRM", "Clientes Inadimplentes", "Simulação de Vendas", "Pix e WhatsApp", "Ajuda / Tutorial"
         ]
     }
 
@@ -2353,6 +2552,8 @@ def app():
     folha = carregar_folha()
     metas = carregar_metas()
     planejamento = carregar_planejamento()
+    notas_fiscais = carregar_notas_fiscais()
+    simulacoes_vendas = carregar_simulacoes_vendas()
     assinatura = carregar_assinatura()
     onboarding = carregar_onboarding()
     status_assinatura = status_assinatura_real(assinatura)
@@ -3466,6 +3667,251 @@ def app():
                     st.rerun()
 
 
+    elif menu == "Nota Fiscal / Pré-nota":
+        st.title("🧾 Nota Fiscal / Pré-nota")
+        st.warning(
+            "Esta aba cria uma pré-nota, recibo ou rascunho fiscal para organização interna. "
+            "Para emitir nota fiscal oficial, será necessário integrar com prefeitura/SEFAZ e certificado digital quando exigido."
+        )
+
+        aba_emitir, aba_historico = st.tabs(["Criar pré-nota", "Histórico de notas"])
+
+        with aba_emitir:
+            with st.form("form_nota_fiscal"):
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    data_emissao = st.date_input("Data da emissão", value=date.today(), key="nf_data")
+                    segmento = st.selectbox("Segmento", SEGMENTOS_NEGOCIO, key="nf_segmento")
+                    modelo_nota = st.selectbox("Modelo", MODELOS_NOTA, key="nf_modelo")
+                    natureza = st.text_input("Natureza da operação", value="Venda / Prestação de serviço", key="nf_natureza")
+
+                with col2:
+                    cliente_nome = st.text_input("Cliente / tomador", key="nf_cliente")
+                    cliente_documento = st.text_input("CPF/CNPJ do cliente", key="nf_doc")
+                    cliente_telefone = st.text_input("Telefone", key="nf_tel")
+                    cliente_email = st.text_input("E-mail", key="nf_email")
+
+                with col3:
+                    valor_base = st.number_input("Valor produto/serviço", min_value=0.0, step=100.0, key="nf_valor")
+                    desconto_nf = st.number_input("Desconto", min_value=0.0, step=10.0, key="nf_desconto")
+                    impostos_estimados = st.number_input("Impostos estimados", min_value=0.0, step=10.0, key="nf_impostos")
+                    status_nf = st.selectbox("Status", STATUS_NOTA_FISCAL, key="nf_status")
+
+                descricao_nf = st.text_area("Descrição da nota", placeholder="Produtos, serviços, placa do veículo, OS, contrato, mensalidade, etc.", key="nf_desc")
+                observacao_nf = st.text_area("Observação interna", key="nf_obs")
+                salvar_nf = st.form_submit_button("Salvar pré-nota", use_container_width=True)
+
+            valor_total_nf = max(float(valor_base) - float(desconto_nf) + float(impostos_estimados), 0)
+            st.metric("Total previsto da pré-nota", moeda(valor_total_nf))
+
+            if salvar_nf:
+                if not cliente_nome or not descricao_nf:
+                    st.warning("Preencha pelo menos cliente e descrição.")
+                else:
+                    executar(
+                        """
+                        INSERT INTO notas_fiscais
+                        (empresa_id, usuario_id, data_emissao, segmento, modelo_nota, natureza_operacao,
+                        cliente_nome, cliente_documento, cliente_telefone, cliente_email, descricao,
+                        valor_servico_produto, desconto, impostos_estimados, valor_total, status, observacao, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            empresa_id_atual(), usuario_id_atual(), str(data_emissao), segmento, modelo_nota, natureza,
+                            cliente_nome, cliente_documento, cliente_telefone, cliente_email, descricao_nf,
+                            float(valor_base), float(desconto_nf), float(impostos_estimados), float(valor_total_nf),
+                            status_nf, observacao_nf, datetime.now().isoformat()
+                        )
+                    )
+                    st.success("Pré-nota salva com sucesso.")
+                    st.rerun()
+
+        with aba_historico:
+            if notas_fiscais.empty:
+                st.info("Nenhuma pré-nota cadastrada ainda.")
+            else:
+                tabela_nf = notas_fiscais.copy()
+                tabela_nf["valor_total_formatado"] = tabela_nf["valor_total"].apply(moeda)
+                tabela_nf["data_emissao_br"] = tabela_nf["data_emissao"].apply(data_br)
+                st.dataframe(
+                    tabela_nf[["id", "data_emissao_br", "segmento", "modelo_nota", "cliente_nome", "valor_total_formatado", "status"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                nota_opcoes = tabela_nf.apply(lambda x: f"#{int(x['id'])} - {x['cliente_nome']} | {moeda(x['valor_total'])} | {x['status']}", axis=1).tolist()
+                nota_sel = st.selectbox("Selecionar pré-nota para visualizar", nota_opcoes, key="nf_select_hist")
+                nota_id = int(nota_sel.split(" - ")[0].replace("#", ""))
+                nota_row = tabela_nf[tabela_nf["id"] == nota_id].iloc[0]
+                texto_nf = texto_pre_nota(nota_row)
+                st.text_area("Prévia do documento", value=texto_nf, height=360, key="nf_texto_preview")
+                st.download_button(
+                    "Baixar pré-nota TXT",
+                    data=texto_nf.encode("utf-8"),
+                    file_name=f"pre_nota_{nota_id}.txt",
+                    mime="text/plain",
+                    key="download_pre_nota_txt"
+                )
+                st.download_button(
+                    "Baixar notas CSV",
+                    data=notas_fiscais.to_csv(index=False).encode("utf-8"),
+                    file_name="notas_fiscais_pre_notas.csv",
+                    mime="text/csv",
+                    key="download_notas_csv"
+                )
+
+                if st.button("Excluir pré-nota selecionada", key="btn_excluir_nf"):
+                    executar("DELETE FROM notas_fiscais WHERE id = ? AND empresa_id = ?", (nota_id, empresa_id_atual()))
+                    st.success("Pré-nota excluída.")
+                    st.rerun()
+
+    elif menu == "Simulação de Vendas":
+        st.title("💰 Simulação de Vendas")
+        st.info("Simule venda à vista, parcelada, com entrada, desconto, taxa, comissão, impostos estimados, lucro e margem para qualquer segmento.")
+
+        aba_simular, aba_historico = st.tabs(["Nova simulação", "Histórico de simulações"])
+
+        with aba_simular:
+            with st.form("form_simulacao_venda"):
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+                    data_simulacao = st.date_input("Data", value=date.today(), key="sim_data")
+                    segmento_sim = st.selectbox("Segmento", SEGMENTOS_NEGOCIO, key="sim_segmento")
+                    cliente_sim = st.text_input("Cliente / interessado", key="sim_cliente")
+                    produto_servico = st.text_input("Produto ou serviço", placeholder="Ex: carro, moto, consultoria, peça, mensalidade", key="sim_produto")
+
+                with col2:
+                    quantidade = st.number_input("Quantidade", min_value=0.0, value=1.0, step=1.0, key="sim_qtd")
+                    custo_unitario = st.number_input("Custo unitário", min_value=0.0, step=100.0, key="sim_custo")
+                    preco_unitario = st.number_input("Preço unitário de venda", min_value=0.0, step=100.0, key="sim_preco")
+                    desconto_sim = st.number_input("Desconto total", min_value=0.0, step=50.0, key="sim_desconto")
+
+                with col3:
+                    entrada_sim = st.number_input("Entrada", min_value=0.0, step=100.0, key="sim_entrada")
+                    parcelas_sim = st.number_input("Parcelas", min_value=1, max_value=120, value=1, step=1, key="sim_parcelas")
+                    taxa_mensal = st.number_input("Taxa mensal %", min_value=0.0, step=0.1, key="sim_taxa")
+                    comissao_percentual = st.number_input("Comissão %", min_value=0.0, step=0.5, key="sim_comissao")
+                    impostos_percentual = st.number_input("Impostos estimados %", min_value=0.0, step=0.5, key="sim_impostos")
+
+                status_sim = st.selectbox("Status da simulação", STATUS_SIMULACAO_VENDA, key="sim_status")
+                observacao_sim = st.text_area("Observação", key="sim_obs")
+                salvar_sim = st.form_submit_button("Salvar simulação", use_container_width=True)
+
+            calc = calcular_simulacao_venda(quantidade, custo_unitario, preco_unitario, desconto_sim, entrada_sim, parcelas_sim, taxa_mensal, comissao_percentual, impostos_percentual)
+
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                card("Valor total", moeda(calc["valor_total"]), "Venda após desconto")
+            with c2:
+                card("Valor financiado", moeda(calc["valor_financiado"]), f"Entrada: {moeda(entrada_sim)}")
+            with c3:
+                card("Parcela estimada", moeda(calc["valor_parcela"]), f"{int(parcelas_sim)}x")
+            with c4:
+                card("Lucro estimado", moeda(calc["lucro_estimado"]), f"Margem: {percentual(calc['margem_percentual'])}")
+
+            if salvar_sim:
+                if not produto_servico:
+                    st.warning("Preencha o produto ou serviço da simulação.")
+                else:
+                    executar(
+                        """
+                        INSERT INTO simulacoes_vendas
+                        (empresa_id, usuario_id, data_simulacao, segmento, cliente_nome, produto_servico, quantidade,
+                        custo_unitario, preco_unitario, desconto, entrada, parcelas, taxa_mensal, comissao_percentual,
+                        impostos_percentual, custo_total, venda_bruta, valor_total, valor_financiado, valor_parcela,
+                        lucro_estimado, margem_percentual, status, observacao, criado_em)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            empresa_id_atual(), usuario_id_atual(), str(data_simulacao), segmento_sim, cliente_sim, produto_servico,
+                            float(quantidade), float(custo_unitario), float(preco_unitario), float(desconto_sim), float(entrada_sim),
+                            int(parcelas_sim), float(taxa_mensal), float(comissao_percentual), float(impostos_percentual),
+                            float(calc["custo_total"]), float(calc["venda_bruta"]), float(calc["valor_total"]),
+                            float(calc["valor_financiado"]), float(calc["valor_parcela"]), float(calc["lucro_estimado"]),
+                            float(calc["margem_percentual"]), status_sim, observacao_sim, datetime.now().isoformat()
+                        )
+                    )
+                    st.success("Simulação salva com sucesso.")
+                    st.rerun()
+
+        with aba_historico:
+            if simulacoes_vendas.empty:
+                st.info("Nenhuma simulação salva ainda.")
+            else:
+                tabela_sim = simulacoes_vendas.copy()
+                tabela_sim["valor_total_formatado"] = tabela_sim["valor_total"].apply(moeda)
+                tabela_sim["lucro_formatado"] = tabela_sim["lucro_estimado"].apply(moeda)
+                tabela_sim["margem_formatada"] = tabela_sim["margem_percentual"].apply(percentual)
+                tabela_sim["data_br"] = tabela_sim["data_simulacao"].apply(data_br)
+                st.dataframe(
+                    tabela_sim[["id", "data_br", "segmento", "cliente_nome", "produto_servico", "valor_total_formatado", "lucro_formatado", "margem_formatada", "status"]],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+                sim_opcoes = tabela_sim.apply(lambda x: f"#{int(x['id'])} - {x['produto_servico']} | {moeda(x['valor_total'])} | {x['status']}", axis=1).tolist()
+                sim_sel = st.selectbox("Selecionar simulação", sim_opcoes, key="sim_select_hist")
+                sim_id = int(sim_sel.split(" - ")[0].replace("#", ""))
+                sim_row = tabela_sim[tabela_sim["id"] == sim_id].iloc[0]
+
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.write(f"**Cliente:** {sim_row.get('cliente_nome', '')}")
+                    st.write(f"**Produto/serviço:** {sim_row.get('produto_servico', '')}")
+                    st.write(f"**Total:** {moeda(sim_row.get('valor_total', 0))}")
+                    st.write(f"**Entrada:** {moeda(sim_row.get('entrada', 0))}")
+                    st.write(f"**Parcelas:** {int(sim_row.get('parcelas', 1))}x de {moeda(sim_row.get('valor_parcela', 0))}")
+                with col_b:
+                    st.write(f"**Custo total:** {moeda(sim_row.get('custo_total', 0))}")
+                    st.write(f"**Lucro estimado:** {moeda(sim_row.get('lucro_estimado', 0))}")
+                    st.write(f"**Margem:** {percentual(sim_row.get('margem_percentual', 0))}")
+                    st.write(f"**Status:** {sim_row.get('status', '')}")
+
+                texto_proposta = (
+                    f"Olá! Segue simulação da sua proposta:\n\n"
+                    f"Produto/Serviço: {sim_row.get('produto_servico', '')}\n"
+                    f"Valor total: {moeda(sim_row.get('valor_total', 0))}\n"
+                    f"Entrada: {moeda(sim_row.get('entrada', 0))}\n"
+                    f"Parcelamento: {int(sim_row.get('parcelas', 1))}x de {moeda(sim_row.get('valor_parcela', 0))}\n\n"
+                    f"Global Software"
+                )
+                st.text_area("Mensagem de proposta para WhatsApp", value=texto_proposta, height=170, key="sim_texto_whats")
+                st.download_button(
+                    "Baixar simulações CSV",
+                    data=simulacoes_vendas.to_csv(index=False).encode("utf-8"),
+                    file_name="simulacoes_vendas.csv",
+                    mime="text/csv",
+                    key="download_simulacoes_csv"
+                )
+
+                col_excluir, col_lancar = st.columns(2)
+                with col_lancar:
+                    if st.button("Registrar como receita em Entradas e Saídas", key="btn_sim_lancar_receita"):
+                        executar(
+                            """
+                            INSERT INTO lancamentos
+                            (empresa_id, usuario_id, data, vencimento, tipo, categoria, descricao,
+                            cliente_fornecedor, valor, forma_pagamento, conta, status, parcela_atual,
+                            parcela_total, observacao, criado_em)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                empresa_id_atual(), usuario_id_atual(), str(date.today()), str(date.today()), "Receita", "Venda",
+                                f"Venda simulada - {sim_row.get('produto_servico', '')}", sim_row.get('cliente_nome', ''),
+                                float(sim_row.get('valor_total', 0)), "Outro", "Caixa", "Recebido", 1, 1,
+                                f"Gerado pela Simulação de Vendas #{sim_id}", datetime.now().isoformat()
+                            )
+                        )
+                        st.success("Receita registrada com sucesso.")
+                        st.rerun()
+                with col_excluir:
+                    if st.button("Excluir simulação selecionada", key="btn_excluir_sim"):
+                        executar("DELETE FROM simulacoes_vendas WHERE id = ? AND empresa_id = ?", (sim_id, empresa_id_atual()))
+                        st.success("Simulação excluída.")
+                        st.rerun()
+
     elif menu == "Assinaturas / Planos":
         st.title("💳 Assinaturas e Planos")
 
@@ -3644,6 +4090,13 @@ def app():
         if not folha.empty:
             st.download_button("Baixar folha CSV", data=folha.to_csv(index=False).encode("utf-8"), file_name="folha_pagamento.csv", mime="text/csv", key="download_csv_folha")
 
+
+        if not notas_fiscais.empty:
+            st.download_button("Baixar notas / pré-notas CSV", data=notas_fiscais.to_csv(index=False).encode("utf-8"), file_name="notas_fiscais_pre_notas.csv", mime="text/csv", key="download_csv_notas")
+
+        if not simulacoes_vendas.empty:
+            st.download_button("Baixar simulações de vendas CSV", data=simulacoes_vendas.to_csv(index=False).encode("utf-8"), file_name="simulacoes_vendas.csv", mime="text/csv", key="download_csv_simulacoes")
+
     elif menu == "IA Financeira":
         st.title("🤖 IA Financeira")
 
@@ -3709,13 +4162,19 @@ Gere mensagens e simule IA WhatsApp PF/PJ.
 **10. Planejamento Financeiro**  
 Cadastre previsto x realizado, metas, dívidas, investimentos e reserva.
 
-**11. Assinaturas / Planos**  
+**11. Nota Fiscal / Pré-nota**  
+Crie pré-notas, recibos, faturas e rascunhos fiscais por segmento. A emissão oficial exige integração fiscal.
+
+**12. Simulação de Vendas**  
+Simule vendas por segmento com entrada, parcelas, desconto, comissão, impostos estimados, lucro e margem.
+
+**13. Assinaturas / Planos**  
 Controle plano, status, vencimento, mensalidade, limite de usuários e renovação pelo WhatsApp.
 
-**12. Relatórios**  
+**14. Relatórios**  
 Baixe PDF e planilhas CSV.
 
-**13. Dados de exemplo**  
+**15. Dados de exemplo**  
 Vá em **Configurações** e clique em **Carregar dados de exemplo** para apresentar o sistema bonito para clientes.
 """)
 
@@ -3865,6 +4324,8 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
             "folha": folha.to_dict(orient="records") if not folha.empty else [],
             "metas": metas.to_dict(orient="records") if not metas.empty else [],
             "planejamento": planejamento.to_dict(orient="records") if not planejamento.empty else [],
+            "notas_fiscais": notas_fiscais.to_dict(orient="records") if not notas_fiscais.empty else [],
+            "simulacoes_vendas": simulacoes_vendas.to_dict(orient="records") if not simulacoes_vendas.empty else [],
             "assinatura": assinatura.to_dict(orient="records") if not assinatura.empty else [],
             "onboarding": onboarding.to_dict(orient="records") if not onboarding.empty else [],
             "gerado_em": datetime.now().isoformat()
