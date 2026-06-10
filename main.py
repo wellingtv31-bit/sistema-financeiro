@@ -929,6 +929,22 @@ def criar_tabelas():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS assinaturas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empresa_id INTEGER UNIQUE,
+            plano TEXT,
+            status TEXT,
+            data_inicio TEXT,
+            data_vencimento TEXT,
+            valor_mensal REAL DEFAULT 0,
+            limite_usuarios INTEGER DEFAULT 1,
+            observacao TEXT,
+            criado_em TEXT,
+            atualizado_em TEXT
+        )
+    """)
+
     con.commit()
     con.close()
 
@@ -994,6 +1010,16 @@ FORMAS_PAGAMENTO = ["Dinheiro", "Pix", "Cartão de débito", "Cartão de crédit
 CONTAS = ["Caixa", "Banco", "Conta digital", "Carteira", "Cartão", "Outro"]
 STATUS_OPCOES = ["Pendente", "Pago", "Recebido"]
 
+PLANOS_ASSINATURA = {
+    "Gratuito": {"valor": 0.0, "limite": 1, "descricao": "Teste, controle básico e validação inicial."},
+    "Básico PF": {"valor": 29.0, "limite": 1, "descricao": "Controle financeiro pessoal, gastos, dívidas, metas e relatórios."},
+    "Básico PJ": {"valor": 97.0, "limite": 2, "descricao": "Financeiro, entradas, saídas, clientes e relatórios básicos."},
+    "Premium PJ": {"valor": 297.0, "limite": 5, "descricao": "Financeiro completo, CRM, estoque, folha, metas e relatórios."},
+    "Premium IA WhatsApp": {"valor": 497.0, "limite": 10, "descricao": "Sistema completo com automações, WhatsApp e IA financeira."},
+}
+
+STATUS_ASSINATURA = ["Teste grátis", "Ativo", "Vencido", "Bloqueado", "Cancelado"]
+
 
 # =====================================================
 # FUNÇÕES DE CONTEXTO
@@ -1013,6 +1039,131 @@ def tipo_usuario_atual():
 
 def tipo_pessoa_atual():
     return st.session_state.usuario.get("tipo_pessoa", "PJ")
+
+
+# =====================================================
+# ASSINATURAS E PLANOS
+# =====================================================
+
+def plano_padrao_por_perfil(tipo_pessoa):
+    return "Básico PF" if tipo_pessoa == "PF" else "Básico PJ"
+
+
+def garantir_assinatura_empresa(empresa_id, tipo_pessoa="PJ"):
+    assinatura = consultar("SELECT * FROM assinaturas WHERE empresa_id = ?", (int(empresa_id),))
+    if not assinatura.empty:
+        return
+
+    plano = plano_padrao_por_perfil(tipo_pessoa)
+    dados_plano = PLANOS_ASSINATURA.get(plano, PLANOS_ASSINATURA["Gratuito"])
+    hoje = date.today()
+    vencimento = hoje + timedelta(days=7)
+    agora = datetime.now().isoformat()
+
+    executar(
+        """
+        INSERT INTO assinaturas
+        (empresa_id, plano, status, data_inicio, data_vencimento, valor_mensal, limite_usuarios, observacao, criado_em, atualizado_em)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            int(empresa_id),
+            plano,
+            "Teste grátis",
+            str(hoje),
+            str(vencimento),
+            float(dados_plano["valor"]),
+            int(dados_plano["limite"]),
+            "Assinatura criada automaticamente no primeiro acesso.",
+            agora,
+            agora,
+        )
+    )
+
+
+def carregar_assinatura():
+    garantir_assinatura_empresa(empresa_id_atual(), tipo_pessoa_atual())
+    return consultar("SELECT * FROM assinaturas WHERE empresa_id = ?", (empresa_id_atual(),))
+
+
+def status_assinatura_real(assinatura):
+    if assinatura is None or assinatura.empty:
+        return "Sem assinatura"
+
+    row = assinatura.iloc[0]
+    status = row.get("status", "Teste grátis") or "Teste grátis"
+
+    if status in ["Bloqueado", "Cancelado"]:
+        return status
+
+    try:
+        vencimento = pd.to_datetime(row.get("data_vencimento")).date()
+        if vencimento < date.today():
+            return "Vencido"
+    except Exception:
+        return status
+
+    return status
+
+
+def dias_restantes_assinatura(assinatura):
+    if assinatura is None or assinatura.empty:
+        return 0
+    try:
+        vencimento = pd.to_datetime(assinatura.iloc[0].get("data_vencimento")).date()
+        return (vencimento - date.today()).days
+    except Exception:
+        return 0
+
+
+def renovar_assinatura_empresa(plano, meses, status="Ativo"):
+    dados_plano = PLANOS_ASSINATURA.get(plano, PLANOS_ASSINATURA["Gratuito"])
+    assinatura = carregar_assinatura()
+    hoje = date.today()
+
+    data_base = hoje
+    if not assinatura.empty:
+        try:
+            venc_atual = pd.to_datetime(assinatura.iloc[0].get("data_vencimento")).date()
+            if venc_atual > hoje:
+                data_base = venc_atual
+        except Exception:
+            data_base = hoje
+
+    novo_vencimento = data_base + timedelta(days=30 * int(meses))
+
+    executar(
+        """
+        UPDATE assinaturas
+        SET plano = ?, status = ?, data_vencimento = ?, valor_mensal = ?, limite_usuarios = ?, atualizado_em = ?
+        WHERE empresa_id = ?
+        """,
+        (
+            plano,
+            status,
+            str(novo_vencimento),
+            float(dados_plano["valor"]),
+            int(dados_plano["limite"]),
+            datetime.now().isoformat(),
+            empresa_id_atual(),
+        )
+    )
+
+
+def link_whatsapp_renovacao(assinatura):
+    if assinatura is None or assinatura.empty:
+        texto = "Olá! Quero renovar minha assinatura da Global Software."
+    else:
+        row = assinatura.iloc[0]
+        texto = (
+            "Olá! Quero renovar minha assinatura da Global Software.\n\n"
+            f"Conta: {st.session_state.usuario['empresa_nome']}\n"
+            f"Plano atual: {row.get('plano', '')}\n"
+            f"Status: {status_assinatura_real(assinatura)}\n"
+            f"Vencimento: {data_br(row.get('data_vencimento'))}\n\n"
+            "Pode me enviar as opções de renovação?"
+        )
+    return f"https://wa.me/{WHATSAPP_COMERCIAL}?text={quote(texto)}"
 
 
 # =====================================================
@@ -1481,13 +1632,16 @@ def responder_ajuda(pergunta):
     if "planejamento" in p or "orçamento" in p or "orcamento" in p or "previsto" in p:
         return "Para planejar o mês, acesse **Planejamento Financeiro**. Cadastre valores previstos, valores realizados, metas, dívidas, investimentos e compare o planejado com o realizado."
 
+    if "assinatura" in p or "mensalidade" in p or "plano" in p or "renovar" in p or "vencimento" in p:
+        return "Para controlar assinatura e mensalidade, acesse **Assinaturas / Planos**. Lá você vê plano atual, status, vencimento, dias restantes, limite de usuários e pode gerar link de renovação pelo WhatsApp."
+
     if "whatsapp" in p or "cobrança" in p or "cobranca" in p:
         return "Para gerar mensagem de WhatsApp, vá em **Pix e WhatsApp**. Digite telefone, nome, valor, vencimento e gere o link pronto."
 
     if "dashboard" in p or "painel" in p:
         return "O **Dashboard** mostra receita, saídas, lucro, caixa, contas pagas no mês, clientes inadimplentes, estoque, folha de pagamento, contas a receber e contas vencidas."
 
-    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, relatórios, WhatsApp e dashboard."
+    return "Posso te ajudar com lançamentos, clientes, inadimplentes, estoque, funcionários, folha, metas, planejamento, assinatura, relatórios, WhatsApp e dashboard."
 
 
 # =====================================================
@@ -1906,6 +2060,7 @@ def menus_por_tipo_usuario():
         "Metas e Premiações",
         "Parcelas",
         "Planejamento Financeiro",
+        "Assinaturas / Planos",
         "Pix e WhatsApp",
         "Relatórios",
         "IA Financeira",
@@ -1920,12 +2075,12 @@ def menus_por_tipo_usuario():
         "Gerente": [
             "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes / CRM",
             "Clientes Inadimplentes", "Estoque", "Funcionários", "Folha de Pagamento",
-            "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Pix e WhatsApp", "Relatórios",
+            "Metas e Premiações", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial", "Configurações"
         ],
         "Financeiro": [
             "Dashboard", "Entradas e Saídas", "Contas Pagas no Mês", "Clientes Inadimplentes",
-            "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Pix e WhatsApp", "Relatórios",
+            "Folha de Pagamento", "Parcelas", "Planejamento Financeiro", "Assinaturas / Planos", "Pix e WhatsApp", "Relatórios",
             "IA Financeira", "Ajuda / Tutorial"
         ],
         "Vendedor": [
@@ -2018,6 +2173,13 @@ def app():
     st.sidebar.write(f"**Usuário:** {usuario['nome']}")
     st.sidebar.write(f"**Permissão:** {usuario['tipo']}")
 
+    garantir_assinatura_empresa(usuario["empresa_id"], usuario.get("tipo_pessoa", "PJ"))
+    assinatura_sidebar = consultar("SELECT * FROM assinaturas WHERE empresa_id = ?", (int(usuario["empresa_id"]),))
+    status_sidebar = status_assinatura_real(assinatura_sidebar)
+    dias_sidebar = dias_restantes_assinatura(assinatura_sidebar)
+    st.sidebar.write(f"**Plano:** {assinatura_sidebar.iloc[0]['plano'] if not assinatura_sidebar.empty else 'Sem plano'}")
+    st.sidebar.write(f"**Assinatura:** {status_sidebar} ({dias_sidebar} dias)")
+
     df = carregar_lancamentos()
     clientes = carregar_clientes()
     estoque = carregar_estoque()
@@ -2025,6 +2187,9 @@ def app():
     folha = carregar_folha()
     metas = carregar_metas()
     planejamento = carregar_planejamento()
+    assinatura = carregar_assinatura()
+    status_assinatura = status_assinatura_real(assinatura)
+    dias_assinatura = dias_restantes_assinatura(assinatura)
 
     ind = calcular_indicadores(df)
     menus_liberados = menus_por_tipo_usuario()
@@ -2067,6 +2232,13 @@ def app():
 
     if menu == "Dashboard":
         st.title("📊 Dashboard Executivo Premium")
+
+        if status_assinatura in ["Vencido", "Bloqueado", "Cancelado"]:
+            st.error(f"Assinatura {status_assinatura}. Acesse **Assinaturas / Planos** para regularizar e renovar pelo WhatsApp.")
+        elif dias_assinatura <= 3:
+            st.warning(f"Sua assinatura vence em {dias_assinatura} dia(s). Acesse **Assinaturas / Planos** para renovar.")
+        else:
+            st.caption(f"Plano ativo: {assinatura.iloc[0]['plano']} • Status: {status_assinatura} • Vencimento: {data_br(assinatura.iloc[0]['data_vencimento'])}")
 
         inadimplentes_df = pd.DataFrame()
         if not df.empty:
@@ -2828,6 +3000,89 @@ def app():
                     st.rerun()
 
 
+    elif menu == "Assinaturas / Planos":
+        st.title("💳 Assinaturas e Planos")
+
+        if assinatura.empty:
+            st.warning("Nenhuma assinatura encontrada para esta conta.")
+        else:
+            ass = assinatura.iloc[0]
+            plano_atual = ass.get("plano", "Gratuito")
+            status_real = status_assinatura_real(assinatura)
+            dias_restantes = dias_restantes_assinatura(assinatura)
+            valor_mensal = float(ass.get("valor_mensal") or 0)
+            limite_usuarios = int(ass.get("limite_usuarios") or 1)
+            vencimento = ass.get("data_vencimento")
+
+            c1, c2, c3, c4 = st.columns(4)
+            with c1:
+                card("Plano atual", plano_atual, PLANOS_ASSINATURA.get(plano_atual, {}).get("descricao", "Plano cadastrado"))
+            with c2:
+                card("Status", status_real, "Situação atual da mensalidade")
+            with c3:
+                card("Vencimento", data_br(vencimento), f"Faltam {dias_restantes} dia(s)")
+            with c4:
+                card("Mensalidade", moeda(valor_mensal), f"Limite de {limite_usuarios} usuário(s)")
+
+            if status_real == "Vencido":
+                st.error("Assinatura vencida. Gere o link de renovação pelo WhatsApp ou renove manualmente como administrador.")
+            elif status_real == "Bloqueado":
+                st.error("Conta bloqueada. Entre em contato com o suporte Global Software.")
+            elif status_real == "Cancelado":
+                st.warning("Assinatura cancelada. Regularize para continuar usando como cliente ativo.")
+            elif dias_restantes <= 3:
+                st.warning(f"Atenção: sua assinatura vence em {dias_restantes} dia(s).")
+            else:
+                st.success("Assinatura em dia.")
+
+            st.markdown(f"[📲 Renovar pelo WhatsApp]({link_whatsapp_renovacao(assinatura)})")
+
+        st.divider()
+        st.subheader("Planos comerciais da Global Software")
+
+        p1, p2, p3, p4, p5 = st.columns(5)
+        planos_cols = [p1, p2, p3, p4, p5]
+        for coluna, (nome_plano, dados) in zip(planos_cols, PLANOS_ASSINATURA.items()):
+            with coluna:
+                preco_card(nome_plano, moeda(dados["valor"]), f"{dados['descricao']} Limite: {dados['limite']} usuário(s).")
+
+        if tipo_usuario_atual() == "Administrador":
+            st.divider()
+            st.subheader("Controle administrativo da assinatura")
+            st.info("Use esta área para liberar teste, renovar mensalidade, bloquear cliente ou alterar plano.")
+
+            with st.form("form_assinatura_admin"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    novo_plano = st.selectbox("Plano", list(PLANOS_ASSINATURA.keys()), index=list(PLANOS_ASSINATURA.keys()).index(plano_atual) if not assinatura.empty and plano_atual in PLANOS_ASSINATURA else 0, key="ass_novo_plano")
+                    novo_status = st.selectbox("Status", STATUS_ASSINATURA, index=STATUS_ASSINATURA.index(status_real) if status_real in STATUS_ASSINATURA else 0, key="ass_status")
+                with col2:
+                    meses = st.number_input("Adicionar quantos meses?", min_value=1, max_value=36, value=1, step=1, key="ass_meses")
+                    observacao = st.text_area("Observação interna", value=ass.get("observacao", "") if not assinatura.empty else "", key="ass_obs")
+
+                if st.form_submit_button("Salvar / Renovar assinatura", use_container_width=True):
+                    renovar_assinatura_empresa(novo_plano, int(meses), novo_status)
+                    executar(
+                        "UPDATE assinaturas SET observacao = ?, atualizado_em = ? WHERE empresa_id = ?",
+                        (observacao, datetime.now().isoformat(), empresa_id_atual())
+                    )
+                    st.success("Assinatura atualizada com sucesso.")
+                    st.rerun()
+
+            st.divider()
+            st.subheader("Usuários x limite do plano")
+            usuarios_conta = consultar(
+                "SELECT id, nome, email, tipo, ativo, criado_em FROM usuarios WHERE empresa_id = ? ORDER BY nome ASC",
+                (empresa_id_atual(),)
+            )
+            total_usuarios = len(usuarios_conta)
+            st.info(f"Usuários cadastrados: {total_usuarios} de {limite_usuarios} permitidos no plano atual.")
+            if total_usuarios > limite_usuarios:
+                st.warning("Esta conta possui mais usuários do que o limite contratado. Considere migrar para um plano superior.")
+            if not usuarios_conta.empty:
+                st.dataframe(usuarios_conta, use_container_width=True, hide_index=True)
+
+
     elif menu == "Pix e WhatsApp":
         st.title("📲 Pix e WhatsApp")
 
@@ -2985,10 +3240,13 @@ Gere mensagens e simule IA WhatsApp PF/PJ.
 **10. Planejamento Financeiro**  
 Cadastre previsto x realizado, metas, dívidas, investimentos e reserva.
 
-**11. Relatórios**  
+**11. Assinaturas / Planos**  
+Controle plano, status, vencimento, mensalidade, limite de usuários e renovação pelo WhatsApp.
+
+**12. Relatórios**  
 Baixe PDF e planilhas CSV.
 
-**12. Dados de exemplo**  
+**13. Dados de exemplo**  
 Vá em **Configurações** e clique em **Carregar dados de exemplo** para apresentar o sistema bonito para clientes.
 """)
 
@@ -3137,6 +3395,8 @@ Vá em **Configurações** e clique em **Carregar dados de exemplo** para aprese
             "funcionarios": funcionarios.to_dict(orient="records") if not funcionarios.empty else [],
             "folha": folha.to_dict(orient="records") if not folha.empty else [],
             "metas": metas.to_dict(orient="records") if not metas.empty else [],
+            "planejamento": planejamento.to_dict(orient="records") if not planejamento.empty else [],
+            "assinatura": assinatura.to_dict(orient="records") if not assinatura.empty else [],
             "gerado_em": datetime.now().isoformat()
         }
 
